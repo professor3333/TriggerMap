@@ -1,0 +1,52 @@
+# Advisory snapshot and regenerable data (rebuilt from the pinned commit)
+data/raw/
+data/quarantine/
+data/processed/
+advisory-database/
+
+# Label Studio local state (exports live in annotations/ once adjudicated)
+label-studio-data/
+data/label_studio/
+
+# Models, checkpoints, experiment tracking
+models/
+checkpoints/
+artifacts/
+*.onnx
+*.safetensors
+*.bin
+*.pt
+mlruns/
+mlartifacts/
+
+# Review databases
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Secrets and environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
