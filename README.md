@@ -19,8 +19,19 @@ affected; TriggerMap surfaces the *conditions* stated in the advisory.
 ## Data
 
 Advisories come from the public [GitHub Advisory Database](https://github.com/github/advisory-database)
-(CC BY 4.0). Attribution, the pinned snapshot commit and measured counts will be documented in
-`docs/dataset_card.md`.
+(CC BY 4.0). The corpus is rebuilt from a pinned snapshot:
+
+```bash
+uv run triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6  # sparse clone, ~360 MB
+uv run triggermap ingest build    # PyPI filter, withdrawn excluded, malformed quarantined
+uv run triggermap corpus stats    # writes docs/corpus_stats.md
+```
+
+`ingest build` writes `data/processed/advisories.jsonl` (not committed) and the committed
+manifest `data/manifests/snapshot.json`, which records the source commit, every filtering
+count, quarantined files with reasons, and the SHA-256 of the output. Rebuilding from the same
+commit reproduces the manifest byte for byte. Current counts are in
+[`docs/corpus_stats.md`](docs/corpus_stats.md).
 
 ## Development
 

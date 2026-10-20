@@ -208,5 +208,5 @@ def test_canonicalize_never_crashes_on_unicode(raw: str) -> None:
 
 @given(st.from_regex(r"[A-Za-z][A-Za-z ,]{0,60}", fullmatch=True))
 def test_plain_prose_is_unchanged(raw: str) -> None:
-    doc = canonicalize(raw)
-    assert doc.text == " ".join(raw.split()) if raw.strip() else doc.text == ""
+    # Internal whitespace is preserved; only trailing whitespace is trimmed.
+    assert canonicalize(raw).text == raw.rstrip()
