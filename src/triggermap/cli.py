@@ -98,16 +98,49 @@ def _corpus_split(args: argparse.Namespace) -> int:
     return 0
 
 
+def _corpus_sample_batch(args: argparse.Namespace) -> int:
+    from triggermap.corpus.batches import (
+        BatchParams,
+        already_sampled,
+        batch_manifest,
+        sample_batch,
+    )
+    from triggermap.corpus.splits import load_split
+    from triggermap.eval.runner import load_predictions
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus, write_manifest
+
+    out = Path("annotations/batches") / f"{args.name}.json"
+    if out.exists():
+        raise SystemExit(f"{out} exists; batches are immutable once drawn")
+    params = BatchParams(
+        name=args.name,
+        pool=args.pool,
+        n=args.n,
+        strategy=args.strategy,
+        per_group_cap=args.per_group_cap,
+        max_words=args.max_words,
+    )
+    split = load_split(args.split_manifest)
+    exclude = already_sampled(sorted(Path("annotations").glob("**/*.json")))
+    predictions = load_predictions(args.predictions) if args.predictions else None
+    docs = load_corpus(args.processed / CORPUS_FILE)
+    items = sample_batch(docs, split, params, exclude, predictions)
+    write_manifest(batch_manifest(items, params, split), out)
+    print(f"wrote {len(items)} {params.strategy} items from the {params.pool} pool to {out}")
+    return 0
+
+
 def _annotate_tasks(args: argparse.Namespace) -> int:
     from triggermap.annotate.label_studio import build_task
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
 
-    pilot = json.loads(args.pilot.read_text(encoding="utf-8"))
+    sample = json.loads(args.sample.read_text(encoding="utf-8"))
     corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
-    tasks = [build_task(corpus[item["advisory_id"]], item["order"]) for item in pilot["items"]]
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(tasks, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"wrote {len(tasks)} Label Studio tasks to {args.out}")
+    tasks = [build_task(corpus[item["advisory_id"]], item["order"]) for item in sample["items"]]
+    out = args.out or Path(f"data/label_studio/{sample['sample_version']}_tasks.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(tasks, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"wrote {len(tasks)} Label Studio tasks to {out}")
     return 0
 
 
@@ -120,8 +153,8 @@ def _annotate_import(args: argparse.Namespace) -> int:
     )
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
 
-    pilot = json.loads(args.pilot.read_text(encoding="utf-8"))
-    items = {item["advisory_id"]: item for item in pilot["items"]}
+    sample = json.loads(args.sample.read_text(encoding="utf-8"))
+    items = {item["advisory_id"]: item for item in sample["items"]}
     corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
     conversions = import_export(
         load_export(args.export), corpus, args.annotation_version, args.annotator
@@ -331,6 +364,17 @@ def build_parser() -> argparse.ArgumentParser:
     pilot.add_argument("--seed", type=int, default=20261020)
     pilot.add_argument("--out", type=Path, default=DEFAULT_PILOT)
     pilot.set_defaults(handler=_corpus_sample_pilot)
+    batch = corpus_cmds.add_parser("sample-batch", help="draw an annotation batch from a pool")
+    batch.add_argument("--name", required=True, help="e.g. batch-01; output annotations/batches/")
+    batch.add_argument("--pool", choices=["train", "dev", "test"], required=True)
+    batch.add_argument("--n", type=int, required=True)
+    batch.add_argument("--strategy", choices=["natural", "enriched", "uncertainty"])
+    batch.add_argument("--per-group-cap", type=int, default=3)
+    batch.add_argument("--max-words", type=int)
+    batch.add_argument("--predictions", type=Path, help="Extraction JSONL for uncertainty")
+    batch.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    batch.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    batch.set_defaults(handler=_corpus_sample_batch, strategy="natural")
     split = corpus_cmds.add_parser("split", help="freeze leakage-safe train/dev/test pools")
     split.add_argument("--version", default="pool-v1")
     split.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
@@ -342,13 +386,13 @@ def build_parser() -> argparse.ArgumentParser:
     annotate = commands.add_parser("annotate", help="Label Studio tasks and imports")
     annotate_cmds = annotate.add_subparsers(dest="subcommand", required=True)
     tasks = annotate_cmds.add_parser("tasks", help="write Label Studio tasks for a sample")
-    tasks.add_argument("--pilot", type=Path, default=DEFAULT_PILOT)
+    tasks.add_argument("--sample", "--pilot", type=Path, default=DEFAULT_PILOT, dest="sample")
     tasks.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
-    tasks.add_argument("--out", type=Path, default=Path("data/label_studio/pilot_tasks.json"))
+    tasks.add_argument("--out", type=Path, help="default: data/label_studio/<sample>_tasks.json")
     tasks.set_defaults(handler=_annotate_tasks)
     imp = annotate_cmds.add_parser("import", help="validate a Label Studio JSON export")
     imp.add_argument("export", type=Path, help="Label Studio JSON export file")
-    imp.add_argument("--pilot", type=Path, default=DEFAULT_PILOT)
+    imp.add_argument("--sample", "--pilot", type=Path, default=DEFAULT_PILOT, dest="sample")
     imp.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     imp.add_argument("--annotator", required=True, help="pseudonymous annotator id, e.g. A1")
     imp.add_argument("--annotation-version", default="pilot-1")
