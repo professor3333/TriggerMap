@@ -292,3 +292,13 @@ def test_metrics_and_logs_never_contain_submitted_text(
     metrics = client.get("/metrics").text
     assert "triggermap_requests_total" in metrics and "zebra" not in metrics
     assert 'route="/v1/extractions"' in metrics
+
+
+def test_app_cli_uses_the_server_database(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """create-user must write where the server reads (TRIGGERMAP_DATABASE)."""
+    from triggermap.cli import build_parser
+
+    target = tmp_path / "server.db"
+    monkeypatch.setenv("TRIGGERMAP_DATABASE", str(target))
+    args = build_parser().parse_args(["app", "create-user", "someone"])
+    assert args.database == target

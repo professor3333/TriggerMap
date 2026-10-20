@@ -52,3 +52,7 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Deployment state (releases are assembled per host; only the README is committed)
+deploy/releases/*
+!deploy/releases/README.md

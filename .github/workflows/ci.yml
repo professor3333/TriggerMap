@@ -23,3 +23,9 @@ jobs:
         run: uv run mypy src/
       - name: Tests
         run: uv run pytest -m "not slow"
+      - name: Validate compose file
+        run: TRIGGERMAP_IMAGE=triggermap:ci docker compose -f deploy/compose.yaml config --quiet
+      - name: Build image
+        run: TRIGGERMAP_IMAGE=triggermap:ci docker compose -f deploy/compose.yaml build app
+      - name: Container smoke test
+        run: deploy/smoke.sh triggermap:ci

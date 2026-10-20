@@ -10,7 +10,7 @@
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-f59e0b)](annotations/README.md)
 ![mypy strict](https://img.shields.io/badge/types-mypy%20strict-2563eb)
 ![ruff](https://img.shields.io/badge/lint-ruff-d7ff64?logo=ruff&logoColor=black)
-![Status](https://img.shields.io/badge/status-phase%203%20%C2%B7%20training%20ready-8b5cf6)
+![Status](https://img.shields.io/badge/status-phase%205%20%C2%B7%20app%20deployable-8b5cf6)
 
 **Read the advisory. Get the conditions. Check them against your deployment.**
 
@@ -55,9 +55,9 @@ flowchart LR
     classDef done fill:#dcfce7,stroke:#16a34a,color:#14532d
     classDef progress fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef planned fill:#f1f5f9,stroke:#94a3b8,color:#334155,stroke-dasharray:4 3
-    class A,B,J done
-    class C,D,E,F,K,L progress
-    class G,H,I,M,N planned
+    class A,B,H,I,J,L,M done
+    class C,D,E,F,G,K progress
+    class N planned
 ```
 
 <sub>🟩 built · 🟨 in progress · ⬜ planned. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
@@ -158,7 +158,7 @@ item can be highlighted in the original advisory.
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
-| 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, JSON/Markdown export; Docker and deployment next | 🟨 app built · packaging next |
+| 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
 
 Results will be published here only once measured. Until then this README reports no accuracy numbers.
@@ -273,6 +273,16 @@ explicit `--release-evaluation` reason, and every such run is logged.
 
 Details: [`docs/splits.md`](docs/splits.md) · annotation batches:
 [`docs/annotation_plan.md`](docs/annotation_plan.md).
+
+## Deployment
+
+One CPU host, Docker Compose: a Caddy proxy (automatic HTTPS), the app (read-only container,
+non-root), SQLite in WAL mode on a volume, Prometheus, and an on-demand advisory refresh job.
+A release pins the image, model bundle and review policy together. `triggermap release
+rollback` restores all three at once, and `triggermap app verify` checks a running service
+against its release manifest end to end. Rollback is exercised by
+[`deploy/rollback_drill.sh`](deploy/rollback_drill.sh); the runbook is in
+[`docs/deployment.md`](docs/deployment.md).
 
 ## Corpus at a glance
 

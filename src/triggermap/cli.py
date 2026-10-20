@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
@@ -569,6 +570,55 @@ def _app_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _release(args: argparse.Namespace) -> int:
+    from triggermap.serve import release as releases
+
+    root = args.root
+    if args.subcommand == "create":
+        path = releases.create_release(
+            root, args.release_id, args.image, args.model, args.model_dir, args.review_policy
+        )
+        print(json.dumps(releases.read_release(root, args.release_id), indent=2))
+        print(f"created {path}")
+    elif args.subcommand == "activate":
+        manifest = releases.activate(root, args.release_id)
+        print(f"active release: {manifest['release_id']} ({manifest['image']})")
+    elif args.subcommand == "rollback":
+        manifest = releases.rollback(root)
+        print(f"rolled back to {manifest['release_id']} ({manifest['image']})")
+    else:
+        current = releases.current_release(root)
+        print(f"current: {current}; previous: {releases.previous_release(root)}")
+        print("history: " + " -> ".join(releases.history(root)))
+    if args.subcommand in ("activate", "rollback") and args.apply:
+        import subprocess
+
+        compose = ["docker", "compose", "-f", str(args.compose), "--env-file", str(root / ".env")]
+        try:
+            subprocess.run([*compose, "up", "-d", "--force-recreate", "app"], check=True)
+        except subprocess.CalledProcessError as exc:
+            message = f"docker compose failed (exit {exc.returncode}); see output above"
+            raise SystemExit(message) from exc
+    return 0
+
+
+def _app_verify(args: argparse.Namespace) -> int:
+    from triggermap.serve.verify import VerificationError, verify
+
+    release = json.loads(args.release.read_text(encoding="utf-8"))
+    token = args.token or os.environ.get("TRIGGERMAP_VERIFY_TOKEN", "")
+    if not token:
+        raise SystemExit("pass --token or set TRIGGERMAP_VERIFY_TOKEN")
+    try:
+        for check in verify(args.url, release, token):
+            print(f"ok  {check}")
+    except VerificationError as exc:
+        print(f"FAIL {exc}")
+        return 1
+    print(f"deployment verified: {release['release_id']}")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -775,7 +825,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     app = commands.add_parser("app", help="review application: data, users, server")
     app_cmds = app.add_subparsers(dest="subcommand", required=True)
-    default_db = Path("data/app/triggermap.db")
+    # The same database the server uses (TRIGGERMAP_DATABASE), so CLI and server agree.
+    default_db = Path(os.environ.get("TRIGGERMAP_DATABASE", "data/app/triggermap.db"))
     sync = app_cmds.add_parser("sync", help="load the advisory snapshot into the app database")
     sync.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     sync.add_argument("--database", type=Path, default=default_db)
@@ -788,6 +839,38 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--host", default="127.0.0.1")
     run.add_argument("--port", type=int, default=8000)
     run.set_defaults(handler=_app_run)
+
+    verify = app_cmds.add_parser("verify", help="check a running deployment against its release")
+    verify.add_argument("--url", default="http://127.0.0.1:8000")
+    verify.add_argument(
+        "--release", type=Path, default=Path("deploy/releases/current/release.json")
+    )
+    verify.add_argument("--token", help="API token of a verification user")
+    verify.set_defaults(handler=_app_verify)
+
+    release = commands.add_parser("release", help="create, activate and roll back releases")
+    release.add_argument("--root", type=Path, default=Path("deploy/releases"))
+    release_cmds = release.add_subparsers(dest="subcommand", required=True)
+    create = release_cmds.add_parser("create", help="assemble an immutable release directory")
+    create.add_argument("release_id")
+    create.add_argument("--image", required=True, help="image reference, ideally by digest")
+    create.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    create.add_argument("--model-dir", type=Path)
+    create.add_argument("--review-policy", type=Path, default=DEFAULT_POLICY)
+    create.set_defaults(handler=_release)
+    compose_default = Path("deploy/compose.yaml")
+    for name, helptext in (
+        ("activate", "point the active release at RELEASE_ID"),
+        ("rollback", "re-activate the previous release (image and bundle together)"),
+    ):
+        sub = release_cmds.add_parser(name, help=helptext)
+        if name == "activate":
+            sub.add_argument("release_id")
+        sub.add_argument("--apply", action="store_true", help="recreate the app container")
+        sub.add_argument("--compose", type=Path, default=compose_default)
+        sub.set_defaults(handler=_release)
+    status = release_cmds.add_parser("status", help="show current, previous and history")
+    status.set_defaults(handler=_release)
 
     errors = commands.add_parser("errors", help="write the error catalogue for a split")
     errors.add_argument("--gold", type=Path, nargs="+", required=True)

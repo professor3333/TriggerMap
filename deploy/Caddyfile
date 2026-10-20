@@ -1,0 +1,16 @@
+# HTTPS is automatic when DOMAIN is a public name pointing at this host.
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 2MB
+	}
+	@metrics path /metrics
+	respond @metrics 404
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+		-Server
+	}
+	reverse_proxy app:8000
+}

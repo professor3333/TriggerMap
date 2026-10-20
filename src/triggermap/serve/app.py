@@ -74,15 +74,32 @@ class Settings(BaseModel):
     max_osv_vulnerabilities: int = 200
     max_concurrency: int = 4
     queue_timeout_seconds: float = 5.0
+    expected_weights_sha256: str | None = None
 
     @classmethod
     def from_env(cls) -> Settings:
+        """TRIGGERMAP_* variables; TRIGGERMAP_RELEASE_DIR fills model, policy and release."""
         values: dict[str, Any] = {}
+        release_dir = os.environ.get("TRIGGERMAP_RELEASE_DIR")
+        if release_dir:
+            values.update(release_settings(Path(release_dir)))
         for name in cls.model_fields:
             env = os.environ.get(f"TRIGGERMAP_{name.upper()}")
             if env is not None:
                 values[name] = env
         return cls.model_validate(values)
+
+
+def release_settings(release_dir: Path) -> dict[str, Any]:
+    manifest = json.loads((release_dir / "release.json").read_text(encoding="utf-8"))
+    model_dir = release_dir / "model"
+    return {
+        "release": manifest["release_id"],
+        "model": manifest["model_kind"],
+        "model_dir": model_dir if model_dir.exists() else None,
+        "review_policy": release_dir / "review_policy.yaml",
+        "expected_weights_sha256": manifest["weights_sha256"],
+    }
 
 
 class ApiError(Exception):
@@ -156,6 +173,12 @@ class Service:
             else ReviewPolicy(version="review-policy-none", model_id=self.extractor.model_id)
         )
         self.weights_sha256 = weights_digest(settings.model, settings.model_dir)
+        expected = settings.expected_weights_sha256
+        if expected is not None and expected != self.weights_sha256:
+            raise RuntimeError(
+                f"weights digest {self.weights_sha256[:12]} does not match the release manifest "
+                f"({expected[:12]}); refusing to serve"
+            )
         self.semaphore = asyncio.Semaphore(settings.max_concurrency)
         self.metrics = Metrics()
 
