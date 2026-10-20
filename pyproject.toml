@@ -13,6 +13,14 @@ dependencies = [
 [project.scripts]
 triggermap = "triggermap.cli:main"
 
+[project.optional-dependencies]
+baselines = [
+    "en-core-web-sm",
+    "python-crfsuite==0.9.12",
+    "scikit-learn>=1.9,<1.10",
+    "spacy>=3.8.16,<3.9",
+]
+
 [dependency-groups]
 dev = [
     "hypothesis>=6.170.5",
@@ -49,3 +57,10 @@ addopts = "-ra --strict-markers"
 markers = [
     "slow: needs network, GPU, or large data; excluded from CI",
 ]
+
+[tool.uv.sources]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
+
+[[tool.mypy.overrides]]
+module = ["pycrfsuite", "sklearn.*", "joblib"]
+ignore_missing_imports = true

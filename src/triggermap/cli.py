@@ -6,6 +6,7 @@ import argparse
 import json
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from triggermap import __version__
 
@@ -132,6 +133,33 @@ def _evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _gold_examples(gold: Path, processed: Path) -> list[Any]:
+    from triggermap.eval.runner import load_gold
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+    from triggermap.schema.models import AdvisoryAnnotation
+    from triggermap.text.preprocessing import compose_raw, preprocess
+
+    corpus = {d.advisory_id: d for d in load_corpus(processed / CORPUS_FILE)}
+    examples = []
+    for aid, record in sorted(load_gold(gold).items()):
+        assert isinstance(record, AdvisoryAnnotation)
+        doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
+        examples.append((doc, record))
+    return examples
+
+
+def _train(args: argparse.Namespace) -> int:
+    from triggermap.models.crf.model import CrfExtractor
+
+    examples = _gold_examples(args.gold, args.processed)
+    model = CrfExtractor.train(
+        examples, args.out, model_id=args.model_id, use_pos=not args.no_pos, seed=args.seed
+    )
+    print(json.dumps(model.metadata["stats"], indent=2))
+    print(f"trained {model.model_id} on {len(examples)} documents; bundle at {args.out}")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.rules.extractor import RuleExtractor
@@ -144,7 +172,15 @@ def _predict(args: argparse.Namespace) -> int:
         ids = [i["advisory_id"] for i in items if args.use in ("all", i["intended_use"])]
     else:
         ids = sorted(corpus)
-    extractor = RuleExtractor()
+    extractor: Any
+    if args.model == "crf":
+        from triggermap.models.crf.model import CrfExtractor
+
+        if args.model_dir is None:
+            raise SystemExit("--model crf needs --model-dir")
+        extractor = CrfExtractor.load(args.model_dir)
+    else:
+        extractor = RuleExtractor()
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as fh:
         for aid in ids:
@@ -218,7 +254,8 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.set_defaults(handler=_evaluate)
 
     predict = commands.add_parser("predict", help="run an extraction system over documents")
-    predict.add_argument("--model", choices=["rules"], default="rules")
+    predict.add_argument("--model", choices=["rules", "crf"], default="rules")
+    predict.add_argument("--model-dir", type=Path, help="trained bundle (crf)")
     predict.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     predict.add_argument("--sample", type=Path, help="sample manifest; default: whole corpus")
     predict.add_argument(
@@ -226,6 +263,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     predict.add_argument("--out", type=Path, required=True)
     predict.set_defaults(handler=_predict)
+
+    train = commands.add_parser("train", help="train a supervised baseline on gold records")
+    train.add_argument("--model", choices=["crf"], default="crf")
+    train.add_argument("--gold", type=Path, required=True, help="gold AdvisoryAnnotation JSONL")
+    train.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    train.add_argument("--out", type=Path, required=True, help="bundle directory to write")
+    train.add_argument("--model-id", default="crf-1")
+    train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
+    train.add_argument("--seed", type=int, default=0)
+    train.set_defaults(handler=_train)
     return parser
 
 
