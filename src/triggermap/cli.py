@@ -406,6 +406,71 @@ def _calibrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _robustness(args: argparse.Namespace) -> int:
+    import random
+
+    from triggermap.corpus.splits import load_split
+    from triggermap.eval.robustness import PERTURBATIONS, measure, render
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+    from triggermap.models.registry import load_extractor
+    from triggermap.text.preprocessing import compose_raw
+
+    split = load_split(args.split_manifest)
+    docs = [
+        d
+        for d in load_corpus(args.processed / CORPUS_FILE)
+        if split["assignment"].get(d.advisory_id) in ("train", "dev")
+    ]
+    sample = random.Random(args.seed).sample(docs, min(args.n, len(docs)))
+    raws = {d.advisory_id: compose_raw(d.summary, d.details) for d in sample}
+    extractor = load_extractor(args.model, args.model_dir)
+    results = measure(extractor, raws, args.perturbation or list(PERTURBATIONS))
+    out = args.out or Path("reports/robustness") / f"{extractor.model_id}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(
+        render(
+            f"Formatting robustness: {extractor.model_id}",
+            results,
+            {
+                "Sample": f"{len(sample)} advisories, train and dev pools (seed {args.seed})",
+                "Consistent": "same conditions (normalised surface, category, role) and groups",
+            },
+        ),
+        encoding="utf-8",
+    )
+    for r in results:
+        print(f"{r.name:22} {r.consistent}/{r.documents}")
+    print(f"wrote {out}")
+    return 0
+
+
+def _challenge(args: argparse.Namespace) -> int:
+    from triggermap.eval.challenge import family_counts, load, render, score
+    from triggermap.models.registry import load_extractor
+
+    items = load(args.set)
+    extractor = load_extractor(args.model, args.model_dir)
+    verified, _ = score([r for r in items if r.item.status == "verified"], extractor)
+    drafts, _ = score([r for r in items if r.item.status == "draft"], extractor)
+    out = args.out or Path("reports/challenge") / f"{extractor.model_id}.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    counts = family_counts(items)
+    out.write_text(
+        render(
+            f"Challenge set: {extractor.model_id}",
+            verified,
+            drafts,
+            {
+                "Set": f"`{args.set}`",
+                "Items": ", ".join(f"{k}: {v}" for k, v in sorted(counts.items())),
+            },
+        ),
+        encoding="utf-8",
+    )
+    print(f"wrote {out}")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -609,6 +674,24 @@ def build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--seed", type=int, default=0)
     calibrate.add_argument("--out", type=Path, default=DEFAULT_POLICY)
     calibrate.set_defaults(handler=_calibrate)
+
+    robust = commands.add_parser("robustness", help="formatting-perturbation consistency")
+    robust.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    robust.add_argument("--model-dir", type=Path)
+    robust.add_argument("--n", type=int, default=300, help="advisories to sample")
+    robust.add_argument("--seed", type=int, default=0)
+    robust.add_argument("--perturbation", action="append", help="repeat to select a subset")
+    robust.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    robust.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    robust.add_argument("--out", type=Path)
+    robust.set_defaults(handler=_robustness)
+
+    challenge = commands.add_parser("challenge", help="score the constructed challenge set")
+    challenge.add_argument("--set", type=Path, default=Path("challenge/challenge_set.jsonl"))
+    challenge.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    challenge.add_argument("--model-dir", type=Path)
+    challenge.add_argument("--out", type=Path)
+    challenge.set_defaults(handler=_challenge)
 
     experiment = commands.add_parser("experiment", help="run a grid of transformer trainings")
     experiment.add_argument("--config", type=Path, required=True)

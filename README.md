@@ -137,7 +137,7 @@ item can be highlighted in the original advisory.
 <img src="docs/assets/viewer-flask.png" alt="TriggerMap review page for the Flask advisory: five highlighted conditions in the advisory text, and a checklist grouping them under 'All of these must hold' with Present, Absent and Unknown answers." width="90%">
 </div>
 
-<sub>`triggermap view GHSA-m2qf-hxjv-5gpq` with the rules baseline (`rules-1`). Clicking a checklist item scrolls to and flashes its source span; answers export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
+<sub>`triggermap view GHSA-m2qf-hxjv-5gpq` with the rules baseline. Clicking a checklist item scrolls to and flashes its source span; answers export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
 
 ## Design principles
 
@@ -192,7 +192,7 @@ output. Rebuilding from the same commit reproduces it byte for byte.
 uv sync --extra baselines                  # adds CRF, scikit-learn and spaCy for the trained baseline
 uv run triggermap view GHSA-m2qf-hxjv-5gpq --out review.html          # evidence-linked review page
 uv run triggermap view --text-file advisory.md --out review.html      # any pasted advisory text
-uv run triggermap predict --out data/predictions/rules-1.jsonl        # whole corpus, validated output
+uv run triggermap predict --out data/predictions/rules-2.jsonl        # whole corpus, validated output
 ```
 
 **Train and evaluate** (once gold labels exist):

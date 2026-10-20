@@ -28,41 +28,89 @@ from triggermap.text.markdown import Block, BlockKind
 from triggermap.text.preprocessing import PreprocessedDocument
 from triggermap.text.segment import Sentence
 
-MODEL_ID = "rules-1"
+MODEL_ID = "rules-2"  # rules-2: pattern spaces match any run of horizontal whitespace
 
-_SKIP_SECTION = re.compile(
+_HSPACE = "[ \\t\\u00a0]+"
+
+
+def _flexible_spaces(pattern: str) -> str:
+    """Let literal spaces match runs of horizontal whitespace (not newlines).
+
+    Spaces inside character classes and inside fixed-width lookbehinds are kept as is.
+    """
+    out: list[str] = []
+    i = 0
+    in_class = False
+    while i < len(pattern):
+        ch = pattern[i]
+        if ch == "\\":
+            out.append(pattern[i : i + 2])
+            i += 2
+            continue
+        if not in_class and pattern.startswith(("(?<!", "(?<="), i):
+            depth, j = 0, i
+            while j < len(pattern):
+                if pattern[j] == "\\":
+                    j += 2
+                    continue
+                depth += {"(": 1, ")": -1}.get(pattern[j], 0)
+                j += 1
+                if depth == 0:
+                    break
+            out.append(pattern[i:j])
+            i = j
+            continue
+        if ch == "[" and not in_class:
+            in_class = True
+        elif ch == "]" and in_class:
+            in_class = False
+        if ch == " " and not in_class:
+            while i + 1 < len(pattern) and pattern[i + 1] == " ":
+                i += 1
+            out.append(_HSPACE)
+        else:
+            out.append(ch)
+        i += 1
+    return "".join(out)
+
+
+def _compile(pattern: str, flags: int = 0) -> re.Pattern[str]:
+    return re.compile(_flexible_spaces(pattern), flags)
+
+
+_SKIP_SECTION = _compile(
     r"workaround|mitigat|remediat|patch|\bfix|resolution|credit|acknowledg|reference|timeline|"
     r"disclosure|proof of concept|\bpoc\b|reproduc|steps to|exploit|recommend|suggest|solution|"
     r"resource|thank",
     re.IGNORECASE,
 )
-_IMPERATIVE = re.compile(
+_IMPERATIVE = _compile(
     r"(?:upgrade|update|disable|enable|set|avoid|do not|don't|never|users should|you should|"
     r"we recommend|it is recommended|to mitigate|as a workaround|consider|ensure|make sure)\b",
     re.IGNORECASE,
 )
-_NOT_A_CONDITION = re.compile(
+_NOT_A_CONDITION = _compile(
     r"^(?:successful|exploited|successfully exploited|an attacker succeeds|so|not|true|false)\b",
     re.IGNORECASE,
 )
 
-_ACCESS = re.compile(
-    r"authenticat|\bprivileg|\badmin|logged[- ]in|permission|\baccount\b|credential|"
+_ACCESS = _compile(
+    r"authenticat|\bprivileg|\badmin|logged(?:-|\s+)in|permission|\baccount\b|credential|"
     r"\battacker\b|\brole\b|\baccess to\b|\blocal user|\bremote user",
     re.IGNORECASE,
 )
-_CONFIGURATION = re.compile(
+_CONFIGURATION = _compile(
     r"\benabled?\b|\bdisabled?\b|\bset to\b|=|\boption\b|\bsetting|\bflag\b|\bconfig|"
     r"\bdefault\b|\btrue\b|\bfalse\b|environment variable|\bparameter\b|\bargument\b",
     re.IGNORECASE,
 )
-_PLATFORM = re.compile(
+_PLATFORM = _compile(
     r"\bwindows\b|\blinux\b|\bmacos\b|\bpython (?:\d|version)|operating system|\bproxy\b|"
     r"\bbehind\b|\bdocker\b|kubernetes|file ?system|\bnginx\b|\bapache\b|\bgpu\b|\bcpu\b|"
     r"32-bit|64-bit|\bhost(?:ed)?\b|symlink",
     re.IGNORECASE,
 )
-_USAGE = re.compile(
+_USAGE = _compile(
     r"\busing\b|\buses?\b|\bused\b|\bcall(?:s|ed|ing)?\b|\bconfigured\b|\bdeploy|\brun(?:s|ning)?\b|"
     r"\bexpos|\bserv(?:e|es|ed|ing)\b|\binstall|\bload(?:s|ed|ing)?\b|\bpass(?:es|ed|ing)?\b|"
     r"\bprocess(?:es|ed|ing)?\b|\brender|\bpars(?:e|es|ed|ing)\b|\baccept|\ballow(?:s|ed)?\b|"
@@ -70,76 +118,77 @@ _USAGE = re.compile(
     re.IGNORECASE,
 )
 
-# "regardless of if …" and "even when …" introduce non-requirements, handled separately.
-_CONDITIONAL = re.compile(
-    r"(?<!regardless of )(?<!regardless of whether )(?<!even )"
+_CONDITIONAL = _compile(
     r"\b(?P<cue>only (?:if|when)|when(?:ever)?|if|as long as|provided that|in case)\s+",
     re.IGNORECASE,
 )
-_UNLESS = re.compile(r"\b(?:unless|except (?:when|if))\s+", re.IGNORECASE)
-_NOT_AFFECTED = re.compile(
+# "regardless of if …" and "even when …" introduce non-requirements, handled separately.
+# Checked in code because Python lookbehinds must be fixed-width.
+_NON_REQUIREMENT_PREFIX = re.compile(r"(?:\beven|\bregardless\s+of(?:\s+whether)?)\s+$", re.I)
+_UNLESS = _compile(r"\b(?:unless|except (?:when|if))\s+", re.IGNORECASE)
+_NOT_AFFECTED = _compile(
     r"\b(?:not (?:affected|vulnerable|exploitable)|unaffected|safe)\s+(?:if|when|unless)\s+",
     re.IGNORECASE,
 )
-_ONLY_AFFECTS = re.compile(
+_ONLY_AFFECTS = _compile(
     r"\b(?:only (?:affects|applies to|impacts)|affects only|is only (?:exploitable|vulnerable) "
     r"(?:when|if)|only (?:exploitable|vulnerable) (?:when|if))\s+",
     re.IGNORECASE,
 )
-_REQUIRES = re.compile(
+_REQUIRES = _compile(
     r"\b(?:exploitation|exploiting this|the attack|this attack|the vulnerability|"
     r"this vulnerability)\s+requires?\s+(?:that\s+)?",
     re.IGNORECASE,
 )
-_REGARDLESS = re.compile(r"\bregardless of (?:whether |if )?", re.IGNORECASE)
-_EVEN_NOT = re.compile(
+_REGARDLESS = _compile(r"\bregardless of (?:whether |if )?", re.IGNORECASE)
+_EVEN_NOT = _compile(
     r"\beven (?:when|if)\s+(?P<x>[^,.;:]+?)\s+(?:is|are)\s+not\s+"
     r"(?:present|enabled|used|configured|set|installed|exposed)\b",
     re.IGNORECASE,
 )
-_NO_AUTH = re.compile(
+_NO_AUTH = _compile(
     r"\b(?:without (?:requiring |any )?(?P<a>authentication)|"
     r"no (?P<b>authentication) (?:is )?required|"
     r"does not require (?P<c>authentication)|(?P<d>unauthenticated))\b",
     re.IGNORECASE,
 )
-_AUTH_ACTOR = re.compile(
-    r"\b(?:an?|any)\s+(?P<x>(?:authenticated|logged[- ]in|privileged|admin(?:istrator)?)\s+"
-    r"(?:remote\s+)?(?:attacker|user|account)s?(?:\s+with\s+[\w\s-]{1,40}?"
-    r"(?:permission|privileges?|role|access)s?)?|(?:attacker|user)s?\s+with\s+[\w\s-]{1,40}?"
-    r"(?:permission|privileges?|role|access)s?)\b",
+_QUALIFIED_ACCESS = r"\s+with\s+(?:[\w-]+\s+){0,4}?(?:permission|privileges?|role|access)s?"
+_AUTH_ACTOR = _compile(
+    r"\b(?:an?|any)\s+(?P<x>(?:authenticated|logged(?:-|\s+)in|privileged|admin(?:istrator)?)\s+"
+    r"(?:remote\s+)?(?:attacker|user|account)s?(?:" + _QUALIFIED_ACCESS + r")?|"
+    r"(?:attacker|user)s?" + _QUALIFIED_ACCESS + r")\b",
     re.IGNORECASE,
 )
-_CONFIG_INLINE = re.compile(
+_CONFIG_INLINE = _compile(
     r"\b(?P<x>[A-Za-z_][\w.]*_[\w.]*\s*(?:=|==|\bset to\b|\bis set to\b)\s*"
     r"(?:True|False|true|false|None|\d+|\"[^\"]*\"|'[^']*'))",
 )
 
-_LEAD_IN = re.compile(
+_LEAD_IN = _compile(
     r"following|conditions?|only (?:if|when|for|affects)|affected (?:if|when)|"
     r"vulnerable (?:if|when)|requires?|prerequisite|must|combine",
     re.IGNORECASE,
 )
-_ALL = re.compile(r"\ball (?:of )?(?:the following|these|conditions)|\bcombine|\bboth\b", re.I)
-_ANY = re.compile(r"\b(?:any|one) of (?:the following|these)|\beither\b", re.IGNORECASE)
-_NEGATIVE_LEAD = re.compile(r"not affected|unaffected|not vulnerable|unless|except", re.I)
+_ALL = _compile(r"\ball (?:of )?(?:the following|these|conditions)|\bcombine|\bboth\b", re.I)
+_ANY = _compile(r"\b(?:any|one) of (?:the following|these)|\beither\b", re.IGNORECASE)
+_NEGATIVE_LEAD = _compile(r"not affected|unaffected|not vulnerable|unless|except", re.I)
 
-_SUBJECT = re.compile(
+_SUBJECT = _compile(
     r"(?:(?:the|an?|your|any)\s+)?(?:application|app|server|service|user|developer|deployment|"
     r"instance|project|program|code|system|website|site)s?\s+(?:must\s+be\s+|must\s+|also\s+)?",
     re.IGNORECASE,
 )
-_CLAUSE_END = re.compile(
+_CLAUSE_END = _compile(
     r",|;|:|\.\s|\.$|\s(?:then|it|this|which|an attacker|attackers)\s|"
     r"\s(?:can|could|may|might|will|would|leads?|results?|allows?|causes?|enables?)\s",
     re.IGNORECASE,
 )
-_WORD = re.compile(r"[A-Za-z][\w.]{1,}")
-_SPLIT_CONJ = re.compile(
+_WORD = _compile(r"[A-Za-z][\w.]{1,}")
+_SPLIT_CONJ = _compile(
     r"\s+(?P<op>and|or)\s+(?=(?:\w+ing|the|an?|its|when|if|\w+_\w+)\b)", re.IGNORECASE
 )
-_LEADING_CUE = re.compile(r"(?:when(?:ever)?|if|only (?:if|when))\s+", re.IGNORECASE)
-_SPLIT_WITH = re.compile(r"\s+with\s+(?=[\w.'\"]+\s*(?:=|set to|enabled|disabled))", re.I)
+_LEADING_CUE = _compile(r"(?:when(?:ever)?|if|only (?:if|when))\s+", re.IGNORECASE)
+_SPLIT_WITH = _compile(r"\s+with\s+(?=[\w.'\"]+\s*(?:=|set to|enabled|disabled))", re.I)
 
 
 @dataclass(frozen=True)
@@ -250,6 +299,9 @@ class RuleExtractor:
             (_CONDITIONAL, Role.REQUIRED, 0.55),
         ):
             for m in pattern.finditer(text, s.start, s.end):
+                before = text[max(s.start, m.start() - 30) : m.start()]
+                if pattern is _CONDITIONAL and _NON_REQUIREMENT_PREFIX.search(before):
+                    continue
                 clause_id += 1
                 yield from self._clause(text, m.end(), s.end, role, confidence, clause_id)
 
