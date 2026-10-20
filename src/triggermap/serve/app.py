@@ -488,6 +488,39 @@ async def read_json(request: Request, limit: int) -> Any:
         raise ApiError(422, "invalid_json", "request body is not valid JSON") from exc
 
 
+SESSION_COOKIE = "tm_session"
+
+
+def get_service(request: Request) -> Service:
+    svc = getattr(request.app.state, "service", None)
+    if svc is None:
+        raise ApiError(503, "not_ready", "service is starting")
+    return svc  # type: ignore[no-any-return]
+
+
+def optional_user(request: Request) -> User | None:
+    """User from a bearer token or the UI session cookie (HttpOnly, SameSite=Strict)."""
+    header = request.headers.get("authorization", "")
+    token = header[7:].strip() if header.lower().startswith("bearer ") else ""
+    token = token or request.cookies.get(SESSION_COOKIE, "")
+    return get_service(request).store.user_for_token(token) if token else None
+
+
+def require_user(request: Request) -> User:
+    found = optional_user(request)
+    if found is None:
+        raise ApiError(401, "unauthorized", "a valid API token is required")
+    return found
+
+
+def idempotency_key(request: Request) -> str:
+    """Required on state-changing calls; cross-site forms cannot send it (CSRF guard)."""
+    key = request.headers.get("idempotency-key", "").strip()
+    if not 1 <= len(key) <= 200:
+        raise ApiError(400, "missing_idempotency_key", "send an Idempotency-Key header")
+    return key
+
+
 def create_app(
     settings: Settings | None = None, service_factory: Callable[[], Service] | None = None
 ) -> FastAPI:
@@ -505,25 +538,12 @@ def create_app(
         lifespan=lifespan,
     )
 
-    def service(request: Request) -> Service:
-        svc = getattr(request.app.state, "service", None)
-        if svc is None:
-            raise ApiError(503, "not_ready", "service is starting")
-        return svc  # type: ignore[no-any-return]
+    from fastapi.staticfiles import StaticFiles
 
-    def user(request: Request) -> User:
-        header = request.headers.get("authorization", "")
-        token = header[7:].strip() if header.lower().startswith("bearer ") else ""
-        found = service(request).store.user_for_token(token) if token else None
-        if found is None:
-            raise ApiError(401, "unauthorized", "a valid API token is required")
-        return found
+    from triggermap.serve.ui import router as ui_router
 
-    def idempotency_key(request: Request) -> str:
-        key = request.headers.get("idempotency-key", "").strip()
-        if not 1 <= len(key) <= 200:
-            raise ApiError(400, "missing_idempotency_key", "send an Idempotency-Key header")
-        return key
+    app.include_router(ui_router)
+    app.mount("/static", StaticFiles(packages=[("triggermap.serve", "static")]), name="static")
 
     @app.exception_handler(ApiError)
     async def api_error(request: Request, exc: ApiError) -> JSONResponse:
@@ -574,24 +594,24 @@ def create_app(
     @app.get("/metrics")
     async def metrics(request: Request) -> Response:
         return Response(
-            generate_latest(service(request).metrics.registry), media_type=CONTENT_TYPE_LATEST
+            generate_latest(get_service(request).metrics.registry), media_type=CONTENT_TYPE_LATEST
         )
 
     @app.post("/v1/extractions", response_model=ExtractionOut)
     async def extractions(request: Request) -> ExtractionOut:
-        svc = service(request)
+        svc = get_service(request)
         body, _ = await read_model(request, ExtractionRequest, svc.settings.max_body_bytes)
         return await svc.extract(body)
 
     @app.post("/v1/imports/osv", response_model=OsvImportOut)
     async def import_osv(request: Request) -> OsvImportOut:
-        svc = service(request)
+        svc = get_service(request)
         return await svc.import_osv(await read_json(request, svc.settings.max_body_bytes))
 
     @app.post("/v1/reviews", response_model=ReviewCreated)
     async def create_review(request: Request, response: Response) -> ReviewCreated:
-        svc = service(request)
-        who, key = user(request), idempotency_key(request)
+        svc = get_service(request)
+        who, key = require_user(request), idempotency_key(request)
         body, payload = await read_model(request, ReviewCreate, svc.settings.max_body_bytes)
         result = await run_in_threadpool(svc.create_review, who, key, body, payload)
         response.status_code = 201 if result.created else 200
@@ -599,8 +619,8 @@ def create_app(
 
     @app.post("/v1/reviews/{review_id}/revisions", response_model=RevisionCreated)
     async def revise(review_id: str, request: Request, response: Response) -> RevisionCreated:
-        svc = service(request)
-        who, key = user(request), idempotency_key(request)
+        svc = get_service(request)
+        who, key = require_user(request), idempotency_key(request)
         body, payload = await read_model(request, RevisionCreate, svc.settings.max_body_bytes)
         result = await run_in_threadpool(svc.revise_review, who, review_id, key, body, payload)
         response.status_code = 201 if result.created else 200
@@ -608,15 +628,15 @@ def create_app(
 
     @app.get("/v1/reviews")
     async def list_reviews(request: Request) -> list[dict[str, Any]]:
-        return service(request).store.reviews(user(request))
+        return get_service(request).store.reviews(require_user(request))
 
     @app.get("/v1/reviews/{review_id}")
     async def get_review(review_id: str, request: Request) -> dict[str, Any]:
-        return service(request).get_review(user(request), review_id)
+        return get_service(request).get_review(require_user(request), review_id)
 
     @app.get("/v1/reviews/{review_id}/export")
     async def export(review_id: str, request: Request, format: str = "json") -> Response:
-        review = service(request).get_review(user(request), review_id)
+        review = get_service(request).get_review(require_user(request), review_id)
         name = (review["advisory_id"] or "advisory") + "-review"
         if format == "markdown":
             content, media, ext = review_markdown(review), "text/markdown; charset=utf-8", "md"

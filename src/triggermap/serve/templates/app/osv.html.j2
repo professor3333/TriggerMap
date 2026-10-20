@@ -1,0 +1,26 @@
+{% extends "base.html.j2" %}
+{% block title %}OSV-Scanner import · TriggerMap{% endblock %}
+{% block body %}
+<main class="narrow">
+  <section class="card">
+    <h2>OSV-Scanner import: {{ filename }}</h2>
+    <p class="hint">
+      {% for status, n in result.counts.items() %}{{ status | replace("_", " ") }}: <b>{{ n }}</b>{% if not loop.last %} · {% endif %}{% endfor %}
+    </p>
+    <table class="list">
+      <thead><tr><th>Package</th><th>Vulnerability</th><th>Status</th><th>Conditions</th><th>Needs review</th></tr></thead>
+      <tbody>
+      {% for item in result.items %}
+        <tr>
+          <td>{{ item.package }}{% if item.version %} {{ item.version }}{% endif %} <span class="hint">{{ item.ecosystem }}</span></td>
+          <td>{% if item.advisory_id %}<a href="/ui/extract?id={{ item.advisory_id | urlencode }}">{{ item.advisory_id }}</a>{% else %}{{ item.vulnerability_id }}{% endif %}</td>
+          <td>{{ item.status | replace("_", " ") }}</td>
+          <td>{% if item.status == "extracted" %}{{ item.conditions }}{% if item.conditions == 0 %} <span class="hint">(none stated)</span>{% endif %}{% endif %}</td>
+          <td>{{ item.review_required if item.review_required is not none else "" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+{% endblock %}

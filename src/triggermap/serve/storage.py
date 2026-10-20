@@ -384,6 +384,13 @@ class Store:
             "history": history,
         }
 
+    def review_raw_text(self, review_id: str, user: User) -> str | None:
+        with self.connect() as db:
+            row = db.execute(
+                "SELECT raw_text FROM reviews WHERE id=? AND user_id=?", (review_id, user.id)
+            ).fetchone()
+        return None if row is None else str(row[0])
+
     def reviews(self, user: User) -> list[dict[str, Any]]:
         with self.connect() as db:
             rows = db.execute(

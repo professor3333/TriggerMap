@@ -1,0 +1,48 @@
+{% extends "base.html.j2" %}
+{% block body %}
+<main class="narrow">
+  <section class="hero">
+    <h1>What does this advisory require of your deployment?</h1>
+    <p class="lede">Look up a Python security advisory, or paste one, and get its conditions as a checklist where every item links to the exact sentence that states it.</p>
+  </section>
+  {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+  <section class="card">
+    <h2>Look up an advisory</h2>
+    <form method="get" action="/ui/extract" class="row">
+      <input name="id" placeholder="GHSA-m2qf-hxjv-5gpq, CVE-2023-30861 or PYSEC id" required maxlength="64" aria-label="Advisory id">
+      <button type="submit" class="primary">Extract</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Paste advisory text</h2>
+    <form method="post" action="/ui/extract">
+      <input name="title" placeholder="Title (optional)" maxlength="300" aria-label="Title">
+      <textarea name="text" rows="7" placeholder="Paste the advisory Markdown here" required aria-label="Advisory text"></textarea>
+      <button type="submit" class="primary">Extract</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Import an OSV-Scanner result</h2>
+    <form method="post" action="/ui/osv" enctype="multipart/form-data" class="row">
+      <input type="file" name="report" accept=".json,application/json" required aria-label="OSV-Scanner JSON">
+      <button type="submit">Import</button>
+    </form>
+    <p class="hint">Run <code>osv-scanner --format json -r . &gt; report.json</code> and upload the file.</p>
+  </section>
+  {% if user %}
+  <section class="card">
+    <h2>Your saved reviews</h2>
+    {% if reviews %}
+    <table class="list">
+      <thead><tr><th>Advisory</th><th>Title</th><th>Last saved</th></tr></thead>
+      <tbody>
+      {% for r in reviews %}
+        <tr><td><a href="/ui/reviews/{{ r.id }}">{{ r.advisory_id or "pasted text" }}</a></td><td>{{ r.title }}</td><td>{{ r.updated_at }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<p class="hint">No saved reviews yet.</p>{% endif %}
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

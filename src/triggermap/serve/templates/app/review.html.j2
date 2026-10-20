@@ -1,0 +1,54 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ advisory_id or "Advisory" }} · TriggerMap review{% endblock %}
+{% block body %}
+<section class="pagehead">
+  <h1>{{ title }}</h1>
+  <div class="meta">
+    {% if advisory_id %}<code>{{ advisory_id }}</code>{% endif %}
+    {% if packages %}<span>Packages: {{ packages | join(", ") }}</span>{% endif %}
+    {% if source_url %}<a href="{{ source_url }}" rel="noopener noreferrer">View source advisory ↗</a>{% endif %}
+    <span>Model <code>{{ meta.model_id }}</code> · policy <code>{{ meta.review_policy_version }}</code></span>
+  </div>
+  {% if advisory_changed %}<div class="notice error" role="alert">The advisory has changed since this review was saved. Extract it again and re-check the conditions.</div>{% endif %}
+</section>
+<main class="split">
+  <section class="card doc" aria-label="Advisory text">
+    <div class="cardhead"><h2>Advisory text</h2><button type="button" id="add-selection">Add selected text as condition</button></div>
+    {% for node in nodes %}
+      {% if node.kind == "list" %}
+        <{{ "ol" if node.ordered else "ul" }}>
+        {% for seg in node["items"] %}
+          <li class="lvl-{{ [seg.level, 4] | min }}{{ ' codeitem' if seg.kind == 'code' }}"><span class="seg{{ ' code' if seg.kind == 'code' }}" data-start="{{ seg.start }}" data-end="{{ seg.end }}">{{ seg.text }}</span></li>
+        {% endfor %}
+        </{{ "ol" if node.ordered else "ul" }}>
+      {% else %}
+        {% set seg = node["items"][0] %}
+        {% if seg.kind == "heading" %}<h3><span class="seg" data-start="{{ seg.start }}" data-end="{{ seg.end }}">{{ seg.text }}</span></h3>
+        {% elif seg.kind == "code" %}<pre><span class="seg" data-start="{{ seg.start }}" data-end="{{ seg.end }}">{{ seg.text }}</span></pre>
+        {% else %}<p class="{{ seg.kind }}"><span class="seg" data-start="{{ seg.start }}" data-end="{{ seg.end }}">{{ seg.text }}</span></p>{% endif %}
+      {% endif %}
+    {% endfor %}
+  </section>
+  <aside class="card checklist" aria-label="Exposure checklist">
+    <div class="cardhead"><h2>Exposure checklist</h2><span id="counts" class="hint"></span></div>
+    <div id="status-line" class="notice" hidden></div>
+    <div class="toolbar">
+      <label>Document status <select id="doc-status"></select></label>
+      <span class="grow"></span>
+      <button type="button" id="group-all" title="Group the ticked items: all must hold">Group ALL</button>
+      <button type="button" id="group-any" title="Group the ticked items: any one suffices">Group ANY</button>
+      <button type="button" id="ungroup">Ungroup</button>
+    </div>
+    <div id="items"></div>
+    <label class="notes">Reviewer notes<textarea id="notes" rows="3" maxlength="5000"></textarea></label>
+    <div class="actions">
+      <button type="button" id="save" class="primary">Save review</button>
+      <button type="button" id="export-json">Export JSON</button>
+      <button type="button" id="export-md">Export Markdown</button>
+    </div>
+    <div id="history"></div>
+  </aside>
+</main>
+<script id="payload" type="application/json">{{ payload | safe }}</script>
+<script src="/static/review.js" defer></script>
+{% endblock %}

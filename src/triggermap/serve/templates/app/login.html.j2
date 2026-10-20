@@ -1,0 +1,15 @@
+{% extends "base.html.j2" %}
+{% block title %}Sign in · TriggerMap{% endblock %}
+{% block body %}
+<main class="narrow">
+  <section class="card">
+    <h2>Sign in</h2>
+    <p class="hint">Use the API token issued with <code>triggermap app create-user &lt;name&gt;</code>. Without signing in you can still review and export; saving needs an account.</p>
+    {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+    <form method="post" action="/ui/login" class="row">
+      <input type="password" name="token" placeholder="tm_…" required autocomplete="off" aria-label="API token">
+      <button type="submit" class="primary">Sign in</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

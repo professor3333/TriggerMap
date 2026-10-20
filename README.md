@@ -134,10 +134,10 @@ item can be highlighted in the original advisory.
 ## See it
 
 <div align="center">
-<img src="docs/assets/viewer-flask.png" alt="TriggerMap review page for the Flask advisory: five highlighted conditions in the advisory text, and a checklist grouping them under 'All of these must hold' with Present, Absent and Unknown answers." width="90%">
+<img src="docs/assets/app-review.png" alt="TriggerMap review application for the Flask advisory: highlighted conditions in the advisory text beside an editable checklist grouped under 'All of these must hold', each item showing why it needs review and Present, Absent and Unknown answers." width="92%">
 </div>
 
-<sub>`triggermap view GHSA-m2qf-hxjv-5gpq` with the rules baseline. Clicking a checklist item scrolls to and flashes its source span; answers export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
+<sub>The review application on the Flask advisory (rules baseline, uncalibrated review policy). Each highlight links to its checklist item. Reviewers can correct category and role, add conditions by selecting text, regroup items, answer present, absent or unknown, and save versioned reviews that export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
 
 ## Design principles
 
@@ -158,7 +158,7 @@ item can be highlighted in the original advisory.
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
-| 5 · Application | FastAPI, review UI, SQLite storage, JSON/Markdown export, Docker, CI/CD | ⏳ |
+| 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, JSON/Markdown export; Docker and deployment next | 🟨 app built · packaging next |
 | 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
 
 Results will be published here only once measured. Until then this README reports no accuracy numbers.
@@ -217,6 +217,20 @@ uv run triggermap predict --model transformer --model-dir artifacts/experiments/
 Each run records the pinned base-checkpoint revision, the training-data and split hashes,
 hyperparameters, seed, per-epoch dev metrics, training time and peak GPU memory (and logs
 them to MLflow). Reports carry leakage-group bootstrap intervals and mean ± SD across seeds.
+
+**Run the review application** (FastAPI + SQLite):
+
+```bash
+uv sync --extra serve
+uv run triggermap app sync                    # load the advisory snapshot (6,350 advisories)
+uv run triggermap app create-user alice       # prints an API token once
+uv run triggermap app run                     # http://127.0.0.1:8000
+```
+
+Look up an advisory by GHSA, CVE or PYSEC id, paste advisory text, or upload an OSV-Scanner
+JSON report. The same features are available as a JSON API: `POST /v1/extractions`,
+`POST /v1/imports/osv`, `POST /v1/reviews` (bearer token and `Idempotency-Key`), plus
+`/healthz`, `/readyz` and `/metrics`. Interactive API docs are served at `/docs`.
 
 **Annotate** with [Label Studio](https://labelstud.io/):
 
@@ -283,7 +297,7 @@ src/triggermap/
 ├── models/      rules baseline · CRF + logistic regression · transformer (encoder + span,
 │                role and group heads, windows, bundles) · experiment runner
 ├── eval/        metrics, cluster bootstrap, Markdown reports
-├── serve/       evidence-linked review page (Jinja template, escaped, CSP)
+├── serve/       FastAPI app, review UI (strict CSP), SQLite storage, review policy, exports
 └── cli.py       `triggermap` command
 configs/         Label Studio config · experiment configs (pinned checkpoint revisions)
 splits/          frozen split manifest (pool-v1)

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}TriggerMap{% endblock %}</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="16" height="16" rx="4" fill="none" stroke="#3b82f6" stroke-width="1.6"/><path d="M5 9.2l2.6 2.6L13 6.4" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    TriggerMap
+  </a>
+  <nav>
+    {% if user %}
+      <span class="who">Signed in as {{ user.name }}</span>
+      <form method="post" action="/ui/logout"><button type="submit" class="link">Sign out</button></form>
+    {% else %}
+      <a href="/ui/login">Sign in to save reviews</a>
+    {% endif %}
+  </nav>
+</header>
+{% block body %}{% endblock %}
+<footer class="foot">
+  Checklist items are verbatim advisory text linked to their source. Advisory text from the
+  <a href="https://github.com/github/advisory-database" rel="noopener noreferrer">GitHub Advisory Database</a> (CC BY 4.0).
+</footer>
+</body>
+</html>
