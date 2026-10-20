@@ -895,6 +895,7 @@ name = "triggermap"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "jinja2" },
     { name = "pydantic" },
 ]
 
@@ -917,6 +918,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "en-core-web-sm", marker = "extra == 'baselines'", url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" },
+    { name = "jinja2", specifier = ">=3.1.6,<4" },
     { name = "pydantic", specifier = ">=2.9,<3" },
     { name = "python-crfsuite", marker = "extra == 'baselines'", specifier = "==0.9.12" },
     { name = "scikit-learn", marker = "extra == 'baselines'", specifier = ">=1.9,<1.10" },

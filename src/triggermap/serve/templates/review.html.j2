@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>{{ advisory_id or "Advisory" }} · TriggerMap review</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --panel: #ffffff; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0;
+    --accent: #2563eb; --code: #f1f5f9;
+    --c-configuration: #2563eb; --c-configuration-bg: #dbeafe;
+    --c-usage: #16a34a; --c-usage-bg: #dcfce7;
+    --c-access: #d97706; --c-access-bg: #fef3c7;
+    --c-platform: #9333ea; --c-platform-bg: #f3e8ff;
+    --warn-bg: #fff7ed; --warn-ink: #9a3412;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220; --panel: #111a2e; --ink: #e2e8f0; --muted: #94a3b8; --line: #1e293b;
+      --accent: #60a5fa; --code: #0f172a;
+      --c-configuration: #93c5fd; --c-configuration-bg: #1e3a8a66;
+      --c-usage: #4ade80; --c-usage-bg: #14532d66;
+      --c-access: #fbbf24; --c-access-bg: #78350f66;
+      --c-platform: #d8b4fe; --c-platform-bg: #3b076466;
+      --warn-bg: #431407; --warn-ink: #fdba74;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 18px 28px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px;
+    font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  h1 { margin: 8px 0 6px; font-size: 22px; line-height: 1.3; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 13px; }
+  .meta a { color: var(--accent); text-decoration: none; }
+  .meta code { font-size: 12px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .stat { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; font-size: 13px; }
+  .stat b { font-variant-numeric: tabular-nums; }
+  main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 20px;
+    padding: 20px 28px 40px; max-width: 1400px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } header { padding: 16px; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .card h2 { margin: 0 0 14px; font-size: 13px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  .checklist { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow: auto; }
+  .doc h3 { font-size: 16px; margin: 20px 0 6px; }
+  .doc p, .doc li { margin: 6px 0; overflow-wrap: anywhere; white-space: pre-line; }
+  .doc ul, .doc ol { padding-left: 22px; }
+  .doc pre { background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+    overflow-x: auto; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre; }
+  .doc blockquote { margin: 8px 0; padding-left: 12px; border-left: 3px solid var(--line); color: var(--muted); }
+  .table-row { white-space: pre-line; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; margin: 2px 0; }
+  mark { border-radius: 4px; padding: 1px 2px; color: inherit; cursor: pointer;
+    box-shadow: inset 0 -2px 0 var(--mark-line); background: var(--mark-bg); transition: box-shadow .2s, background .2s; }
+  mark.configuration { --mark-bg: var(--c-configuration-bg); --mark-line: var(--c-configuration); }
+  mark.usage { --mark-bg: var(--c-usage-bg); --mark-line: var(--c-usage); }
+  mark.access { --mark-bg: var(--c-access-bg); --mark-line: var(--c-access); }
+  mark.platform { --mark-bg: var(--c-platform-bg); --mark-line: var(--c-platform); }
+  mark.active { box-shadow: 0 0 0 2px var(--mark-line); }
+  mark.flash { animation: flash 1.6s ease-out; }
+  @keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--mark-line); } 100% { box-shadow: inset 0 -2px 0 var(--mark-line); } }
+  .notice { background: var(--warn-bg); color: var(--warn-ink); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 14px; }
+  .section { margin-bottom: 18px; }
+  .section h4 { margin: 0 0 8px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .section.group { border: 1px dashed var(--line); border-radius: 12px; padding: 12px; }
+  .op { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 1px 7px; background: var(--code); color: var(--muted); }
+  .item { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 8px 0; cursor: pointer; }
+  .item:hover, .item.active { border-color: var(--accent); }
+  .item .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-weight: 700; letter-spacing: .04em; border-radius: 999px; padding: 1px 9px; }
+  .chip.configuration { color: var(--c-configuration); background: var(--c-configuration-bg); }
+  .chip.usage { color: var(--c-usage); background: var(--c-usage-bg); }
+  .chip.access { color: var(--c-access); background: var(--c-access-bg); }
+  .chip.platform { color: var(--c-platform); background: var(--c-platform-bg); }
+  .flag { font-size: 11px; color: var(--warn-ink); background: var(--warn-bg); border-radius: 999px; padding: 1px 8px; }
+  .surface { margin: 6px 0 4px; font-weight: 600; overflow-wrap: anywhere; }
+  .surface::before { content: "\201C"; color: var(--muted); } .surface::after { content: "\201D"; color: var(--muted); }
+  .question { color: var(--muted); font-size: 13px; }
+  .answers { display: inline-flex; margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .answers label { font-size: 12px; padding: 3px 10px; cursor: pointer; border-right: 1px solid var(--line); }
+  .answers label:last-child { border-right: 0; }
+  .answers input { position: absolute; opacity: 0; pointer-events: none; }
+  .answers input:checked + span { font-weight: 700; color: var(--accent); }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 0 16px 28px; }
+  footer code { font-size: 11px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="1" y="1" width="16" height="16" rx="4" fill="none" stroke="#3b82f6" stroke-width="1.6"/><path d="M5 9.2l2.6 2.6L13 6.4" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    TriggerMap · exposure review
+  </div>
+  <h1>{{ title }}</h1>
+  <div class="meta">
+    {% if advisory_id %}<span><code>{{ advisory_id }}</code></span>{% endif %}
+    {% if packages %}<span>Packages: {{ packages | join(", ") }}</span>{% endif %}
+    {% if source_url %}<span><a href="{{ source_url }}" rel="noopener noreferrer">View source advisory ↗</a></span>{% endif %}
+  </div>
+  <div class="stats">
+    <span class="stat">Required <b>{{ counts.REQUIRED }}</b></span>
+    <span class="stat">Exceptions <b>{{ counts.EXCEPTION }}</b></span>
+    <span class="stat">Not required <b>{{ counts.NOT_REQUIRED }}</b></span>
+    {% if counts.UNCERTAIN %}<span class="stat">Unclear <b>{{ counts.UNCERTAIN }}</b></span>{% endif %}
+    <span class="stat">Groups <b>{{ extraction.groups | length }}</b></span>
+    <span class="stat">Model <code>{{ extraction.model_id }}</code></span>
+  </div>
+</header>
+
+<main>
+  <section class="card doc" aria-label="Advisory text">
+    <h2>Advisory text</h2>
+    {% macro pieces(block) %}{% for piece in block.pieces %}{% if piece.condition %}<mark id="mark-{{ piece.condition }}" class="{{ piece.category }}" data-cond="{{ piece.condition }}">{{ piece.text }}</mark>{% else %}{{ piece.text }}{% endif %}{% endfor %}{% endmacro %}
+    {% macro render_block(block) %}
+      {% if block.kind == "heading" %}<h3>{{ pieces(block) }}</h3>
+      {% elif block.kind == "code" %}<pre>{{ pieces(block) }}</pre>
+      {% elif block.kind == "quote" %}<blockquote>{{ pieces(block) }}</blockquote>
+      {% elif block.kind == "table" %}<div class="table-row">{{ pieces(block) }}</div>
+      {% else %}<p>{{ pieces(block) }}</p>{% endif %}
+    {% endmacro %}
+    {% for node in nodes %}
+      {% if node.kind == "list" %}
+        <{{ "ol" if node.ordered else "ul" }}>
+        {% for block in node.blocks %}
+          {% if block.kind == "code" %}<li style="list-style:none; margin-left:{{ block.level * 18 }}px"><pre>{{ pieces(block) }}</pre></li>
+          {% else %}<li style="margin-left:{{ block.level * 18 }}px">{{ pieces(block) }}</li>{% endif %}
+        {% endfor %}
+        </{{ "ol" if node.ordered else "ul" }}>
+      {% else %}
+        {{ render_block(node.blocks[0]) }}
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <aside class="card checklist" aria-label="Exposure checklist">
+    <h2>Exposure checklist</h2>
+    {% if status_message %}<div class="notice" role="status">{{ status_message }}</div>{% endif %}
+    {% for section in sections %}
+      <div class="section{{ ' group' if section.operator }}">
+        <h4>{% if section.operator %}<span class="op">{{ section.operator }}</span>{% endif %}{{ section.heading }}</h4>
+        {% for item in section.items %}
+          <div class="item" data-cond="{{ item.id }}" tabindex="0">
+            <div class="top">
+              <span class="chip {{ item.category | lower }}">{{ item.category }}</span>
+              {% if section.operator %}<span class="question">{{ item.role | replace("_", " ") | lower }}</span>{% endif %}
+              {% if item.flagged %}<span class="flag">low confidence</span>{% endif %}
+            </div>
+            <div class="surface">{{ item.surface }}</div>
+            <div class="question">{{ item.question }}</div>
+            <div class="answers" role="radiogroup" aria-label="Answer for {{ item.id }}">
+              {% for value, label in [("PRESENT", "Present"), ("ABSENT", "Absent"), ("UNKNOWN", "Unknown")] %}
+              <label><input type="radio" name="answer-{{ item.id }}" value="{{ value }}"><span>{{ label }}</span></label>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <div class="actions">
+      <button type="button" id="export-json">Export JSON</button>
+      <button type="button" id="export-md">Export Markdown</button>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Every checklist item is a verbatim span of the advisory, linked to its source text. Answers stay in this page until you export them.<br>
+  Model <code>{{ extraction.model_id }}</code> · preprocessing <code>{{ extraction.preprocessing_version }}</code> · text SHA-256 <code>{{ extraction.content_hash[:16] }}…</code>
+  {% if source_url %}· Advisory text from the <a href="https://github.com/github/advisory-database" rel="noopener noreferrer">GitHub Advisory Database</a> (CC BY 4.0){% endif %}
+</footer>
+
+<script id="payload" type="application/json">{{ payload | safe }}</script>
+<script>
+(() => {
+  const data = JSON.parse(document.getElementById("payload").textContent);
+  const answers = {};
+  const marks = (id) => document.querySelectorAll(`mark[data-cond="${id}"]`);
+  const items = (id) => document.querySelectorAll(`.item[data-cond="${id}"]`);
+
+  function focusMark(id) {
+    const mark = document.getElementById(`mark-${id}`);
+    if (!mark) return;
+    mark.scrollIntoView({ behavior: "smooth", block: "center" });
+    mark.classList.remove("flash"); void mark.offsetWidth; mark.classList.add("flash");
+  }
+  document.querySelectorAll(".item").forEach((el) => {
+    const id = el.dataset.cond;
+    el.addEventListener("click", (e) => { if (!e.target.closest(".answers")) focusMark(id); });
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter") focusMark(id); });
+    el.addEventListener("mouseenter", () => marks(id).forEach((m) => m.classList.add("active")));
+    el.addEventListener("mouseleave", () => marks(id).forEach((m) => m.classList.remove("active")));
+  });
+  document.querySelectorAll("mark[data-cond]").forEach((mark) => {
+    mark.addEventListener("click", () => {
+      const item = items(mark.dataset.cond)[0];
+      if (!item) return;
+      item.scrollIntoView({ behavior: "smooth", block: "center" });
+      item.classList.add("active"); setTimeout(() => item.classList.remove("active"), 1600);
+    });
+  });
+  document.querySelectorAll('.answers input').forEach((input) => {
+    input.addEventListener("change", () => { answers[input.name.slice(7)] = input.value; });
+  });
+
+  function record() {
+    return {
+      review_format: 1,
+      exported_at: new Date().toISOString(),
+      advisory_id: data.advisory_id,
+      source_url: data.source_url,
+      content_hash: data.content_hash,
+      preprocessing_version: data.preprocessing_version,
+      model_id: data.model_id,
+      document_status: data.document_status,
+      conditions: data.conditions.map((c) => ({ ...c, answer: answers[c.id] || "UNANSWERED" })),
+      groups: data.groups,
+      review_flags: data.review_flags,
+    };
+  }
+  function markdown() {
+    const r = record();
+    const lines = [`# Exposure review: ${data.title}`, ""];
+    if (r.advisory_id) lines.push(`- Advisory: ${r.advisory_id}${r.source_url ? ` (${r.source_url})` : ""}`);
+    lines.push(`- Model: ${r.model_id}; preprocessing ${r.preprocessing_version}; text SHA-256 ${r.content_hash}`,
+               `- Exported: ${r.exported_at}`, `- Document status: ${r.document_status}`, "");
+    if (!r.conditions.length) lines.push("No explicit conditions found. This does not mean the conditions do not apply.", "");
+    const byId = Object.fromEntries(r.conditions.map((c) => [c.id, c]));
+    const grouped = new Set();
+    const row = (c) => `- [${c.answer}] ${c.category} / ${c.role}: "${c.surface}" (chars ${c.span[0]}-${c.span[1]})`;
+    r.groups.forEach((g) => {
+      lines.push(`## ${g.operator} group`, "");
+      g.members.forEach((m) => { grouped.add(m); if (byId[m]) lines.push(row(byId[m])); });
+      lines.push("");
+    });
+    const rest = r.conditions.filter((c) => !grouped.has(c.id));
+    if (rest.length) { lines.push("## Ungrouped conditions", ""); rest.forEach((c) => lines.push(row(c))); lines.push(""); }
+    return lines.join("\n");
+  }
+  function download(name, type, text) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+  const base = (data.advisory_id || "advisory") + "-review";
+  document.getElementById("export-json").addEventListener("click", () =>
+    download(`${base}.json`, "application/json", JSON.stringify(record(), null, 2)));
+  document.getElementById("export-md").addEventListener("click", () =>
+    download(`${base}.md`, "text/markdown", markdown()));
+})();
+</script>
+</body>
+</html>

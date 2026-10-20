@@ -10,13 +10,14 @@
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-f59e0b)](annotations/README.md)
 ![mypy strict](https://img.shields.io/badge/types-mypy%20strict-2563eb)
 ![ruff](https://img.shields.io/badge/lint-ruff-d7ff64?logo=ruff&logoColor=black)
-![Status](https://img.shields.io/badge/status-phase%201%20%C2%B7%20pilot%20annotation-8b5cf6)
+![Status](https://img.shields.io/badge/status-phase%202%20%C2%B7%20baselines%20built-8b5cf6)
 
 **Read the advisory. Get the conditions. Check them against your deployment.**
 
 [Architecture](#architecture) ·
 [Why](#why-triggermap) ·
 [What it extracts](#what-it-extracts) ·
+[See it](#see-it) ·
 [Principles](#design-principles) ·
 [Status](#project-status) ·
 [Quickstart](#quickstart) ·
@@ -55,8 +56,8 @@ flowchart LR
     classDef progress fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef planned fill:#f1f5f9,stroke:#94a3b8,color:#334155,stroke-dasharray:4 3
     class A,B,J done
-    class C progress
-    class D,E,F,G,H,I,K,L,M,N planned
+    class C,E,F,K,L progress
+    class D,G,H,I,M,N planned
 ```
 
 <sub>🟩 built · 🟨 in progress · ⬜ planned. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
@@ -130,6 +131,14 @@ item can be highlighted in the original advisory.
 
 </details>
 
+## See it
+
+<div align="center">
+<img src="docs/assets/viewer-flask.png" alt="TriggerMap review page for the Flask advisory: five highlighted conditions in the advisory text, and a checklist grouping them under 'All of these must hold' with Present, Absent and Unknown answers." width="90%">
+</div>
+
+<sub>`triggermap view GHSA-m2qf-hxjv-5gpq` with the rules baseline (`rules-1`). Clicking a checklist item scrolls to and flashes its source span; answers export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
+
 ## Design principles
 
 | | Principle | In practice |
@@ -146,7 +155,7 @@ item can be highlighted in the original advisory.
 |---|---|:---:|
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot annotation, guideline revision, decision gate | 🟨 in progress |
-| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes, evaluator, evidence viewer | ⏳ next |
+| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
 | 3 · Neural models | Scaled annotation, frozen splits, DistilBERT and DeBERTa-v3 with span / role / group heads | ⏳ |
 | 4 · Reliability | Group logic, calibration, negation and scope challenge set, error catalogue | ⏳ |
 | 5 · Application | FastAPI, review UI, SQLite storage, JSON/Markdown export, Docker, CI/CD | ⏳ |
@@ -177,6 +186,23 @@ uv run triggermap corpus stats             # writes docs/corpus_stats.md
 commit, every filtering count, each quarantined file with its reason, and the SHA-256 of the
 output. Rebuilding from the same commit reproduces it byte for byte.
 
+**Extract and review** (rules baseline; no labels needed):
+
+```bash
+uv sync --extra baselines                  # adds CRF, scikit-learn and spaCy for the trained baseline
+uv run triggermap view GHSA-m2qf-hxjv-5gpq --out review.html          # evidence-linked review page
+uv run triggermap view --text-file advisory.md --out review.html      # any pasted advisory text
+uv run triggermap predict --out data/predictions/rules-1.jsonl        # whole corpus, validated output
+```
+
+**Train and evaluate** (once gold labels exist):
+
+```bash
+uv run triggermap train --gold annotations/pilot/pilot-1.jsonl --out artifacts/crf-1
+uv run triggermap predict --model crf --model-dir artifacts/crf-1 --out data/predictions/crf-1.jsonl
+uv run triggermap evaluate annotations/pilot/pilot-1.jsonl data/predictions/crf-1.jsonl --out reports/crf-1.md
+```
+
 **Annotate** with [Label Studio](https://labelstud.io/):
 
 ```bash
@@ -189,6 +215,17 @@ The importer validates every exported annotation (offsets, labels, groups, docum
 writes only clean records, and reports problems, label counts and annotation pace. The procedure
 is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md), and the labelling rules are in
 [`docs/annotation_guidelines.md`](docs/annotation_guidelines.md).
+
+## How results will be measured
+
+A condition counts as correct only when its **exact span, category and role** all match the gold
+annotation. A group counts as correct only when its **members and operator** both match. Reports
+give exact span P/R/F1, typed micro-F1, role macro-F1 with per-class support, group exact match,
+complete-document exact match (separately for advisories with and without conditions), the
+**false-prerequisite rate**, the **reversed-meaning rate**, and precision versus coverage. All of
+these come with document- or project-clustered bootstrap confidence intervals.
+"No explicit conditions found" is never treated as "not affected": TriggerMap supports review,
+it does not decide whether a deployment is vulnerable.
 
 ## Corpus at a glance
 
@@ -210,12 +247,15 @@ src/triggermap/
 ├── ingest/      pinned snapshot, OSV parsing, PyPI filter, quarantine, manifests
 ├── corpus/      statistics, condition cues, leakage groups, pilot sampling
 ├── annotate/    Label Studio tasks and validated import
+├── models/      rules baseline; CRF tagger + logistic-regression attribute/group classifiers
+├── eval/        metrics, cluster bootstrap, Markdown reports
+├── serve/       evidence-linked review page (Jinja template, escaped, CSP)
 └── cli.py       `triggermap` command
 configs/         Label Studio labelling config
 annotations/     versioned annotations and sample manifests (CC BY 4.0)
 data/manifests/  committed snapshot manifest (raw and processed data are rebuilt, not committed)
 docs/            guidelines, pilot protocol, corpus statistics
-tests/           unit, property-based and real-export regression tests
+tests/           unit, property-based, synthetic end-to-end and real-export regression tests
 ```
 
 ## Data and licensing

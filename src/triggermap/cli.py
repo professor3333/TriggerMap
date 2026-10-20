@@ -194,6 +194,42 @@ def _predict(args: argparse.Namespace) -> int:
     return 0
 
 
+def _view(args: argparse.Namespace) -> int:
+    from triggermap.models.rules.extractor import RuleExtractor
+    from triggermap.serve.render import render_review
+    from triggermap.text.preprocessing import compose_raw, preprocess
+
+    packages: tuple[str, ...] = ()
+    source_url = None
+    if args.text_file is not None:
+        raw = args.text_file.read_text(encoding="utf-8")
+        advisory_id, title = None, args.text_file.name
+    else:
+        from triggermap.ingest.build import CORPUS_FILE, load_corpus
+
+        corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
+        if args.advisory not in corpus:
+            raise SystemExit(f"{args.advisory} is not in the processed corpus")
+        record = corpus[args.advisory]
+        raw = compose_raw(record.summary, record.details)
+        advisory_id, title, packages = record.advisory_id, record.summary, record.pypi_packages
+        source_url = f"https://github.com/advisories/{record.advisory_id}"
+    doc = preprocess(raw)
+    extractor: Any = RuleExtractor()
+    if args.model == "crf":
+        from triggermap.models.crf.model import CrfExtractor
+
+        if args.model_dir is None:
+            raise SystemExit("--model crf needs --model-dir")
+        extractor = CrfExtractor.load(args.model_dir)
+    extraction = extractor.extract(doc, advisory_id)
+    html = render_review(doc, extraction, title=title, source_url=source_url, packages=packages)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(html, encoding="utf-8")
+    print(f"wrote {args.out} ({len(extraction.conditions)} conditions, {extraction.model_id})")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="triggermap", description=__doc__)
     parser.add_argument("--version", action="version", version=f"triggermap {__version__}")
@@ -273,6 +309,16 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
     train.add_argument("--seed", type=int, default=0)
     train.set_defaults(handler=_train)
+
+    view = commands.add_parser("view", help="render an evidence-linked review page")
+    source = view.add_mutually_exclusive_group(required=True)
+    source.add_argument("advisory", nargs="?", help="GHSA id from the processed corpus")
+    source.add_argument("--text-file", type=Path, help="advisory text (Markdown) to review")
+    view.add_argument("--model", choices=["rules", "crf"], default="rules")
+    view.add_argument("--model-dir", type=Path)
+    view.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    view.add_argument("--out", type=Path, required=True)
+    view.set_defaults(handler=_view)
     return parser
 
 
