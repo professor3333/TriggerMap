@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="title desc">
+  <title id="title">TriggerMap</title>
+  <desc id="desc">An aiohttp advisory sentence with three highlighted conditions becomes an exposure checklist: three required conditions that must all hold, and one condition the advisory says is not required.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#131f3a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.1" r="0.6">
+      <stop offset="0" stop-color="#3b82f6" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#1e2a44"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="400" rx="18" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="18" fill="url(#dots)"/>
+  <rect width="1280" height="400" rx="18" fill="url(#glow)"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <!-- Title -->
+    <g transform="translate(48 70)">
+      <rect x="0" y="-30" width="34" height="34" rx="8" fill="none" stroke="#60a5fa" stroke-width="2.5"/>
+      <path d="M8 -13 l6 6 l12 -13" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="48" y="0" font-size="38" font-weight="700" fill="#f8fafc" letter-spacing="-0.5">TriggerMap</text>
+      <text x="0" y="36" font-size="18" fill="#94a3b8">Security advisories → evidence-linked exposure checklists</text>
+    </g>
+
+    <!-- Advisory card -->
+    <g transform="translate(48 148)">
+      <rect width="560" height="208" rx="14" fill="#0f172a" stroke="#1e293b"/>
+      <text x="24" y="34" font-size="12" font-weight="600" fill="#64748b" letter-spacing="1.5">ADVISORY TEXT · GHSA-5h86-8mv2-jq9f</text>
+      <g font-size="17" fill="#cbd5e1">
+        <text x="24" y="74">When <tspan fill="#4ade80" font-weight="600">using aiohttp as a web server</tspan> and</text>
+        <text x="24" y="102"><tspan fill="#4ade80" font-weight="600">enabling static resource resolution</tspan> with</text>
+        <text x="24" y="130"><tspan fill="#60a5fa" font-weight="600">follow_symlinks set to True</tspan>, it can lead to this</text>
+        <text x="24" y="158">vulnerability … even when <tspan fill="#c084fc" font-weight="600">symlinks</tspan> are not</text>
+        <text x="24" y="186">present.</text>
+      </g>
+    </g>
+
+    <!-- Arrow -->
+    <g transform="translate(624 252)">
+      <line x1="0" y1="0" x2="52" y2="0" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+    </g>
+
+    <!-- Checklist card -->
+    <g transform="translate(692 148)">
+      <rect width="540" height="208" rx="14" fill="#0f172a" stroke="#1e293b"/>
+      <text x="24" y="34" font-size="12" font-weight="600" fill="#64748b" letter-spacing="1.5">EXPOSURE CHECKLIST</text>
+      <text x="24" y="62" font-size="13" font-weight="600" fill="#e2e8f0">Required — all of:</text>
+
+      <g font-size="15" fill="#e2e8f0">
+        <g transform="translate(24 78)">
+          <rect width="16" height="16" rx="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="28" y="-1" width="118" height="19" rx="9.5" fill="#14532d"/>
+          <text x="87" y="13" font-size="11" font-weight="700" fill="#4ade80" text-anchor="middle" letter-spacing="0.6">USAGE</text>
+          <text x="160" y="13">using aiohttp as a web server</text>
+        </g>
+        <g transform="translate(24 106)">
+          <rect width="16" height="16" rx="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="28" y="-1" width="118" height="19" rx="9.5" fill="#14532d"/>
+          <text x="87" y="13" font-size="11" font-weight="700" fill="#4ade80" text-anchor="middle" letter-spacing="0.6">USAGE</text>
+          <text x="160" y="13">enabling static resource resolution</text>
+        </g>
+        <g transform="translate(24 134)">
+          <rect width="16" height="16" rx="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="28" y="-1" width="118" height="19" rx="9.5" fill="#1e3a8a"/>
+          <text x="87" y="13" font-size="11" font-weight="700" fill="#93c5fd" text-anchor="middle" letter-spacing="0.6">CONFIGURATION</text>
+          <text x="160" y="13">follow_symlinks set to True</text>
+        </g>
+      </g>
+
+      <text x="24" y="178" font-size="13" font-weight="600" fill="#94a3b8">Explicitly not required:</text>
+      <g transform="translate(200 165)" font-size="15">
+        <rect x="0" y="-1" width="118" height="19" rx="9.5" fill="#3b0764"/>
+        <text x="59" y="13" font-size="11" font-weight="700" fill="#d8b4fe" text-anchor="middle" letter-spacing="0.6">PLATFORM</text>
+        <text x="132" y="13" fill="#94a3b8">symlinks</text>
+      </g>
+    </g>
+
+    <text x="1232" y="385" font-size="13" fill="#64748b" text-anchor="end">Every item links back to its exact source span</text>
+  </g>
+</svg>

@@ -1,62 +1,235 @@
-# TriggerMap
+<div align="center">
 
-**Security advisories → evidence-linked exposure checklists.**
+<img src="docs/assets/banner.svg" alt="TriggerMap turns an advisory sentence into an exposure checklist: three required conditions that must all hold, and one condition the advisory says is not required." width="100%">
 
-> Status: early development (Phase 1, feasibility). Nothing below the roadmap line is
-> implemented yet; this README only describes features that exist.
+<br>
 
-A vulnerability alert tells you a dependency is affected. The advisory prose tells you *when*:
-an optional feature must be enabled, a particular function used, the attacker already
-authenticated, or several conditions must hold together. TriggerMap extracts those conditions
-from English advisories for Python (PyPI) packages, classifies each one as a prerequisite,
-an exception, or an explicitly unnecessary condition, keeps their ALL/ANY grouping, and links
-every checklist item to the exact source text so a developer can verify it.
+[![CI](https://github.com/professor3333/TriggerMap/actions/workflows/ci.yml/badge.svg)](https://github.com/professor3333/TriggerMap/actions/workflows/ci.yml)
+![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-22c55e)](LICENSE)
+[![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-f59e0b)](annotations/README.md)
+![mypy strict](https://img.shields.io/badge/types-mypy%20strict-2563eb)
+![ruff](https://img.shields.io/badge/lint-ruff-d7ff64?logo=ruff&logoColor=black)
+![Status](https://img.shields.io/badge/status-phase%201%20%C2%B7%20pilot%20annotation-8b5cf6)
 
-It complements dependency scanners such as
-[OSV-Scanner](https://github.com/google/osv-scanner): the scanner says *which* dependency is
-affected; TriggerMap surfaces the *conditions* stated in the advisory.
+**Read the advisory. Get the conditions. Check them against your deployment.**
 
-## Data
+[Architecture](#architecture) ·
+[Why](#why-triggermap) ·
+[What it extracts](#what-it-extracts) ·
+[Principles](#design-principles) ·
+[Status](#project-status) ·
+[Quickstart](#quickstart) ·
+[Data](#data-and-licensing)
 
-Advisories come from the public [GitHub Advisory Database](https://github.com/github/advisory-database)
-(CC BY 4.0). The corpus is rebuilt from a pinned snapshot:
+</div>
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph Data["Dataset pipeline"]
+        A[Pinned advisory<br>snapshot] --> B[Validate · normalise<br>preserve offsets]
+        B --> C[Annotation and<br>adjudication]
+        C --> D[Versioned dataset<br>and frozen splits]
+    end
+    subgraph Models["Modelling"]
+        D --> E[Rules · CRF ·<br>DistilBERT · DeBERTa]
+        E --> F[Evaluation and<br>calibration]
+        F --> G[Versioned<br>model bundle]
+    end
+    subgraph Serving["Review application"]
+        H[GHSA / CVE id, text,<br>or OSV-Scanner result] --> I[FastAPI]
+        I --> J[Shared<br>preprocessing]
+        J --> K[Inference and<br>structured decoding]
+        G --> K
+        K --> L[Evidence-linked<br>review UI]
+        L --> M[Review storage<br>and export]
+        M --> N[Curated<br>correction queue]
+    end
+    N -. human adjudication .-> C
+
+    classDef done fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef progress fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef planned fill:#f1f5f9,stroke:#94a3b8,color:#334155,stroke-dasharray:4 3
+    class A,B,J done
+    class C progress
+    class D,E,F,G,H,I,K,L,M,N planned
+```
+
+<sub>🟩 built · 🟨 in progress · ⬜ planned. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
+
+## Why TriggerMap
+
+A vulnerability alert tells you **a dependency is affected**. Whether **your deployment** is
+exposed usually depends on conditions buried in the advisory prose:
+
+| Question a developer asks | Typical advisory wording |
+|---|---|
+| Does it need an optional feature? | "…with `follow_symlinks` set to True" |
+| Must the app use a particular interface? | "When using aiohttp **as a web server**…" |
+| Does the attacker need an account? | "An **authenticated** user with edit permission…" |
+| Must several things hold at once? | Flask's advisory lists **five** jointly necessary conditions |
+| Is this a prerequisite or just a workaround? | "Disable the option immediately" is advice, not a condition |
+
+Dependency scanners such as [OSV-Scanner](https://github.com/google/osv-scanner) answer
+*which* package is affected. TriggerMap complements them by extracting the **conditions**,
+their **logic**, and the **exact sentence** that states each one. Developers can then verify
+the conditions against their application and keep a record of the answers.
+
+## What it extracts
+
+Each checklist item is a contiguous **span of the advisory text**. It carries a category and a
+role, and may belong to an explicit logical group:
+
+<table>
+<tr><th>Category</th><th>Role</th><th>Group</th></tr>
+<tr valign="top"><td>
+
+`CONFIGURATION` option or flag values<br>
+`USAGE` features, functions, modes used<br>
+`ACCESS` what the attacker must have<br>
+`PLATFORM` OS, runtime, infrastructure
+
+</td><td>
+
+`REQUIRED` must hold (incl. required *absences*)<br>
+`EXCEPTION` if it holds, you are not exposed<br>
+`NOT_REQUIRED` the text says it is unnecessary<br>
+`UNCERTAIN` the text does not settle it
+
+</td><td>
+
+`ALL` every member must hold<br>
+`ANY` one member suffices<br>
+`UNRESOLVED` connected, logic unclear
+
+</td></tr>
+</table>
+
+<details>
+<summary><b>Example record</b> for the aiohttp sentence in the banner</summary>
+
+```json
+{
+  "advisory_id": "GHSA-5h86-8mv2-jq9f",
+  "conditions": [
+    {"id": "c1", "span": [5, 34],   "category": "USAGE",         "role": "REQUIRED"},
+    {"id": "c2", "span": [39, 74],  "category": "USAGE",         "role": "REQUIRED"},
+    {"id": "c3", "span": [80, 107], "category": "CONFIGURATION", "role": "REQUIRED"}
+  ],
+  "groups": [{"operator": "ALL", "members": ["c1", "c2", "c3"]}]
+}
+```
+
+Offsets are zero-based and half-open, measured in the canonical text, which has display markup
+such as backticks removed. Every canonical character maps back to the raw Markdown, so each
+item can be highlighted in the original advisory.
+
+</details>
+
+## Design principles
+
+| | Principle | In practice |
+|---|---|---|
+| 🔗 | **Every claim has evidence** | Checklist wording is the source span plus a fixed template. No generated paraphrase, no LLM in the serving path. |
+| 🕳️ | **Missing information stays visible** | "No explicit conditions found" is never shown as "conditions do not apply". Unsupported structure is flagged for review rather than dropped. |
+| ↔️ | **Negation scope matters** | "does *not* set Cache-Control" is a required absence; "symlinks need *not* exist" removes a prerequisite. These are different labels. |
+| 🧪 | **Honest evaluation** | Project- and alias-grouped splits, a frozen blind test set, bootstrap confidence intervals, and strong baselines. |
+| 🧑‍⚖️ | **Humans own the labels** | Gold annotations are hand-made. Reviewer corrections reach training only after adjudication. |
+
+## Project status
+
+| Phase | Scope | Status |
+|---|---|:---:|
+| 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
+| 1 · Pilot | 100-document pilot annotation, guideline revision, decision gate | 🟨 in progress |
+| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes, evaluator, evidence viewer | ⏳ next |
+| 3 · Neural models | Scaled annotation, frozen splits, DistilBERT and DeBERTa-v3 with span / role / group heads | ⏳ |
+| 4 · Reliability | Group logic, calibration, negation and scope challenge set, error catalogue | ⏳ |
+| 5 · Application | FastAPI, review UI, SQLite storage, JSON/Markdown export, Docker, CI/CD | ⏳ |
+| 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
+
+Results will be published here only once measured. Until then this README reports no accuracy numbers.
+
+## Quickstart
+
+Requires [uv](https://docs.astral.sh/uv/) and Git.
 
 ```bash
-uv run triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6  # sparse clone, ~360 MB
-uv run triggermap ingest build    # PyPI filter, withdrawn excluded, malformed quarantined
-uv run triggermap corpus stats    # writes docs/corpus_stats.md
+git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap
+uv sync                                    # Python 3.12 environment from uv.lock
+uv run pytest -m "not slow"                # offline test suite
+```
+
+**Rebuild the corpus** from the pinned snapshot:
+
+```bash
+uv run triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6   # sparse clone, ~360 MB
+uv run triggermap ingest build             # PyPI filter, withdrawn excluded, malformed quarantined
+uv run triggermap corpus stats             # writes docs/corpus_stats.md
 ```
 
 `ingest build` writes `data/processed/advisories.jsonl` (not committed) and the committed
-manifest `data/manifests/snapshot.json`, which records the source commit, every filtering
-count, quarantined files with reasons, and the SHA-256 of the output. Rebuilding from the same
-commit reproduces the manifest byte for byte. Current counts are in
-[`docs/corpus_stats.md`](docs/corpus_stats.md).
+[`data/manifests/snapshot.json`](data/manifests/snapshot.json). The manifest records the source
+commit, every filtering count, each quarantined file with its reason, and the SHA-256 of the
+output. Rebuilding from the same commit reproduces it byte for byte.
 
-## Annotation
-
-Gold labels are created by hand in [Label Studio](https://labelstud.io/) following
-[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md). Each condition is a span of the
-canonical advisory text, with a category (`CONFIGURATION`, `USAGE`, `ACCESS`, `PLATFORM`), a
-role (`REQUIRED`, `EXCEPTION`, `NOT_REQUIRED`, `UNCERTAIN`) and, where the text states it, an
-`ALL`/`ANY`/`UNRESOLVED` group. The 100-document pilot sample is fixed in
-[`annotations/pilot/pilot_manifest.json`](annotations/pilot/pilot_manifest.json); the procedure
-is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md).
+**Annotate** with [Label Studio](https://labelstud.io/):
 
 ```bash
-uv run triggermap corpus sample-pilot     # reproduce the pilot sample (seed 20261020)
-uv run triggermap annotate tasks          # Label Studio tasks for the sample
+uv run triggermap corpus sample-pilot      # reproduce the pilot sample (seed 20261020)
+uv run triggermap annotate tasks           # Label Studio tasks for the sample
 uv run triggermap annotate import data/label_studio/export.json --annotator A1
 ```
 
-The importer validates every exported annotation (offsets, labels, groups, document status)
-and writes only clean records, plus a report of problems, label counts and annotation pace.
+The importer validates every exported annotation (offsets, labels, groups, document status),
+writes only clean records, and reports problems, label counts and annotation pace. The procedure
+is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md), and the labelling rules are in
+[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md).
 
-## Development
+## Corpus at a glance
 
-Requires [uv](https://docs.astral.sh/uv/).
+Snapshot `1912cbd6` of the GitHub Advisory Database, reviewed advisories only:
 
-```bash
-uv sync
-uv run pytest
+| 36,910 | 6,350 | 1,528 | 236 | 0 |
+|:---:|:---:|:---:|:---:|:---:|
+| advisories scanned | PyPI advisories kept | distinct packages | withdrawn, excluded | quarantined |
+
+More detail (lengths, structure, cue coverage, years, top packages) is in
+[`docs/corpus_stats.md`](docs/corpus_stats.md).
+
+## Repository layout
+
+```text
+src/triggermap/
+├── schema/      label inventory (single source of truth) + deterministic validator
+├── text/        Markdown → canonical text with offset map, segmentation, shared entry point
+├── ingest/      pinned snapshot, OSV parsing, PyPI filter, quarantine, manifests
+├── corpus/      statistics, condition cues, leakage groups, pilot sampling
+├── annotate/    Label Studio tasks and validated import
+└── cli.py       `triggermap` command
+configs/         Label Studio labelling config
+annotations/     versioned annotations and sample manifests (CC BY 4.0)
+data/manifests/  committed snapshot manifest (raw and processed data are rebuilt, not committed)
+docs/            guidelines, pilot protocol, corpus statistics
+tests/           unit, property-based and real-export regression tests
 ```
+
+## Data and licensing
+
+- **Source:** [GitHub Advisory Database](https://github.com/github/advisory-database), reviewed
+  advisories in the PyPI ecosystem, pinned to commit
+  `1912cbd6ce9d4cb141636adc4abafb4eb77a93e6`. Records use the
+  [OSV schema](https://ossf.github.io/osv-schema/).
+- **Advisory text and annotations:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+  Annotations are modified material derived from the advisories; attribution and details are in
+  [`annotations/README.md`](annotations/README.md).
+- **Code:** [MIT](LICENSE).
+
+## Acknowledgements
+
+Built on the [GitHub Advisory Database](https://github.com/github/advisory-database), the
+[OSV schema](https://ossf.github.io/osv-schema/) and [Label Studio](https://labelstud.io/).
