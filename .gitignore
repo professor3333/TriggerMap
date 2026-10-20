@@ -2,16 +2,18 @@
 data/raw/
 data/quarantine/
 data/processed/
+data/predictions/
+reports/tmp/
 advisory-database/
 
 # Label Studio local state (exports live in annotations/ once adjudicated)
 label-studio-data/
 data/label_studio/
 
-# Models, checkpoints, experiment tracking
-models/
-checkpoints/
-artifacts/
+# Models, checkpoints, experiment tracking (root-anchored: src/triggermap/models/ is code)
+/models/
+/checkpoints/
+/artifacts/
 *.onnx
 *.safetensors
 *.bin

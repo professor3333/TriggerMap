@@ -132,6 +132,32 @@ def _evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _predict(args: argparse.Namespace) -> int:
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+    from triggermap.models.rules.extractor import RuleExtractor
+    from triggermap.schema.validate import validate_annotation
+    from triggermap.text.preprocessing import compose_raw, preprocess
+
+    corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
+    if args.sample is not None:
+        items = json.loads(args.sample.read_text(encoding="utf-8"))["items"]
+        ids = [i["advisory_id"] for i in items if args.use in ("all", i["intended_use"])]
+    else:
+        ids = sorted(corpus)
+    extractor = RuleExtractor()
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    with args.out.open("w", encoding="utf-8", newline="\n") as fh:
+        for aid in ids:
+            doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
+            extraction = extractor.extract(doc, aid)
+            issues = validate_annotation(extraction, doc.text)
+            if issues:
+                raise RuntimeError(f"{aid}: invalid prediction {issues}")
+            fh.write(extraction.model_dump_json(exclude_none=True) + "\n")
+    print(f"wrote {len(ids)} {extractor.model_id} predictions to {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="triggermap", description=__doc__)
     parser.add_argument("--version", action="version", version=f"triggermap {__version__}")
@@ -190,6 +216,16 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--title", default="Evaluation report")
     evaluate.add_argument("--out", type=Path)
     evaluate.set_defaults(handler=_evaluate)
+
+    predict = commands.add_parser("predict", help="run an extraction system over documents")
+    predict.add_argument("--model", choices=["rules"], default="rules")
+    predict.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    predict.add_argument("--sample", type=Path, help="sample manifest; default: whole corpus")
+    predict.add_argument(
+        "--use", choices=["all", "training", "evaluation_candidate"], default="all"
+    )
+    predict.add_argument("--out", type=Path, required=True)
+    predict.set_defaults(handler=_predict)
     return parser
 
 
