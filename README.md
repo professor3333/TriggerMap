@@ -157,7 +157,7 @@ item can be highlighted in the original advisory.
 | 1 · Pilot | 100-document pilot annotation, guideline revision, decision gate | 🟨 in progress |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
-| 4 · Reliability | Group logic, calibration, negation and scope challenge set, error catalogue | ⏳ |
+| 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI, review UI, SQLite storage, JSON/Markdown export, Docker, CI/CD | ⏳ |
 | 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
 

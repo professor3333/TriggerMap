@@ -471,6 +471,41 @@ def _challenge(args: argparse.Namespace) -> int:
     return 0
 
 
+def _errors(args: argparse.Namespace) -> int:
+    from triggermap.corpus.splits import load_split, select
+    from triggermap.eval.errors import classify, render
+    from triggermap.eval.runner import check_alignment, load_gold_files, load_predictions
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+    from triggermap.text.preprocessing import compose_raw, preprocess
+
+    if args.split == "test" and not args.release_evaluation:
+        raise SystemExit("the test split is locked: pass --release-evaluation '<reason>'")
+    gold = load_gold_files(args.gold)
+    pred = load_predictions(args.pred)
+    check_alignment(gold, pred)
+    ids = select(sorted(gold), load_split(args.split_manifest), args.split)
+    if args.split == "test":
+        _log_test_access(args, sorted({p.model_id for p in pred.values()}))
+    corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
+    entries = []
+    for aid in ids:
+        doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
+        entries += classify(aid, doc, gold[aid], pred.get(aid))
+    models = ", ".join(sorted({p.model_id for p in pred.values()})) or "none"
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(
+        render(
+            f"Error catalogue: {models}",
+            entries,
+            len(ids),
+            {"Split": f"{args.split} of `{args.split_manifest}`", "Predictions": f"`{args.pred}`"},
+        ),
+        encoding="utf-8",
+    )
+    print(f"wrote {args.out}: {len(entries)} disagreements in {len(ids)} documents")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -674,6 +709,16 @@ def build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--seed", type=int, default=0)
     calibrate.add_argument("--out", type=Path, default=DEFAULT_POLICY)
     calibrate.set_defaults(handler=_calibrate)
+
+    errors = commands.add_parser("errors", help="write the error catalogue for a split")
+    errors.add_argument("--gold", type=Path, nargs="+", required=True)
+    errors.add_argument("--pred", type=Path, required=True)
+    errors.add_argument("--split", choices=["dev", "test"], default="dev")
+    errors.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    errors.add_argument("--release-evaluation", metavar="REASON")
+    errors.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    errors.add_argument("--out", type=Path, default=Path("docs/error_catalogue.md"))
+    errors.set_defaults(handler=_errors)
 
     robust = commands.add_parser("robustness", help="formatting-perturbation consistency")
     robust.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
