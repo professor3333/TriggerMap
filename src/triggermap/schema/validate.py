@@ -9,7 +9,13 @@ from __future__ import annotations
 from collections import Counter
 from dataclasses import dataclass
 
-from triggermap.schema.models import AdvisoryAnnotation, Condition, DocumentStatus, Group
+from triggermap.schema.models import (
+    AdvisoryAnnotation,
+    Condition,
+    DocumentStatus,
+    Extraction,
+    Group,
+)
 
 
 @dataclass(frozen=True)
@@ -78,8 +84,11 @@ def validate_groups(groups: tuple[Group, ...], condition_ids: set[str]) -> list[
     return issues
 
 
-def validate_annotation(record: AdvisoryAnnotation, text: str) -> list[Issue]:
-    """Return every problem with `record` against its canonical `text`; empty means valid."""
+def validate_annotation(record: AdvisoryAnnotation | Extraction, text: str) -> list[Issue]:
+    """Return every problem with a gold record or a prediction against its canonical `text`.
+
+    An empty list means valid.
+    """
     issues = validate_conditions(record.conditions, text)
     issues += validate_groups(record.groups, {c.id for c in record.conditions})
 

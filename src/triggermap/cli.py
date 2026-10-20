@@ -99,6 +99,39 @@ def _annotate_import(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _evaluate(args: argparse.Namespace) -> int:
+    from triggermap.eval.report import render
+    from triggermap.eval.runner import evaluate, load_gold, load_predictions
+
+    gold = load_gold(args.gold)
+    pred = load_predictions(args.pred)
+    cluster_of = None
+    if args.clusters == "project":
+        from triggermap.corpus.groups import build_groups
+        from triggermap.ingest.build import CORPUS_FILE, load_corpus
+
+        cluster_of = build_groups(load_corpus(args.processed / CORPUS_FILE)).leakage
+    docs, intervals = evaluate(gold, pred, cluster_of, args.samples, args.seed)
+    model_ids = sorted({p.model_id for p in pred.values()})
+    report = render(
+        args.title,
+        docs,
+        intervals,
+        {
+            "Gold": f"`{args.gold}`",
+            "Predictions": f"`{args.pred}` ({', '.join(model_ids) or 'none'})",
+            "Bootstrap": f"{args.samples} resamples, {args.clusters} clusters, seed {args.seed}",
+        },
+    )
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(report, encoding="utf-8")
+        print(f"wrote {args.out}")
+    else:
+        print(report)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="triggermap", description=__doc__)
     parser.add_argument("--version", action="version", version=f"triggermap {__version__}")
@@ -146,6 +179,17 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--out", type=Path, default=Path("annotations/pilot/pilot-1.jsonl"))
     imp.add_argument("--report", type=Path)
     imp.set_defaults(handler=_annotate_import)
+
+    evaluate = commands.add_parser("evaluate", help="score predictions against gold")
+    evaluate.add_argument("gold", type=Path, help="gold AdvisoryAnnotation JSONL")
+    evaluate.add_argument("pred", type=Path, help="predicted Extraction JSONL")
+    evaluate.add_argument("--clusters", choices=["document", "project"], default="project")
+    evaluate.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    evaluate.add_argument("--samples", type=int, default=1000)
+    evaluate.add_argument("--seed", type=int, default=0)
+    evaluate.add_argument("--title", default="Evaluation report")
+    evaluate.add_argument("--out", type=Path)
+    evaluate.set_defaults(handler=_evaluate)
     return parser
 
 

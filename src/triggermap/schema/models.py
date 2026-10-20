@@ -98,3 +98,20 @@ class AdvisoryAnnotation(_Frozen):
     annotator: str | None = None
     adjudicated: bool = False
     notes: str | None = None
+
+
+class Extraction(_Frozen):
+    """A system's prediction for one document; same label space as a gold annotation.
+
+    ``review_flags`` carries machine-readable reasons a reviewer should look closer
+    (for example ``low_confidence:c2`` or ``unresolved_group``).
+    """
+
+    advisory_id: str | None = None  # pasted text has no advisory id
+    content_hash: Sha256
+    preprocessing_version: str
+    model_id: str = Field(min_length=1)
+    document_status: DocumentStatus
+    conditions: tuple[Condition, ...] = ()
+    groups: tuple[Group, ...] = ()
+    review_flags: tuple[str, ...] = ()
