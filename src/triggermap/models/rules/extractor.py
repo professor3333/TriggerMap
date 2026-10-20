@@ -87,8 +87,8 @@ _ONLY_AFFECTS = re.compile(
     re.IGNORECASE,
 )
 _REQUIRES = re.compile(
-    r"\b(?:exploitation|exploiting this|the attack|this attack|the vulnerability|this vulnerability)"
-    r"\s+requires?\s+(?:that\s+)?",
+    r"\b(?:exploitation|exploiting this|the attack|this attack|the vulnerability|"
+    r"this vulnerability)\s+requires?\s+(?:that\s+)?",
     re.IGNORECASE,
 )
 _REGARDLESS = re.compile(r"\bregardless of (?:whether |if )?", re.IGNORECASE)
@@ -98,7 +98,8 @@ _EVEN_NOT = re.compile(
     re.IGNORECASE,
 )
 _NO_AUTH = re.compile(
-    r"\b(?:without (?:requiring |any )?(?P<a>authentication)|no (?P<b>authentication) (?:is )?required|"
+    r"\b(?:without (?:requiring |any )?(?P<a>authentication)|"
+    r"no (?P<b>authentication) (?:is )?required|"
     r"does not require (?P<c>authentication)|(?P<d>unauthenticated))\b",
     re.IGNORECASE,
 )
@@ -115,8 +116,8 @@ _CONFIG_INLINE = re.compile(
 )
 
 _LEAD_IN = re.compile(
-    r"following|conditions?|only (?:if|when|for|affects)|affected (?:if|when)|vulnerable (?:if|when)|"
-    r"requires?|prerequisite|must|combine",
+    r"following|conditions?|only (?:if|when|for|affects)|affected (?:if|when)|"
+    r"vulnerable (?:if|when)|requires?|prerequisite|must|combine",
     re.IGNORECASE,
 )
 _ALL = re.compile(r"\ball (?:of )?(?:the following|these|conditions)|\bcombine|\bboth\b", re.I)
@@ -213,7 +214,9 @@ class RuleExtractor:
             preprocessing_version=doc.version,
             model_id=self.model_id,
             document_status=(
-                DocumentStatus.HAS_CONDITIONS if conditions else DocumentStatus.NO_EXPLICIT_CONDITION
+                DocumentStatus.HAS_CONDITIONS
+                if conditions
+                else DocumentStatus.NO_EXPLICIT_CONDITION
             ),
             conditions=tuple(conditions),
             groups=tuple(groups),
@@ -233,8 +236,7 @@ class RuleExtractor:
                 continue
             if _IMPERATIVE.match(text, sentence.start, sentence.end):
                 continue
-            for cand in self._sentence(text, sentence, clause_id):
-                yield cand
+            yield from self._sentence(text, sentence, clause_id)
             clause_id += 10_000
         yield from self._lists(text, blocks, doc.sentences, skip_blocks, clause_id)
 
@@ -267,9 +269,7 @@ class RuleExtractor:
             if not re.match(r"un", m.group("x"), re.I):
                 yield _Candidate(m.start("x"), m.end("x"), Category.ACCESS, Role.REQUIRED, 0.6)
         for m in _CONFIG_INLINE.finditer(text, s.start, s.end):
-            yield _Candidate(
-                m.start("x"), m.end("x"), Category.CONFIGURATION, Role.REQUIRED, 0.35
-            )
+            yield _Candidate(m.start("x"), m.end("x"), Category.CONFIGURATION, Role.REQUIRED, 0.35)
 
     def _clause(
         self, text: str, start: int, limit: int, role: Role, confidence: float, clause_id: int
@@ -322,23 +322,18 @@ class RuleExtractor:
             if lead.kind is not BlockKind.PARAGRAPH:
                 continue
             lead_sentences = [s for s in sentences if s.block == index - 1]
-            lead_text = text[lead_sentences[-1].start : lead_sentences[-1].end] if lead_sentences else ""
-            if not (lead_text.rstrip().endswith(":") or _ALL.search(lead_text)) or not _LEAD_IN.search(
-                lead_text
-            ):
+            if not lead_sentences:
+                continue
+            lead_text = text[lead_sentences[-1].start : lead_sentences[-1].end]
+            introduces_list = lead_text.rstrip().endswith(":") or _ALL.search(lead_text)
+            if not introduces_list or not _LEAD_IN.search(lead_text):
                 continue
             items = [
                 b
                 for b in blocks[index:]
                 if b.kind is BlockKind.LIST_ITEM and b.list_id == block.list_id and b.level == 0
             ]
-            item_text = " ".join(text[b.start : b.end] for b in items)
-            if _ANY.search(lead_text) or re.search(r";?\s+or$", text[items[0].start : items[0].end]):
-                operator = GroupOperator.ANY
-            elif _ALL.search(lead_text) or re.search(r"\band$", item_text[:-1] if item_text else ""):
-                operator = GroupOperator.ALL
-            else:
-                operator = GroupOperator.UNRESOLVED
+            operator = _list_operator(lead_text, [text[b.start : b.end] for b in items])
             role = Role.EXCEPTION if _NEGATIVE_LEAD.search(lead_text) else Role.REQUIRED
             clause_id += 1
             for item in items:
@@ -353,6 +348,16 @@ class RuleExtractor:
                     clause_id if len(items) > 1 else None,
                     operator if len(items) > 1 else None,
                 )
+
+
+def _list_operator(lead_text: str, items: list[str]) -> GroupOperator:
+    """Logic of a lead-in list: from the lead-in, else from "; and" / "; or" item endings."""
+    endings = {item.rstrip(" ;,.").rsplit(None, 1)[-1].lower() for item in items[:-1] if item}
+    if _ANY.search(lead_text) or "or" in endings:
+        return GroupOperator.ANY
+    if _ALL.search(lead_text) or "and" in endings:
+        return GroupOperator.ALL
+    return GroupOperator.UNRESOLVED
 
 
 def _clause_end(text: str, start: int, limit: int) -> int:

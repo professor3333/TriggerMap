@@ -159,3 +159,19 @@ def test_predict_cli_writes_valid_jsonl(tmp_path: Any, monkeypatch: pytest.Monke
     assert lines[0].conditions and not lines[1].conditions
     assert lines[0].content_hash == docs[0].content_hash
     assert compose_raw(docs[0].summary, docs[0].details)  # same composition as ingestion
+
+
+@pytest.mark.parametrize(
+    "lead, items, expected",
+    [
+        ("You are affected if one of the following holds:", ["a", "b"], GroupOperator.ANY),
+        ("Affected deployments must:", ["use X; or", "use Y"], GroupOperator.ANY),
+        ("Affected deployments must:", ["use X; and", "use Y"], GroupOperator.ALL),
+        ("Only when all of the following are true:", ["a", "b"], GroupOperator.ALL),
+        ("Affected deployments must:", ["use X", "use Y"], GroupOperator.UNRESOLVED),
+    ],
+)
+def test_list_operator(lead: str, items: list[str], expected: GroupOperator) -> None:
+    from triggermap.models.rules.extractor import _list_operator
+
+    assert _list_operator(lead, items) is expected
