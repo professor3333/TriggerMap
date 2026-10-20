@@ -1,25 +1,6 @@
+from tests.factories import make_doc as doc
 from triggermap.corpus.cues import condition_score, cue_counts
 from triggermap.corpus.stats import corpus_stats, percentiles, render_markdown
-from triggermap.ingest.records import AdvisoryDocument
-
-
-def doc(advisory_id: str, details: str, packages: tuple[str, ...] = ("pkg",)) -> AdvisoryDocument:
-    return AdvisoryDocument(
-        advisory_id=advisory_id,
-        aliases=(),
-        published="2024-05-01T00:00:00Z",
-        modified="2024-05-01T00:00:00Z",
-        summary="Summary",
-        details=details,
-        pypi_packages=packages,
-        ecosystems=("PyPI",),
-        references=(),
-        cwe_ids=(),
-        source_commit="c" * 40,
-        source_path="advisories/x.json",
-        file_sha256="0" * 64,
-        content_hash="1" * 64,
-    )
 
 
 def test_cues_match_whole_words_case_insensitively() -> None:

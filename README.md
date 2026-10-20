@@ -33,6 +33,25 @@ count, quarantined files with reasons, and the SHA-256 of the output. Rebuilding
 commit reproduces the manifest byte for byte. Current counts are in
 [`docs/corpus_stats.md`](docs/corpus_stats.md).
 
+## Annotation
+
+Gold labels are created by hand in [Label Studio](https://labelstud.io/) following
+[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md). Each condition is a span of the
+canonical advisory text, with a category (`CONFIGURATION`, `USAGE`, `ACCESS`, `PLATFORM`), a
+role (`REQUIRED`, `EXCEPTION`, `NOT_REQUIRED`, `UNCERTAIN`) and, where the text states it, an
+`ALL`/`ANY`/`UNRESOLVED` group. The 100-document pilot sample is fixed in
+[`annotations/pilot/pilot_manifest.json`](annotations/pilot/pilot_manifest.json); the procedure
+is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md).
+
+```bash
+uv run triggermap corpus sample-pilot     # reproduce the pilot sample (seed 20261020)
+uv run triggermap annotate tasks          # Label Studio tasks for the sample
+uv run triggermap annotate import data/label_studio/export.json --annotator A1
+```
+
+The importer validates every exported annotation (offsets, labels, groups, document status)
+and writes only clean records, plus a report of problems, label counts and annotation pace.
+
 ## Development
 
 Requires [uv](https://docs.astral.sh/uv/).

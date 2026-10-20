@@ -1,0 +1,54 @@
+<!--
+  TriggerMap condition annotation, label schema v1.
+  Must change together with src/triggermap/schema/models.py, the converter in
+  src/triggermap/annotate/label_studio.py and docs/annotation_guidelines.md.
+
+  Annotate on "text" (canonical text). "raw" is the original Markdown, for reference only.
+  Groups: link members with relations labelled ALL, ANY or UNRESOLVED; every linked
+  component becomes one group, so a 3-member group needs 2 links (c1-c2, c2-c3).
+-->
+<View>
+  <Header value="$advisory_id"/>
+  <Text name="meta" value="$meta"/>
+
+  <Labels name="condition" toName="text" showInline="true">
+    <Label value="CONFIGURATION" background="#2563eb" hotkey="c"/>
+    <Label value="USAGE" background="#16a34a" hotkey="u"/>
+    <Label value="ACCESS" background="#d97706" hotkey="a"/>
+    <Label value="PLATFORM" background="#9333ea" hotkey="p"/>
+  </Labels>
+
+  <Text name="text" value="$text"/>
+
+  <View visibleWhen="region-selected">
+    <Header value="Role of the selected condition" size="5"/>
+    <Choices name="role" toName="text" perRegion="true" required="true" choice="single" showInline="true">
+      <Choice value="REQUIRED" hotkey="1"/>
+      <Choice value="EXCEPTION" hotkey="2"/>
+      <Choice value="NOT_REQUIRED" hotkey="3"/>
+      <Choice value="UNCERTAIN" hotkey="4"/>
+    </Choices>
+  </View>
+
+  <Relations>
+    <Relation value="ALL"/>
+    <Relation value="ANY"/>
+    <Relation value="UNRESOLVED"/>
+  </Relations>
+
+  <Header value="Document status" size="5"/>
+  <Choices name="document_status" toName="text" required="true" choice="single" showInline="true">
+    <Choice value="HAS_CONDITIONS"/>
+    <Choice value="NO_EXPLICIT_CONDITION"/>
+    <Choice value="UNSUPPORTED_STRUCTURE"/>
+  </Choices>
+
+  <Header value="Notes (ambiguities, guideline questions)" size="5"/>
+  <TextArea name="notes" toName="text" rows="3" editable="true" maxSubmissions="1"/>
+
+  <Collapse>
+    <Panel value="Original Markdown (reference only, do not annotate here)">
+      <Text name="raw" value="$raw"/>
+    </Panel>
+  </Collapse>
+</View>

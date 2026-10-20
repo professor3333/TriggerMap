@@ -1,0 +1,209 @@
+[
+ {
+  "id": 1,
+  "annotations": [
+   {
+    "id": 1,
+    "completed_by": 1,
+    "result": [
+     {
+      "id": "r1",
+      "from_name": "condition",
+      "to_name": "text",
+      "type": "labels",
+      "value": {
+       "start": 1037,
+       "end": 1066,
+       "text": "using aiohttp as a web server",
+       "labels": [
+        "USAGE"
+       ]
+      }
+     },
+     {
+      "id": "r1",
+      "from_name": "role",
+      "to_name": "text",
+      "type": "choices",
+      "value": {
+       "start": 1037,
+       "end": 1066,
+       "text": "using aiohttp as a web server",
+       "choices": [
+        "REQUIRED"
+       ]
+      }
+     },
+     {
+      "id": "r2",
+      "from_name": "condition",
+      "to_name": "text",
+      "type": "labels",
+      "value": {
+       "start": 1071,
+       "end": 1106,
+       "text": "enabling static resource resolution",
+       "labels": [
+        "USAGE"
+       ]
+      }
+     },
+     {
+      "id": "r2",
+      "from_name": "role",
+      "to_name": "text",
+      "type": "choices",
+      "value": {
+       "start": 1071,
+       "end": 1106,
+       "text": "enabling static resource resolution",
+       "choices": [
+        "REQUIRED"
+       ]
+      }
+     },
+     {
+      "id": "r3",
+      "from_name": "condition",
+      "to_name": "text",
+      "type": "labels",
+      "value": {
+       "start": 1112,
+       "end": 1139,
+       "text": "follow_symlinks set to True",
+       "labels": [
+        "CONFIGURATION"
+       ]
+      }
+     },
+     {
+      "id": "r3",
+      "from_name": "role",
+      "to_name": "text",
+      "type": "choices",
+      "value": {
+       "start": 1112,
+       "end": 1139,
+       "text": "follow_symlinks set to True",
+       "choices": [
+        "REQUIRED"
+       ]
+      }
+     },
+     {
+      "id": "r4",
+      "from_name": "condition",
+      "to_name": "text",
+      "type": "labels",
+      "value": {
+       "start": 736,
+       "end": 744,
+       "text": "symlinks",
+       "labels": [
+        "PLATFORM"
+       ]
+      }
+     },
+     {
+      "id": "r4",
+      "from_name": "role",
+      "to_name": "text",
+      "type": "choices",
+      "value": {
+       "start": 736,
+       "end": 744,
+       "text": "symlinks",
+       "choices": [
+        "NOT_REQUIRED"
+       ]
+      }
+     },
+     {
+      "from_id": "r1",
+      "to_id": "r2",
+      "type": "relation",
+      "direction": "right",
+      "labels": [
+       "ALL"
+      ]
+     },
+     {
+      "from_id": "r2",
+      "to_id": "r3",
+      "type": "relation",
+      "direction": "right",
+      "labels": [
+       "ALL"
+      ]
+     },
+     {
+      "id": "st",
+      "from_name": "document_status",
+      "to_name": "text",
+      "type": "choices",
+      "value": {
+       "choices": [
+        "HAS_CONDITIONS"
+       ]
+      }
+     },
+     {
+      "id": "nt",
+      "from_name": "notes",
+      "to_name": "text",
+      "type": "textarea",
+      "value": {
+       "text": [
+        "verification note"
+       ]
+      }
+     }
+    ],
+    "was_cancelled": false,
+    "ground_truth": false,
+    "created_at": "2026-10-20T04:37:10.913351Z",
+    "updated_at": "2026-10-20T04:37:10.913362Z",
+    "draft_created_at": null,
+    "lead_time": 123.4,
+    "prediction": {},
+    "result_count": 7,
+    "unique_id": "5b080ab5-1785-4b03-a2ee-4d7c68f15292",
+    "import_id": null,
+    "last_action": null,
+    "bulk_created": false,
+    "task": 1,
+    "project": 1,
+    "updated_by": 1,
+    "parent_prediction": null,
+    "parent_annotation": null,
+    "last_created_by": null
+   }
+  ],
+  "drafts": [],
+  "predictions": [],
+  "data": {
+   "advisory_id": "GHSA-5h86-8mv2-jq9f",
+   "meta": "#0 \u00b7 packages: aiohttp \u00b7 published 2024-01-29 \u00b7 https://github.com/advisories/GHSA-5h86-8mv2-jq9f",
+   "text": "aiohttp is vulnerable to directory traversal\n\nSummary\nImproperly configuring static resource resolution in aiohttp when used as a web server can result in the unauthorized reading of arbitrary files on the system.\n\nDetails\nWhen using aiohttp as a web server and configuring static routes, it is necessary to specify the root path for static files. Additionally, the option 'follow_symlinks' can be used to determine whether to follow symbolic links outside the static root directory. When 'follow_symlinks' is set to True, there is no validation to check if a given file path is within the root directory.This can lead to directory traversal vulnerabilities, resulting in unauthorized access to arbitrary files on the system, even when symlinks are not present.\n\ni.e. An application is only vulnerable with setup code like:\napp.router.add_routes([\n    web.static(\"/static\", \"static/\", follow_symlinks=True),  # Remove follow_symlinks to avoid the vulnerability\n])\n\nImpact\nThis is a directory traversal vulnerability with CWE ID 22. When using aiohttp as a web server and enabling static resource resolution with follow_symlinks set to True, it can lead to this vulnerability. This vulnerability has been present since the introduction of the follow_symlinks parameter.\n\nWorkaround\nEven if upgrading to a patched version of aiohttp, we recommend following these steps regardless.\n\nIf using follow_symlinks=True outside of a restricted local development environment, disable the option immediately. This option is NOT needed to follow symlinks which point to a location within the static root directory, it is only intended to allow a symlink to break out of the static directory. Even with this CVE fixed, there is still a substantial risk of misconfiguration when using this option on a server that accepts requests from remote users.\n\nAdditionally, aiohttp has always recommended using a reverse proxy server (such as nginx) to handle static resources and not to use these static resources in aiohttp for production environments. Doing so also protects against this vulnerability, and is why we expect the number of affected users to be very low.\n\nPatch: https://github.com/aio-libs/aiohttp/pull/8079/files",
+   "raw": "aiohttp is vulnerable to directory traversal\n\n### Summary\nImproperly configuring static resource resolution in aiohttp when used as a web server can result in the unauthorized reading of arbitrary files on the system.\n\n### Details\nWhen using aiohttp as a web server and configuring static routes, it is necessary to specify the root path for static files. Additionally, the option 'follow_symlinks' can be used to determine whether to follow symbolic links outside the static root directory. When 'follow_symlinks' is set to True, there is no validation to check if a given file path is within the root directory.This can lead to directory traversal vulnerabilities, resulting in unauthorized access to arbitrary files on the system, even when symlinks are not present.\n\ni.e. An application is only vulnerable with setup code like:\n```\napp.router.add_routes([\n    web.static(\"/static\", \"static/\", follow_symlinks=True),  # Remove follow_symlinks to avoid the vulnerability\n])\n```\n\n### Impact\nThis is a directory traversal vulnerability with CWE ID 22. When using aiohttp as a web server and enabling static resource resolution with `follow_symlinks` set to True, it can lead to this vulnerability. This vulnerability has been present since the introduction of the `follow_symlinks` parameter.\n\n### Workaround\nEven if upgrading to a patched version of aiohttp, we recommend following these steps regardless.\n\nIf using `follow_symlinks=True` outside of a restricted local development environment, disable the option immediately. This option is NOT needed to follow symlinks which point to a location _within_ the static root directory, it is _only_ intended to allow a symlink to break out of the static directory. Even with this CVE fixed, there is still a substantial risk of misconfiguration when using this option on a server that accepts requests from remote users.\n\nAdditionally, aiohttp has always recommended using a reverse proxy server (such as nginx) to handle static resources and _not_ to use these static resources in aiohttp for production environments. Doing so also protects against this vulnerability, and is why we expect the number of affected users to be very low.\n\n-----\n\nPatch: https://github.com/aio-libs/aiohttp/pull/8079/files",
+   "content_hash": "724b2df904aae70e2f105266e50d32792a4d6f05623d021c41897843d81286d5",
+   "preprocessing_version": "1",
+   "source_commit": "1912cbd6ce9d4cb141636adc4abafb4eb77a93e6",
+   "order": 0
+  },
+  "meta": {},
+  "created_at": "2026-10-20T04:37:10.852119Z",
+  "updated_at": "2026-10-20T04:37:10.931230Z",
+  "allow_skip": true,
+  "inner_id": 1,
+  "total_annotations": 1,
+  "cancelled_annotations": 0,
+  "total_predictions": 0,
+  "comment_count": 0,
+  "unresolved_comment_count": 0,
+  "last_comment_updated_at": null,
+  "project": 1,
+  "updated_by": 1,
+  "comment_authors": []
+ }
+]

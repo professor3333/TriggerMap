@@ -1,0 +1,1020 @@
+{
+  "corpus_sha256": "848c7441a80605533b68a21d5c3cd3165b212bdcc249b3e40f430f36db00a682",
+  "counts": {
+    "enriched": 50,
+    "random": 50
+  },
+  "items": [
+    {
+      "advisory_id": "GHSA-738x-v49g-p6hx",
+      "condition_score": 0,
+      "content_hash": "ac22c6506f134ba7c4ad1313a24707b6acb66512df8acced1c8574d39ddd9a7d",
+      "intended_use": "evaluation_candidate",
+      "order": 0,
+      "project_group": "GHSA-738x-v49g-p6hx",
+      "stratum": "random",
+      "words": 37
+    },
+    {
+      "advisory_id": "GHSA-7q5r-7gvp-wc82",
+      "condition_score": 6,
+      "content_hash": "939061f204f205dd571ce63d4770f6d4bf94d7de1455b7427e061e69d4e441e6",
+      "intended_use": "training",
+      "order": 1,
+      "project_group": "GHSA-3329-ghmp-jmv5",
+      "stratum": "enriched",
+      "words": 368
+    },
+    {
+      "advisory_id": "GHSA-ppvx-rwh9-7rj7",
+      "condition_score": 8,
+      "content_hash": "e73a02b326bb26d948e0a5a8fe63c0ad80b2c2c19820b2d44a4948b01e1c9611",
+      "intended_use": "training",
+      "order": 2,
+      "project_group": "GHSA-2wvg-62qm-gj33",
+      "stratum": "enriched",
+      "words": 673
+    },
+    {
+      "advisory_id": "GHSA-36p7-vc44-83pf",
+      "condition_score": 4,
+      "content_hash": "aa297047efad9a505353348e3b0cfa212e85ea72e4727ad3fd54811368ed1bea",
+      "intended_use": "training",
+      "order": 3,
+      "project_group": "GHSA-2wm9-hf6c-p5cr",
+      "stratum": "enriched",
+      "words": 51
+    },
+    {
+      "advisory_id": "GHSA-pm87-24wq-r8w9",
+      "condition_score": 6,
+      "content_hash": "942fbaf306ce939b5580a92026be043734e58f78979c379e3c0082fd85937a29",
+      "intended_use": "evaluation_candidate",
+      "order": 4,
+      "project_group": "GHSA-22hf-vx2v-gjff",
+      "stratum": "random",
+      "words": 176
+    },
+    {
+      "advisory_id": "GHSA-35jj-wx47-4w8r",
+      "condition_score": 4,
+      "content_hash": "0800f07398683222c5de502245efe63ce699f3e8eb28c82339bbaff8dc54a88c",
+      "intended_use": "evaluation_candidate",
+      "order": 5,
+      "project_group": "GHSA-35jj-wx47-4w8r",
+      "stratum": "random",
+      "words": 83
+    },
+    {
+      "advisory_id": "GHSA-cmjc-52fg-9f7j",
+      "condition_score": 1,
+      "content_hash": "c9f9ff2ca49ab73160c5f020dfed699c040bb029beea1ee763e5328a71140d40",
+      "intended_use": "evaluation_candidate",
+      "order": 6,
+      "project_group": "GHSA-299q-3p96-5898",
+      "stratum": "random",
+      "words": 37
+    },
+    {
+      "advisory_id": "GHSA-w578-j992-554x",
+      "condition_score": 3,
+      "content_hash": "2cb01371b9a5f03f7c2fd9e9f66e14889c7bca3f33948d9fb6e53da001689fe6",
+      "intended_use": "evaluation_candidate",
+      "order": 7,
+      "project_group": "GHSA-2pfh-q76x-gwvm",
+      "stratum": "random",
+      "words": 67
+    },
+    {
+      "advisory_id": "GHSA-jgpv-4h4c-xhw3",
+      "condition_score": 4,
+      "content_hash": "b7a7fda440483e09b3177a6cf9109a6d64d88289fbd160caa669e93544253226",
+      "intended_use": "evaluation_candidate",
+      "order": 8,
+      "project_group": "GHSA-3c5c-7235-994j",
+      "stratum": "random",
+      "words": 157
+    },
+    {
+      "advisory_id": "GHSA-jxcw-qp4h-6jfq",
+      "condition_score": 9,
+      "content_hash": "0132c2b68b926cf497b2698dbc27d046d0e7f8605fe380537b587877127a6c71",
+      "intended_use": "training",
+      "order": 9,
+      "project_group": "GHSA-22cj-m4wf-fv2c",
+      "stratum": "enriched",
+      "words": 796
+    },
+    {
+      "advisory_id": "GHSA-xx9p-xxvh-7g8j",
+      "condition_score": 5,
+      "content_hash": "65074dc6cf517b32d7b1e93bb9c76ad4f573add718d86b170c2279d7d8dc38fe",
+      "intended_use": "evaluation_candidate",
+      "order": 10,
+      "project_group": "GHSA-27mf-ghqm-j3j8",
+      "stratum": "random",
+      "words": 178
+    },
+    {
+      "advisory_id": "GHSA-3325-v43h-43rv",
+      "condition_score": 7,
+      "content_hash": "d59bdc4a35a62d6c0b005fad2e452fc60c3d4a8de6f1a177a981c5e75a7b7ddc",
+      "intended_use": "training",
+      "order": 11,
+      "project_group": "GHSA-29gw-9793-fvw7",
+      "stratum": "enriched",
+      "words": 778
+    },
+    {
+      "advisory_id": "GHSA-8v84-f9pq-wr9x",
+      "condition_score": 1,
+      "content_hash": "2e2264b6bda48457b51dc85246c6d379a6407b31e436366c762b4facaad02d3e",
+      "intended_use": "evaluation_candidate",
+      "order": 12,
+      "project_group": "GHSA-3c5c-7235-994j",
+      "stratum": "random",
+      "words": 704
+    },
+    {
+      "advisory_id": "GHSA-798h-hpph-m24j",
+      "condition_score": 8,
+      "content_hash": "3a295c649e1a224b1c7540a6de4aee41b46e00fe5cc9d9cdb40f7aecdae0bf01",
+      "intended_use": "training",
+      "order": 13,
+      "project_group": "GHSA-4jc5-g844-4x33",
+      "stratum": "enriched",
+      "words": 481
+    },
+    {
+      "advisory_id": "GHSA-7c78-rm87-5673",
+      "condition_score": 3,
+      "content_hash": "592075943d05f29d962744029b87631553a30a5c4b51a8e54518b0a253f89f4e",
+      "intended_use": "evaluation_candidate",
+      "order": 14,
+      "project_group": "GHSA-7c78-rm87-5673",
+      "stratum": "random",
+      "words": 224
+    },
+    {
+      "advisory_id": "GHSA-pqj8-xhcx-prxm",
+      "condition_score": 0,
+      "content_hash": "ac7afcd5c858534cc82dcac6c62a9554e6d7758be4152ff624bf98350be5ba39",
+      "intended_use": "evaluation_candidate",
+      "order": 15,
+      "project_group": "GHSA-pqj8-xhcx-prxm",
+      "stratum": "random",
+      "words": 27
+    },
+    {
+      "advisory_id": "GHSA-g2m8-f3x2-qprw",
+      "condition_score": 2,
+      "content_hash": "eee44983990b3183ed409ab35aa4cc01ae0e958d29e1e6f5798e82fd90eb252d",
+      "intended_use": "evaluation_candidate",
+      "order": 16,
+      "project_group": "GHSA-4fgp-7vvm-m4jf",
+      "stratum": "random",
+      "words": 61
+    },
+    {
+      "advisory_id": "GHSA-jwv3-5hgf-82ww",
+      "condition_score": 8,
+      "content_hash": "e50e04b672dd3f8318483b219fa80611ef8a8fca9540145755d75f7195f6fe60",
+      "intended_use": "training",
+      "order": 17,
+      "project_group": "GHSA-39hc-v87j-747x",
+      "stratum": "enriched",
+      "words": 760
+    },
+    {
+      "advisory_id": "GHSA-hvhp-v2gc-268q",
+      "condition_score": 6,
+      "content_hash": "548d9b059c52e24af031bcaed26afe67ab872f478d88244f28415fc58c60150b",
+      "intended_use": "training",
+      "order": 18,
+      "project_group": "GHSA-22cj-m4wf-fv2c",
+      "stratum": "enriched",
+      "words": 304
+    },
+    {
+      "advisory_id": "GHSA-hj89-qmx9-8qmh",
+      "condition_score": 4,
+      "content_hash": "4ed4023ac18c8c799d73d2a204a8f74d6ec24a76321940894abdfa2df4558313",
+      "intended_use": "evaluation_candidate",
+      "order": 19,
+      "project_group": "GHSA-22jm-4hxw-35jf",
+      "stratum": "random",
+      "words": 52
+    },
+    {
+      "advisory_id": "GHSA-8p8v-wh79-9r56",
+      "condition_score": 1,
+      "content_hash": "548a61378d0dc9a5d3449dc80b0f3739f8d35820404cb51e90f752f0a7e3b419",
+      "intended_use": "evaluation_candidate",
+      "order": 20,
+      "project_group": "GHSA-2655-q453-22f9",
+      "stratum": "random",
+      "words": 85
+    },
+    {
+      "advisory_id": "GHSA-xjv7-6w92-42r7",
+      "condition_score": 2,
+      "content_hash": "5f132ba9190ed8e3fa5d288ea562d133bea2714af111885566b07bb2f0cf641d",
+      "intended_use": "evaluation_candidate",
+      "order": 21,
+      "project_group": "GHSA-2679-6mx9-h9xc",
+      "stratum": "random",
+      "words": 332
+    },
+    {
+      "advisory_id": "GHSA-jxgr-gcj5-cqqg",
+      "condition_score": 0,
+      "content_hash": "8647179598268e0daa37a2662b09d0ef4367d0a8f684e6e95b659e9d709af3c4",
+      "intended_use": "evaluation_candidate",
+      "order": 22,
+      "project_group": "GHSA-56v6-2fhr-wxgq",
+      "stratum": "random",
+      "words": 243
+    },
+    {
+      "advisory_id": "GHSA-p893-rvq9-2xf9",
+      "condition_score": 5,
+      "content_hash": "4120b5b6dfa3d3ca467f82e0591d635871b73f784ce14d5a4138ea238a6c2ac0",
+      "intended_use": "training",
+      "order": 23,
+      "project_group": "GHSA-3r9x-f23j-gc73",
+      "stratum": "enriched",
+      "words": 303
+    },
+    {
+      "advisory_id": "GHSA-gmj6-6f8f-6699",
+      "condition_score": 4,
+      "content_hash": "c4f492503823b6345fc96a1d67a4b61db71b75bc49c367de8960f8016c354651",
+      "intended_use": "training",
+      "order": 24,
+      "project_group": "GHSA-462w-v97r-4m45",
+      "stratum": "enriched",
+      "words": 90
+    },
+    {
+      "advisory_id": "GHSA-c759-cx9p-mrwq",
+      "condition_score": 4,
+      "content_hash": "21ed9988fbda0ddba791d75b22217a7df83e0a5dc6c6667273cc0e6960e3fcab",
+      "intended_use": "training",
+      "order": 25,
+      "project_group": "GHSA-6x6h-qqr7-855w",
+      "stratum": "enriched",
+      "words": 174
+    },
+    {
+      "advisory_id": "GHSA-ggpf-24jw-3fcw",
+      "condition_score": 4,
+      "content_hash": "c40dc61a01db384617ead75acc19cec3f7cfb36ac92a1507bd81997336f13dd8",
+      "intended_use": "training",
+      "order": 26,
+      "project_group": "GHSA-2823-qmq8-rwvj",
+      "stratum": "enriched",
+      "words": 177
+    },
+    {
+      "advisory_id": "GHSA-crhf-3pfg-w68w",
+      "condition_score": 4,
+      "content_hash": "ce52e50ce109daabd00e667dbbc67fb82c013645c90efc435c56557df98f7fb3",
+      "intended_use": "training",
+      "order": 27,
+      "project_group": "GHSA-2655-q453-22f9",
+      "stratum": "enriched",
+      "words": 83
+    },
+    {
+      "advisory_id": "GHSA-wv4w-6qv2-qqfg",
+      "condition_score": 5,
+      "content_hash": "556c0f5b2d239e56f3e6890bac91a0036d1a68e4ef7e3fd72e8b06ac8deab9a8",
+      "intended_use": "evaluation_candidate",
+      "order": 28,
+      "project_group": "GHSA-2gr8-3wc7-xhj3",
+      "stratum": "random",
+      "words": 72
+    },
+    {
+      "advisory_id": "GHSA-cwvm-v4w8-q58c",
+      "condition_score": 4,
+      "content_hash": "e1730d47b52588e6812b7f0dfaa7eecff9b640ead784bf1c0b528f64245ce071",
+      "intended_use": "training",
+      "order": 29,
+      "project_group": "GHSA-239g-whfq-7xj9",
+      "stratum": "enriched",
+      "words": 271
+    },
+    {
+      "advisory_id": "GHSA-fcfq-m8p6-gw56",
+      "condition_score": 7,
+      "content_hash": "09edcf46d28efd202fd097b17c6235a05949ec103e21e0ca6fd7a1aebebdc8c8",
+      "intended_use": "training",
+      "order": 30,
+      "project_group": "GHSA-3p54-567p-2wpr",
+      "stratum": "enriched",
+      "words": 383
+    },
+    {
+      "advisory_id": "GHSA-4xqm-4p72-87h6",
+      "condition_score": 3,
+      "content_hash": "115f1f2d04198f19452806d50d756ce37cd2bbf61305721997d290d3f9d78fb6",
+      "intended_use": "evaluation_candidate",
+      "order": 31,
+      "project_group": "GHSA-444r-2whx-3685",
+      "stratum": "random",
+      "words": 123
+    },
+    {
+      "advisory_id": "GHSA-qmrf-jrpr-rjx6",
+      "condition_score": 4,
+      "content_hash": "1ef950f29f2e3402d3484ea056cc76e91f427d362919b5ed2bac10217421801f",
+      "intended_use": "training",
+      "order": 32,
+      "project_group": "GHSA-qmrf-jrpr-rjx6",
+      "stratum": "enriched",
+      "words": 109
+    },
+    {
+      "advisory_id": "GHSA-m2qf-hxjv-5gpq",
+      "condition_score": 7,
+      "content_hash": "a55ef2a378df75b7a2bd5499ba6aaeb624dc0e77f26c5eff9b92bd3a17e1eceb",
+      "intended_use": "evaluation_candidate",
+      "order": 33,
+      "project_group": "GHSA-4grg-w6v8-c28g",
+      "stratum": "random",
+      "words": 190
+    },
+    {
+      "advisory_id": "GHSA-f96h-pmfr-66vw",
+      "condition_score": 3,
+      "content_hash": "83964ffebd5d6edcae9dc2200824d8c8ac78a8e17f8e5854160cf09fa5e9f608",
+      "intended_use": "evaluation_candidate",
+      "order": 34,
+      "project_group": "GHSA-2c2j-9gv5-cj73",
+      "stratum": "random",
+      "words": 166
+    },
+    {
+      "advisory_id": "GHSA-533j-2v4q-mw5h",
+      "condition_score": 7,
+      "content_hash": "fe34cc436719269992a9832ae8fb6106dc4dbaca05571e4d66518351c143ccac",
+      "intended_use": "training",
+      "order": 35,
+      "project_group": "GHSA-533j-2v4q-mw5h",
+      "stratum": "enriched",
+      "words": 616
+    },
+    {
+      "advisory_id": "GHSA-7rgv-gqhr-fxg3",
+      "condition_score": 5,
+      "content_hash": "b748a416d631c0decab54bac92791e87c663442bc098b4909813e48481814e76",
+      "intended_use": "training",
+      "order": 36,
+      "project_group": "GHSA-389x-67px-mjg3",
+      "stratum": "enriched",
+      "words": 220
+    },
+    {
+      "advisory_id": "GHSA-58r7-4wr5-hfx8",
+      "condition_score": 10,
+      "content_hash": "abf95c514ed7fc920501bb267ee2e115e8c0cd92814565b79f63bf0c4c003bb6",
+      "intended_use": "training",
+      "order": 37,
+      "project_group": "GHSA-25g8-2mcf-fcx9",
+      "stratum": "enriched",
+      "words": 429
+    },
+    {
+      "advisory_id": "GHSA-5jq2-8x83-x246",
+      "condition_score": 4,
+      "content_hash": "7f039ccb6e172340b68bc9c2a9eb9985330a2c093db4d440d71fad9652fc2b9d",
+      "intended_use": "training",
+      "order": 38,
+      "project_group": "GHSA-23w6-3w8w-8484",
+      "stratum": "enriched",
+      "words": 64
+    },
+    {
+      "advisory_id": "GHSA-r7x6-xfcm-3mxv",
+      "condition_score": 0,
+      "content_hash": "8a820218350f9d08d736f2759848349cedc6c794a94f53f5e9e37fc3d6c0c949",
+      "intended_use": "evaluation_candidate",
+      "order": 39,
+      "project_group": "GHSA-22hf-vx2v-gjff",
+      "stratum": "random",
+      "words": 75
+    },
+    {
+      "advisory_id": "GHSA-x33v-f3gp-gw2c",
+      "condition_score": 0,
+      "content_hash": "cc7973fb67d436743798aaccd12ff507a045f8fe15961bcd0af1e588ff4bce62",
+      "intended_use": "evaluation_candidate",
+      "order": 40,
+      "project_group": "GHSA-8fvv-fgr5-f8ch",
+      "stratum": "random",
+      "words": 46
+    },
+    {
+      "advisory_id": "GHSA-gp3w-2v2m-p686",
+      "condition_score": 6,
+      "content_hash": "2e588690f248a3407de342ea2cc542fb821c804281d65b74dddd606fe44a3518",
+      "intended_use": "evaluation_candidate",
+      "order": 41,
+      "project_group": "GHSA-22wc-c9wj-6q2v",
+      "stratum": "random",
+      "words": 643
+    },
+    {
+      "advisory_id": "GHSA-g4mx-q9vg-27p4",
+      "condition_score": 7,
+      "content_hash": "7d9c34e998b8093fd892488eb1b5708ee99e669035040533b589ae2885a42104",
+      "intended_use": "training",
+      "order": 42,
+      "project_group": "GHSA-2xpw-w6gg-jr37",
+      "stratum": "enriched",
+      "words": 311
+    },
+    {
+      "advisory_id": "GHSA-5rv5-6h4r-h22v",
+      "condition_score": 5,
+      "content_hash": "118cd4f54e893c576c394674ccc9a628771cb9cf6b1ac6e922902b2c6f354bee",
+      "intended_use": "training",
+      "order": 43,
+      "project_group": "GHSA-5rv5-6h4r-h22v",
+      "stratum": "enriched",
+      "words": 195
+    },
+    {
+      "advisory_id": "GHSA-qjxf-f2mg-c6mc",
+      "condition_score": 6,
+      "content_hash": "aa9d896c5954eba07a40649825ec4c4c9adc1b8aa6b44d33f7a435058b78c880",
+      "intended_use": "training",
+      "order": 44,
+      "project_group": "GHSA-3hv7-mjh2-fv65",
+      "stratum": "enriched",
+      "words": 109
+    },
+    {
+      "advisory_id": "GHSA-p6hw-wm59-3g5g",
+      "condition_score": 8,
+      "content_hash": "682b16ab0452b331f22aea0363fcf152e2302a3662151ed7810c0a0c6f3af80f",
+      "intended_use": "training",
+      "order": 45,
+      "project_group": "GHSA-22p3-qrh9-cx32",
+      "stratum": "enriched",
+      "words": 462
+    },
+    {
+      "advisory_id": "GHSA-p944-4xh2-x776",
+      "condition_score": 5,
+      "content_hash": "04d37f5453d0befb208483439914ad3dc2f542394b23e3b9ae3d1858c82c4d53",
+      "intended_use": "training",
+      "order": 46,
+      "project_group": "GHSA-2j5p-7p5m-cvqr",
+      "stratum": "enriched",
+      "words": 339
+    },
+    {
+      "advisory_id": "GHSA-h5v5-8746-g7mm",
+      "condition_score": 4,
+      "content_hash": "5942de430b133d80669387558c196a63edc559e8f3afc651e02a15dc3ee237f4",
+      "intended_use": "evaluation_candidate",
+      "order": 47,
+      "project_group": "GHSA-29gw-9793-fvw7",
+      "stratum": "random",
+      "words": 166
+    },
+    {
+      "advisory_id": "GHSA-4r4c-66gf-g9g5",
+      "condition_score": 2,
+      "content_hash": "baac12f457849b84dd13e576b3f77e6f110b108ddb96b2e9e6d545f902cbf849",
+      "intended_use": "evaluation_candidate",
+      "order": 48,
+      "project_group": "GHSA-4r4c-66gf-g9g5",
+      "stratum": "random",
+      "words": 87
+    },
+    {
+      "advisory_id": "GHSA-67rv-mg8q-5pf3",
+      "condition_score": 3,
+      "content_hash": "ae2335929315a7c828a2ae591cf552f8b121b6a64af9a0425033f3f249b2a442",
+      "intended_use": "evaluation_candidate",
+      "order": 49,
+      "project_group": "GHSA-23m2-mghx-vqmf",
+      "stratum": "random",
+      "words": 136
+    },
+    {
+      "advisory_id": "GHSA-q9p7-wqxg-mrhc",
+      "condition_score": 5,
+      "content_hash": "a37023e047acf457db54d521d24c66c5b7f476978af0ea1090dbfe85cbd304f4",
+      "intended_use": "training",
+      "order": 50,
+      "project_group": "GHSA-22c2-9gwg-mj59",
+      "stratum": "enriched",
+      "words": 532
+    },
+    {
+      "advisory_id": "GHSA-v845-jxx5-vc9f",
+      "condition_score": 5,
+      "content_hash": "137c7d0758be9e4d95e9f097038c640da6b1eb83febd9194dd7685498a093734",
+      "intended_use": "evaluation_candidate",
+      "order": 51,
+      "project_group": "GHSA-2xpw-w6gg-jr37",
+      "stratum": "random",
+      "words": 204
+    },
+    {
+      "advisory_id": "GHSA-q95h-vc86-hv77",
+      "condition_score": 4,
+      "content_hash": "6cc6375062878c4c6cacdbf1b8ee389185ab66c2d252378a80855e90497fe8a9",
+      "intended_use": "evaluation_candidate",
+      "order": 52,
+      "project_group": "GHSA-q95h-vc86-hv77",
+      "stratum": "random",
+      "words": 75
+    },
+    {
+      "advisory_id": "GHSA-gwf7-vfjf-wf6x",
+      "condition_score": 0,
+      "content_hash": "6dcb585d26644f6ac322176a1d961cf09dab0bb9b31af2317034c26e17b42763",
+      "intended_use": "evaluation_candidate",
+      "order": 53,
+      "project_group": "GHSA-22p3-qrh9-cx32",
+      "stratum": "random",
+      "words": 42
+    },
+    {
+      "advisory_id": "GHSA-74vm-8frp-7w68",
+      "condition_score": 2,
+      "content_hash": "fda3458b5ccfe3962f09a2cdafee8100bd26d90bfdcaae89b7bba4ddcc8ed47a",
+      "intended_use": "evaluation_candidate",
+      "order": 54,
+      "project_group": "GHSA-74vm-8frp-7w68",
+      "stratum": "random",
+      "words": 114
+    },
+    {
+      "advisory_id": "GHSA-hjmq-236j-8m87",
+      "condition_score": 4,
+      "content_hash": "7fa3b06ec526c04db4f9fb8c595f17df5c8a8026080b9158f79cc44b4d8fbc4c",
+      "intended_use": "evaluation_candidate",
+      "order": 55,
+      "project_group": "GHSA-23hm-7w47-xw72",
+      "stratum": "random",
+      "words": 215
+    },
+    {
+      "advisory_id": "GHSA-32p4-gm2c-wmch",
+      "condition_score": 4,
+      "content_hash": "d5681bb6ba6bdb85e7471e96d71d21869d3d265c5588bf06d6a59ae6d9ea2cf0",
+      "intended_use": "training",
+      "order": 56,
+      "project_group": "GHSA-32p4-gm2c-wmch",
+      "stratum": "enriched",
+      "words": 80
+    },
+    {
+      "advisory_id": "GHSA-f49j-v924-fx9w",
+      "condition_score": 4,
+      "content_hash": "f1f7abf9faa9a3b09ef6923814d971178a8a074e2b277f0471d6f6000300b118",
+      "intended_use": "training",
+      "order": 57,
+      "project_group": "GHSA-cfw7-6c5v-2wjq",
+      "stratum": "enriched",
+      "words": 558
+    },
+    {
+      "advisory_id": "GHSA-pg36-wpm5-g57p",
+      "condition_score": 7,
+      "content_hash": "501fe9cbd8839de1911a85d3ae2ede65b4b426c023a2f6e6ff0ae7095394604e",
+      "intended_use": "training",
+      "order": 58,
+      "project_group": "GHSA-3f84-rpwh-47g6",
+      "stratum": "enriched",
+      "words": 370
+    },
+    {
+      "advisory_id": "GHSA-527m-2xhr-j27g",
+      "condition_score": 4,
+      "content_hash": "434f7ed0fdad4851c760c720da6b195e5afbf725414b1eb6fd6054c588da9d76",
+      "intended_use": "training",
+      "order": 59,
+      "project_group": "GHSA-527m-2xhr-j27g",
+      "stratum": "enriched",
+      "words": 520
+    },
+    {
+      "advisory_id": "GHSA-f8h2-c479-vqxf",
+      "condition_score": 3,
+      "content_hash": "7342570f55ae965b2799442df40c5b1984bfc98e49408639fb9e25638b8d83f5",
+      "intended_use": "evaluation_candidate",
+      "order": 60,
+      "project_group": "GHSA-4w5w-4fhm-q483",
+      "stratum": "random",
+      "words": 194
+    },
+    {
+      "advisory_id": "GHSA-p5w7-qmq6-pmjr",
+      "condition_score": 0,
+      "content_hash": "07d79151bd4436285d4f7f6a2747ae3c958a90642fc0edd4e73cbdbfeaede6e1",
+      "intended_use": "evaluation_candidate",
+      "order": 61,
+      "project_group": "GHSA-299q-3p96-5898",
+      "stratum": "random",
+      "words": 36
+    },
+    {
+      "advisory_id": "GHSA-qmgc-5h2g-mvrw",
+      "condition_score": 4,
+      "content_hash": "f6868a17496640f24b8174693ed2b499f8bb6e22199f3741ede6fb183313ca45",
+      "intended_use": "training",
+      "order": 62,
+      "project_group": "GHSA-qmgc-5h2g-mvrw",
+      "stratum": "enriched",
+      "words": 578
+    },
+    {
+      "advisory_id": "GHSA-2gr8-3wc7-xhj3",
+      "condition_score": 0,
+      "content_hash": "21a6df9a258aa4031e9e991ac1233c289c344a4d68fa5578090de8bc51dc78da",
+      "intended_use": "evaluation_candidate",
+      "order": 63,
+      "project_group": "GHSA-2gr8-3wc7-xhj3",
+      "stratum": "random",
+      "words": 82
+    },
+    {
+      "advisory_id": "GHSA-crvm-xjhm-9h29",
+      "condition_score": 6,
+      "content_hash": "ec73c70e6799c515a5489d487737ecfb61c455159e727051e97b4a1d740ab922",
+      "intended_use": "training",
+      "order": 64,
+      "project_group": "GHSA-2p75-q37p-f852",
+      "stratum": "enriched",
+      "words": 183
+    },
+    {
+      "advisory_id": "GHSA-3vgw-585j-4m45",
+      "condition_score": 0,
+      "content_hash": "f333a82a0d61169442354d75886fbf48fa8e4d18360657f59419cb4016ebda9c",
+      "intended_use": "evaluation_candidate",
+      "order": 65,
+      "project_group": "GHSA-3mp7-vp6j-2mxx",
+      "stratum": "random",
+      "words": 85
+    },
+    {
+      "advisory_id": "GHSA-v5gj-fx3g-hcpw",
+      "condition_score": 5,
+      "content_hash": "1559295b64cf78e1f0e635b56f33c29a4c74b35581c4cd0f69592824b21eeea4",
+      "intended_use": "training",
+      "order": 66,
+      "project_group": "GHSA-6q97-8v3g-rpxw",
+      "stratum": "enriched",
+      "words": 110
+    },
+    {
+      "advisory_id": "GHSA-4vqc-wpwg-vh7j",
+      "condition_score": 5,
+      "content_hash": "283a380c639627b31cc9ac6bbfcc8bd7df29b6ba518f57dabc1ea99933ac2d1f",
+      "intended_use": "training",
+      "order": 67,
+      "project_group": "GHSA-4vqc-wpwg-vh7j",
+      "stratum": "enriched",
+      "words": 282
+    },
+    {
+      "advisory_id": "GHSA-w2cx-738m-mc7w",
+      "condition_score": 6,
+      "content_hash": "db891f6e0d45d14f7235210e6a548a43688b466713d43d06088b6b7776c77283",
+      "intended_use": "training",
+      "order": 68,
+      "project_group": "GHSA-2gx3-rcp4-g85q",
+      "stratum": "enriched",
+      "words": 356
+    },
+    {
+      "advisory_id": "GHSA-33r8-vrx9-rmcv",
+      "condition_score": 0,
+      "content_hash": "f7a8c84c453960559b92693a9ea252626a13ee728358e3ecaefa5fe3c8519a31",
+      "intended_use": "evaluation_candidate",
+      "order": 69,
+      "project_group": "GHSA-33r8-vrx9-rmcv",
+      "stratum": "random",
+      "words": 43
+    },
+    {
+      "advisory_id": "GHSA-v8mc-9377-rwjj",
+      "condition_score": 8,
+      "content_hash": "978ce319e6d0afc1083d9b961cef2940bda18fad614217310bc5be9679ccdaad",
+      "intended_use": "training",
+      "order": 70,
+      "project_group": "GHSA-3ch3-jhc6-5r8x",
+      "stratum": "enriched",
+      "words": 482
+    },
+    {
+      "advisory_id": "GHSA-4v9f-r55g-g6hc",
+      "condition_score": 0,
+      "content_hash": "5338cd262c97f676d162973ebfc159c8fd9e767ed62a635b1e76304ede691a26",
+      "intended_use": "evaluation_candidate",
+      "order": 71,
+      "project_group": "GHSA-4hh5-2678-83fx",
+      "stratum": "random",
+      "words": 49
+    },
+    {
+      "advisory_id": "GHSA-rcmw-7mc7-3rj7",
+      "condition_score": 6,
+      "content_hash": "b9b037bcb6ab4e39f729a23e2069079317cc7cd90b4176a5eb366d0b0e69f85a",
+      "intended_use": "training",
+      "order": 72,
+      "project_group": "GHSA-444r-2whx-3685",
+      "stratum": "enriched",
+      "words": 239
+    },
+    {
+      "advisory_id": "GHSA-49jv-37hm-6gfp",
+      "condition_score": 4,
+      "content_hash": "2ba812b156f49dff2f3acf1f49b5d925c206ca0f516b3bfc86eaf84ad353fc29",
+      "intended_use": "training",
+      "order": 73,
+      "project_group": "GHSA-22jm-4hxw-35jf",
+      "stratum": "enriched",
+      "words": 51
+    },
+    {
+      "advisory_id": "GHSA-86cj-95qr-2p4f",
+      "condition_score": 4,
+      "content_hash": "7ef3b42211844be238ad6667ca80e960e624e165ca81a4556c36b5d36b0c077c",
+      "intended_use": "training",
+      "order": 74,
+      "project_group": "GHSA-3329-ghmp-jmv5",
+      "stratum": "enriched",
+      "words": 173
+    },
+    {
+      "advisory_id": "GHSA-4c3c-r6p8-c863",
+      "condition_score": 6,
+      "content_hash": "da2916df434727b50418247614d726a42db8a5ae4d437de7e7ecf4e5cbde2f13",
+      "intended_use": "training",
+      "order": 75,
+      "project_group": "GHSA-4c3c-r6p8-c863",
+      "stratum": "enriched",
+      "words": 327
+    },
+    {
+      "advisory_id": "GHSA-rpw8-82v9-3q87",
+      "condition_score": 7,
+      "content_hash": "eeea9cc2c59b5a29fe705e6b1ee1bd30c2d6c47e491726c966f9428396bed189",
+      "intended_use": "evaluation_candidate",
+      "order": 76,
+      "project_group": "GHSA-2h46-8gf5-fmxv",
+      "stratum": "random",
+      "words": 414
+    },
+    {
+      "advisory_id": "GHSA-j6f7-hghw-g437",
+      "condition_score": 0,
+      "content_hash": "ddf3fe964973bb9c1bf758c439cadac7c5796b8f110ca9716483d218aa5404f6",
+      "intended_use": "evaluation_candidate",
+      "order": 77,
+      "project_group": "GHSA-873q-wpqr-xfgw",
+      "stratum": "random",
+      "words": 39
+    },
+    {
+      "advisory_id": "GHSA-r8j9-5cj7-cv39",
+      "condition_score": 0,
+      "content_hash": "c5ce25c5516e2b08327354a472e118f50534dc8e3bc1c0a3cf32fa1efd13e42f",
+      "intended_use": "evaluation_candidate",
+      "order": 78,
+      "project_group": "GHSA-r8j9-5cj7-cv39",
+      "stratum": "random",
+      "words": 161
+    },
+    {
+      "advisory_id": "GHSA-8r99-h8j2-rw64",
+      "condition_score": 8,
+      "content_hash": "8b10e60671cfc84afceb3b5ab337c7d059a73800c98a54f8656eb50c53c9c6fc",
+      "intended_use": "training",
+      "order": 79,
+      "project_group": "GHSA-32gv-6cf3-wcmq",
+      "stratum": "enriched",
+      "words": 193
+    },
+    {
+      "advisory_id": "GHSA-p433-9wv8-28xj",
+      "condition_score": 7,
+      "content_hash": "ce973eecac6496274843b1468529e4447895819c9441623617264a7247858142",
+      "intended_use": "training",
+      "order": 80,
+      "project_group": "GHSA-3r9x-f23j-gc73",
+      "stratum": "enriched",
+      "words": 699
+    },
+    {
+      "advisory_id": "GHSA-xjpw-hx47-rccv",
+      "condition_score": 1,
+      "content_hash": "c68e7feb1ae1d7d868e9d2e7fea73947be29417302427b2bb4b6e550797ccbcc",
+      "intended_use": "evaluation_candidate",
+      "order": 81,
+      "project_group": "GHSA-275c-w5mq-v5m2",
+      "stratum": "random",
+      "words": 25
+    },
+    {
+      "advisory_id": "GHSA-4v28-j6q3-5m4r",
+      "condition_score": 4,
+      "content_hash": "a7ae1fceac5ba00ec0ffa6747e74d68bf0941febab057783e34781e7ab17106f",
+      "intended_use": "training",
+      "order": 82,
+      "project_group": "GHSA-226f-f24g-524w",
+      "stratum": "enriched",
+      "words": 700
+    },
+    {
+      "advisory_id": "GHSA-jf2p-4gqj-849g",
+      "condition_score": 6,
+      "content_hash": "9465a9358c896589b0d9d959c1ecbf9cf4cc04bfeebba07f7fa2ddef5cc2c625",
+      "intended_use": "training",
+      "order": 83,
+      "project_group": "GHSA-5vvx-3h34-f3gj",
+      "stratum": "enriched",
+      "words": 155
+    },
+    {
+      "advisory_id": "GHSA-vf5m-xrhm-v999",
+      "condition_score": 5,
+      "content_hash": "ee0e9561758ef0671faca352de5f702cadd2bd5fb959c2f3be5f92459cbeb546",
+      "intended_use": "evaluation_candidate",
+      "order": 84,
+      "project_group": "GHSA-56v6-2fhr-wxgq",
+      "stratum": "random",
+      "words": 300
+    },
+    {
+      "advisory_id": "GHSA-mqph-7h49-hqfm",
+      "condition_score": 1,
+      "content_hash": "4d6936d995242ae040d2dc16ea701ca2a8ec4772d98a2ebe0fadc0448adcccbf",
+      "intended_use": "evaluation_candidate",
+      "order": 85,
+      "project_group": "GHSA-2p9g-x3cv-5hh4",
+      "stratum": "random",
+      "words": 55
+    },
+    {
+      "advisory_id": "GHSA-wphv-vfrh-23q5",
+      "condition_score": 7,
+      "content_hash": "66659b84f3c6111f71a6bdc9cfd0adb43644df0a3b0202793ead9ea1682935ca",
+      "intended_use": "training",
+      "order": 86,
+      "project_group": "GHSA-frfh-8v73-gjg4",
+      "stratum": "enriched",
+      "words": 783
+    },
+    {
+      "advisory_id": "GHSA-vmjw-c2vp-p33c",
+      "condition_score": 3,
+      "content_hash": "f944b61d98918becb2b92cb2ffa98c84f0cf3146f4a6e7b4ab22c6928ea26cd3",
+      "intended_use": "evaluation_candidate",
+      "order": 87,
+      "project_group": "GHSA-23hm-7w47-xw72",
+      "stratum": "random",
+      "words": 219
+    },
+    {
+      "advisory_id": "GHSA-w2pm-x38x-jp44",
+      "condition_score": 5,
+      "content_hash": "bf3050b06e04045c62d226681ce58fefe7ff07b3b0e71b0ce133f9c91b613fb6",
+      "intended_use": "evaluation_candidate",
+      "order": 88,
+      "project_group": "GHSA-33xw-247w-6hmc",
+      "stratum": "random",
+      "words": 553
+    },
+    {
+      "advisory_id": "GHSA-79f6-p65j-3m2m",
+      "condition_score": 2,
+      "content_hash": "c3c463430cd2848839e969227666a65aeeb3aac23abb4c538d63ec0a93f5b3df",
+      "intended_use": "evaluation_candidate",
+      "order": 89,
+      "project_group": "GHSA-3p54-567p-2wpr",
+      "stratum": "random",
+      "words": 224
+    },
+    {
+      "advisory_id": "GHSA-g3jr-4jrm-jvqv",
+      "condition_score": 3,
+      "content_hash": "094c2dc0d8e3cccd7b84637e8410e60c39e0e0887265164f87feb4cf8dc2c61e",
+      "intended_use": "evaluation_candidate",
+      "order": 90,
+      "project_group": "GHSA-g3jr-4jrm-jvqv",
+      "stratum": "random",
+      "words": 87
+    },
+    {
+      "advisory_id": "GHSA-258h-f687-4226",
+      "condition_score": 3,
+      "content_hash": "1107a409db71ca84d4c472dd7bd0bdf7c4e52e003e6b6bdff90e55146b495bf8",
+      "intended_use": "evaluation_candidate",
+      "order": 91,
+      "project_group": "GHSA-258h-f687-4226",
+      "stratum": "random",
+      "words": 140
+    },
+    {
+      "advisory_id": "GHSA-2hvh-cw5c-8q8q",
+      "condition_score": 5,
+      "content_hash": "e59a60835e73f7a2264f2e467767f9a56f13b732bd213038bc637d00b3e73cd9",
+      "intended_use": "training",
+      "order": 92,
+      "project_group": "GHSA-2hvh-cw5c-8q8q",
+      "stratum": "enriched",
+      "words": 75
+    },
+    {
+      "advisory_id": "GHSA-xq58-69h2-765m",
+      "condition_score": 1,
+      "content_hash": "85920003ec2c045ff33078493011e2b0af7d677a5db98d9d319b27b30e2b5386",
+      "intended_use": "evaluation_candidate",
+      "order": 93,
+      "project_group": "GHSA-2jg5-xgvv-4wq7",
+      "stratum": "random",
+      "words": 39
+    },
+    {
+      "advisory_id": "GHSA-v34v-rq6j-cj6p",
+      "condition_score": 7,
+      "content_hash": "e666fd59e916080c20d1369f753452caa72fbf8533637b1252cec2a1c74aa9dd",
+      "intended_use": "training",
+      "order": 94,
+      "project_group": "GHSA-2g6r-c272-w58r",
+      "stratum": "enriched",
+      "words": 304
+    },
+    {
+      "advisory_id": "GHSA-3x8w-4f7p-xxc2",
+      "condition_score": 6,
+      "content_hash": "6c9f8e590b2afc5c54650cfff6963c61c0e4647721f047c90fcfadf308bef8f4",
+      "intended_use": "training",
+      "order": 95,
+      "project_group": "GHSA-226f-f24g-524w",
+      "stratum": "enriched",
+      "words": 578
+    },
+    {
+      "advisory_id": "GHSA-grg2-63fw-f2qr",
+      "condition_score": 5,
+      "content_hash": "86bd59f082d8afc74688c2cf197afb89cc952179887709c87ec2fb144d5a17df",
+      "intended_use": "training",
+      "order": 96,
+      "project_group": "GHSA-2823-qmq8-rwvj",
+      "stratum": "enriched",
+      "words": 294
+    },
+    {
+      "advisory_id": "GHSA-7q62-r88r-j5gw",
+      "condition_score": 6,
+      "content_hash": "93baeb09fa54333d90fb36befc1317af8c1fe27b9222a4d501a3ac9ff44ecf81",
+      "intended_use": "training",
+      "order": 97,
+      "project_group": "GHSA-2h46-8gf5-fmxv",
+      "stratum": "enriched",
+      "words": 344
+    },
+    {
+      "advisory_id": "GHSA-fh55-r93g-j68g",
+      "condition_score": 2,
+      "content_hash": "111c2f9afea17906319668c4501e32ce61e1000428cd5ea91976fe4736249d3d",
+      "intended_use": "evaluation_candidate",
+      "order": 98,
+      "project_group": "GHSA-27mf-ghqm-j3j8",
+      "stratum": "random",
+      "words": 52
+    },
+    {
+      "advisory_id": "GHSA-2g6r-c272-w58r",
+      "condition_score": 5,
+      "content_hash": "9236e1f4971d0e55d195e471a287f279a3b6e7af04810c0d646cdccbc11a576f",
+      "intended_use": "evaluation_candidate",
+      "order": 99,
+      "project_group": "GHSA-2g6r-c272-w58r",
+      "stratum": "random",
+      "words": 332
+    }
+  ],
+  "params": {
+    "enriched_max_words": 800,
+    "enriched_quantile": 0.75,
+    "n_enriched": 50,
+    "n_random": 50,
+    "per_project_cap": 2,
+    "seed": 20261020
+  },
+  "preprocessing_version": "1",
+  "sample_version": "pilot-1",
+  "source_commit": "1912cbd6ce9d4cb141636adc4abafb4eb77a93e6"
+}
