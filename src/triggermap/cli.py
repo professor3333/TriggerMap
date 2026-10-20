@@ -15,6 +15,7 @@ DEFAULT_PROCESSED = Path("data/processed")
 DEFAULT_MANIFEST = Path("data/manifests/snapshot.json")
 DEFAULT_PILOT = Path("annotations/pilot/pilot_manifest.json")
 DEFAULT_SPLIT = Path("splits/pool-v1.json")
+DEFAULT_POLICY = Path("configs/review_policy.yaml")
 TEST_ACCESS_LOG = Path("docs/test-access-log.md")
 
 
@@ -330,6 +331,81 @@ def _experiment(args: argparse.Namespace) -> int:
     return 0
 
 
+def _calibrate(args: argparse.Namespace) -> int:
+    from triggermap.corpus.splits import load_split, select
+    from triggermap.eval.calibration import (
+        calibration_split,
+        choose_threshold,
+        expected_calibration_error,
+        fit,
+        precision_interval,
+    )
+    from triggermap.eval.metrics import collect
+    from triggermap.eval.runner import check_alignment, load_gold_files, load_predictions
+    from triggermap.serve.policy import ReviewPolicy, save_policy
+
+    gold = load_gold_files(args.gold)
+    pred = load_predictions(args.pred)
+    check_alignment(gold, pred)
+    split = load_split(args.split_manifest)
+    dev = select(sorted(gold), split, "dev")
+    calib_ids, held_ids = calibration_split(dev, split["group_of"], seed=args.seed)
+    if not calib_ids or not held_ids:
+        raise SystemExit("need gold dev documents in both calibration halves")
+    per_doc = {d.advisory_id: d.scored for d in collect({a: gold[a] for a in dev}, pred)}
+    gold_total = {a: len(gold[a].conditions) for a in dev}
+    calib = [s for a in calib_ids for s in per_doc[a]]
+    calibrator = fit(args.method, calib)
+
+    def calibrated(ids: list[str]) -> dict[str, list[tuple[float, bool]]]:
+        return {a: [(calibrator(p), ok) for p, ok in per_doc[a]] for a in ids}
+
+    calib_cal, held_cal = calibrated(calib_ids), calibrated(held_ids)
+    choice = choose_threshold(
+        [s for v in calib_cal.values() for s in v],
+        sum(gold_total[a] for a in calib_ids),
+        args.target_precision,
+    )
+    held_scored = [s for v in held_cal.values() for s in v]
+    measured: dict[str, Any] = {
+        "calibration_documents": len(calib_ids),
+        "held_out_documents": len(held_ids),
+        "ece_raw_held_out": round(
+            expected_calibration_error([s for a in held_ids for s in per_doc[a]]), 4
+        ),
+        "ece_calibrated_held_out": round(expected_calibration_error(held_scored), 4),
+    }
+    threshold = None
+    if choice is not None:
+        threshold = round(choice.threshold, 4)
+        kept = [ok for p, ok in held_scored if p >= threshold]
+        low, high = precision_interval(held_cal, threshold, split["group_of"])
+        measured.update(
+            {
+                "calibration_coverage": round(choice.coverage, 4),
+                "calibration_precision": round(choice.precision, 4),
+                "held_out_coverage": round(len(kept) / len(held_scored), 4) if held_scored else 0,
+                "held_out_precision": round(sum(kept) / len(kept), 4) if kept else None,
+                "held_out_precision_ci95": [round(low, 4), round(high, 4)],
+                "meets_min_coverage": choice.coverage >= args.min_coverage,
+            }
+        )
+    model_ids = sorted({p.model_id for p in pred.values()})
+    policy = ReviewPolicy(
+        version=args.version,
+        model_id=",".join(model_ids),
+        calibration=calibrator.to_dict(),
+        accept_threshold=threshold,
+        target_precision=args.target_precision,
+        min_coverage=args.min_coverage,
+        measured=measured,
+    )
+    save_policy(policy, args.out)
+    print(json.dumps(measured, indent=2))
+    print(f"wrote {args.out} (accept threshold {threshold})")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -346,11 +422,16 @@ def _predict(args: argparse.Namespace) -> int:
         extractor = load_extractor(args.model, args.model_dir)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
+    from triggermap.serve.policy import apply_policy, load_policy
+
+    policy = load_policy(args.review_policy) if args.review_policy else None
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as fh:
         for aid in ids:
             doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
             extraction = extractor.extract(doc, aid)
+            if policy is not None:
+                extraction = apply_policy(extraction, doc, policy)
             issues = validate_annotation(extraction, doc.text)
             if issues:
                 raise RuntimeError(f"{aid}: invalid prediction {issues}")
@@ -385,6 +466,10 @@ def _view(args: argparse.Namespace) -> int:
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     extraction = extractor.extract(doc, advisory_id)
+    if args.review_policy and args.review_policy.exists():
+        from triggermap.serve.policy import apply_policy, load_policy
+
+        extraction = apply_policy(extraction, doc, load_policy(args.review_policy))
     html = render_review(doc, extraction, title=title, source_url=source_url, packages=packages)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(html, encoding="utf-8")
@@ -497,6 +582,7 @@ def build_parser() -> argparse.ArgumentParser:
     predict.add_argument(
         "--use", choices=["all", "training", "evaluation_candidate"], default="all"
     )
+    predict.add_argument("--review-policy", type=Path, help="apply calibration and review flags")
     predict.add_argument("--out", type=Path, required=True)
     predict.set_defaults(handler=_predict)
 
@@ -511,6 +597,18 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
     train.add_argument("--seed", type=int, help="overrides the config seed")
     train.set_defaults(handler=_train)
+
+    calibrate = commands.add_parser("calibrate", help="fit calibration and review thresholds")
+    calibrate.add_argument("--gold", type=Path, nargs="+", required=True)
+    calibrate.add_argument("--pred", type=Path, required=True, help="predictions covering dev")
+    calibrate.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    calibrate.add_argument("--method", choices=["platt", "isotonic", "identity"], default="platt")
+    calibrate.add_argument("--target-precision", type=float, default=0.95)
+    calibrate.add_argument("--min-coverage", type=float, default=0.5)
+    calibrate.add_argument("--version", default="review-policy-1")
+    calibrate.add_argument("--seed", type=int, default=0)
+    calibrate.add_argument("--out", type=Path, default=DEFAULT_POLICY)
+    calibrate.set_defaults(handler=_calibrate)
 
     experiment = commands.add_parser("experiment", help="run a grid of transformer trainings")
     experiment.add_argument("--config", type=Path, required=True)
@@ -530,6 +628,7 @@ def build_parser() -> argparse.ArgumentParser:
     view.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
     view.add_argument("--model-dir", type=Path)
     view.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    view.add_argument("--review-policy", type=Path, default=DEFAULT_POLICY)
     view.add_argument("--out", type=Path, required=True)
     view.set_defaults(handler=_view)
     return parser

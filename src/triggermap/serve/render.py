@@ -70,6 +70,7 @@ class Item:
     question: str
     confidence: float | None
     flagged: bool
+    reasons: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -121,7 +122,14 @@ def _nodes(blocks: list[RenderedBlock]) -> list[Node]:
 
 
 def _sections(doc: PreprocessedDocument, extraction: Extraction) -> list[Section]:
-    flagged = {flag.split(":", 1)[1] for flag in extraction.review_flags if ":" in flag}
+    flagged = {
+        flag.split(":")[1] for flag in extraction.review_flags if flag.startswith("low_confidence:")
+    }
+    reasons: dict[str, list[str]] = {}
+    for flag in extraction.review_flags:
+        parts = flag.split(":")
+        if parts[0] == "review_required" and len(parts) == 3:
+            reasons.setdefault(parts[1], []).append(parts[2].replace("_", " "))
     items = {
         c.id: Item(
             c.id,
@@ -131,6 +139,7 @@ def _sections(doc: PreprocessedDocument, extraction: Extraction) -> list[Section
             CATEGORY_QUESTIONS[c.category],
             c.confidence,
             c.id in flagged,
+            tuple(reasons.get(c.id, ())),
         )
         for c in extraction.conditions
     }

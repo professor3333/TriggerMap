@@ -150,9 +150,11 @@
               <span class="chip {{ item.category | lower }}">{{ item.category }}</span>
               {% if section.operator %}<span class="question">{{ item.role | replace("_", " ") | lower }}</span>{% endif %}
               {% if item.flagged %}<span class="flag">low confidence</span>{% endif %}
+              {% if item.reasons %}<span class="flag" title="{{ item.reasons | join(', ') }}">review required</span>{% endif %}
             </div>
             <div class="surface">{{ item.surface }}</div>
             <div class="question">{{ item.question }}</div>
+            {% if item.reasons %}<div class="question">Review: {{ item.reasons | join(", ") }}</div>{% endif %}
             <div class="answers" role="radiogroup" aria-label="Answer for {{ item.id }}">
               {% for value, label in [("PRESENT", "Present"), ("ABSENT", "Absent"), ("UNKNOWN", "Unknown")] %}
               <label><input type="radio" name="answer-{{ item.id }}" value="{{ value }}"><span>{{ label }}</span></label>
