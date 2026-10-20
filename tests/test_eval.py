@@ -192,3 +192,16 @@ def test_test_split_is_locked_and_logged(scored, tmp_path: Path, monkeypatch) ->
     assert "v0.1 release" in log and "test" in log
     assert main([*base, "--split", "dev"]) == 0
     assert "Documents: 1 " in (tmp_path / "r.md").read_text()
+
+
+def test_multiple_gold_files_merge_and_reject_duplicates(scored, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    from triggermap.eval.runner import load_gold_files
+
+    gold_docs, _ = scored
+    records = list(gold_docs.values())
+    first, second = tmp_path / "a.jsonl", tmp_path / "b.jsonl"
+    first.write_text(records[0].model_dump_json() + "\n")
+    second.write_text("".join(r.model_dump_json() + "\n" for r in records[1:]))
+    assert set(load_gold_files([first, second])) == set(gold_docs)
+    with pytest.raises(ValueError, match="more than one gold file"):
+        load_gold_files([first, first])

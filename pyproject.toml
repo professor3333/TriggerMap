@@ -22,6 +22,14 @@ baselines = [
     "scikit-learn>=1.9,<1.10",
     "spacy>=3.8.16,<3.9",
 ]
+neural = [
+    "mlflow-skinny>=3.17,<3.18",
+    "protobuf>=5",
+    "safetensors>=0.8,<0.9",
+    "sentencepiece>=0.2",
+    "torch>=2.14,<2.15",
+    "transformers>=5.18,<5.19",
+]
 
 [dependency-groups]
 dev = [
@@ -61,8 +69,19 @@ markers = [
 ]
 
 [tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [[tool.mypy.overrides]]
-module = ["pycrfsuite", "sklearn.*", "joblib"]
+module = ["pycrfsuite", "sklearn.*", "joblib", "mlflow", "mlflow.*", "safetensors.*"]
 ignore_missing_imports = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.mypy.overrides]]
+# torch and transformers expose some untyped functions (backward, schedulers, from_config).
+module = ["triggermap.models.transformer.*"]
+disallow_untyped_calls = false

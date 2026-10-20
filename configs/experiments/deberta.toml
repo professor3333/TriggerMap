@@ -1,0 +1,26 @@
+# DeBERTa-v3-small (MIT), identical supervision to DistilBERT.
+# About 44M backbone + 98M embedding parameters: budget memory for the full model.
+
+[train]
+model_id = "deberta-1"
+base_model = "microsoft/deberta-v3-small"
+revision = "a36c739020e01763fe789b4b85e2df55d6180012"
+max_length = 512
+stride = 64
+context_tokens = 48
+use_context = true
+group_loss_weight = 1.0
+learning_rate = 5e-5
+epochs = 6
+batch_size = 8
+gradient_accumulation = 2
+warmup_ratio = 0.1
+weight_decay = 0.01
+patience = 2
+seed = 0
+device = "auto"
+mlflow_experiment = "triggermap"
+
+[grid]
+learning_rate = [2e-5, 5e-5]
+seed = [0, 1, 2]

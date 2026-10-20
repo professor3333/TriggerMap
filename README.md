@@ -10,7 +10,7 @@
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-f59e0b)](annotations/README.md)
 ![mypy strict](https://img.shields.io/badge/types-mypy%20strict-2563eb)
 ![ruff](https://img.shields.io/badge/lint-ruff-d7ff64?logo=ruff&logoColor=black)
-![Status](https://img.shields.io/badge/status-phase%202%20%C2%B7%20baselines%20built-8b5cf6)
+![Status](https://img.shields.io/badge/status-phase%203%20%C2%B7%20training%20ready-8b5cf6)
 
 **Read the advisory. Get the conditions. Check them against your deployment.**
 
@@ -56,8 +56,8 @@ flowchart LR
     classDef progress fill:#fef9c3,stroke:#ca8a04,color:#713f12
     classDef planned fill:#f1f5f9,stroke:#94a3b8,color:#334155,stroke-dasharray:4 3
     class A,B,J done
-    class C,E,F,K,L progress
-    class D,G,H,I,M,N planned
+    class C,D,E,F,K,L progress
+    class G,H,I,M,N planned
 ```
 
 <sub>🟩 built · 🟨 in progress · ⬜ planned. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
@@ -156,7 +156,7 @@ item can be highlighted in the original advisory.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot annotation, guideline revision, decision gate | 🟨 in progress |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
-| 3 · Neural models | Scaled annotation, frozen splits, DistilBERT and DeBERTa-v3 with span / role / group heads | ⏳ |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Group logic, calibration, negation and scope challenge set, error catalogue | ⏳ |
 | 5 · Application | FastAPI, review UI, SQLite storage, JSON/Markdown export, Docker, CI/CD | ⏳ |
 | 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
@@ -203,6 +203,21 @@ uv run triggermap predict --model crf --model-dir artifacts/crf-1 --out data/pre
 uv run triggermap evaluate annotations/pilot/pilot-1.jsonl data/predictions/crf-1.jsonl --out reports/crf-1.md
 ```
 
+**Transformers** (once gold labels exist; DistilBERT, DeBERTa-v3-small; GPU recommended, see
+[`docs/training_on_gpu.md`](docs/training_on_gpu.md)):
+
+```bash
+uv sync --extra neural
+uv run triggermap experiment --config configs/experiments/deberta.toml --dry-run      # planned runs
+uv run triggermap experiment --config configs/experiments/deberta.toml \
+    --gold annotations/pilot/pilot-1.jsonl annotations/batches/batch-0*.jsonl          # lr x seed grid
+uv run triggermap predict --model transformer --model-dir artifacts/experiments/<run> --out preds.jsonl
+```
+
+Each run records the pinned base-checkpoint revision, the training-data and split hashes,
+hyperparameters, seed, per-epoch dev metrics, training time and peak GPU memory (and logs
+them to MLflow). Reports carry leakage-group bootstrap intervals and mean ± SD across seeds.
+
 **Annotate** with [Label Studio](https://labelstud.io/):
 
 ```bash
@@ -227,6 +242,24 @@ these come with document- or project-clustered bootstrap confidence intervals.
 "No explicit conditions found" is never treated as "not affected": TriggerMap supports review,
 it does not decide whether a deployment is vulnerable.
 
+## Data splits
+
+Every advisory is assigned to a **train, dev or test pool before scaled annotation**, so
+labels can never leak across splits. Advisories sharing a package, an upstream repository,
+an alias, or identical or near-identical text (MinHash, Jaccard ≥ 0.6) always land in the
+same pool. Test holds the **newest project groups**, so test scores measure temporal and
+project shift. Training code reads only the train pool. Evaluating on test requires an
+explicit `--release-evaluation` reason, and every such run is logged.
+
+| Pool | Advisories | Project groups | Published |
+|---|---:|---:|---|
+| train | 2,450 | 347 | 2018 → 2026 |
+| dev | 2,703 | 423 | 2018 → 2026 |
+| test | 1,197 | 558 | 2024-04 → 2026 |
+
+Details: [`docs/splits.md`](docs/splits.md) · annotation batches:
+[`docs/annotation_plan.md`](docs/annotation_plan.md).
+
 ## Corpus at a glance
 
 Snapshot `1912cbd6` of the GitHub Advisory Database, reviewed advisories only:
@@ -245,13 +278,15 @@ src/triggermap/
 ├── schema/      label inventory (single source of truth) + deterministic validator
 ├── text/        Markdown → canonical text with offset map, segmentation, shared entry point
 ├── ingest/      pinned snapshot, OSV parsing, PyPI filter, quarantine, manifests
-├── corpus/      statistics, condition cues, leakage groups, pilot sampling
+├── corpus/      statistics, cues, leakage groups, near-duplicates, frozen splits, batch sampling
 ├── annotate/    Label Studio tasks and validated import
-├── models/      rules baseline; CRF tagger + logistic-regression attribute/group classifiers
+├── models/      rules baseline · CRF + logistic regression · transformer (encoder + span,
+│                role and group heads, windows, bundles) · experiment runner
 ├── eval/        metrics, cluster bootstrap, Markdown reports
 ├── serve/       evidence-linked review page (Jinja template, escaped, CSP)
 └── cli.py       `triggermap` command
-configs/         Label Studio labelling config
+configs/         Label Studio config · experiment configs (pinned checkpoint revisions)
+splits/          frozen split manifest (pool-v1)
 annotations/     versioned annotations and sample manifests (CC BY 4.0)
 data/manifests/  committed snapshot manifest (raw and processed data are rebuilt, not committed)
 docs/            guidelines, pilot protocol, corpus statistics

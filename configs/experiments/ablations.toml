@@ -1,0 +1,36 @@
+# Ablations and learning curves on the chosen backbone, one factor at a time, three seeds
+# each. Set base_model/revision to the winner of the DistilBERT vs DeBERTa comparison.
+#   uv run triggermap experiment --config configs/experiments/ablations.toml --gold <gold.jsonl>
+
+[train]
+model_id = "ablation"
+base_model = "microsoft/deberta-v3-small"
+revision = "a36c739020e01763fe789b4b85e2df55d6180012"
+learning_rate = 5e-5
+epochs = 6
+batch_size = 8
+gradient_accumulation = 2
+patience = 2
+mlflow_experiment = "triggermap-ablations"
+
+[grid]
+seed = [0, 1, 2]
+
+[[runs]]
+name = "full"
+
+[[runs]]
+name = "no-context"       # heading/list context removed
+use_context = false
+
+[[runs]]
+name = "no-group"         # group objective removed
+group_loss_weight = 0.0
+
+[[runs]]
+name = "docs-125"         # learning curve
+max_train_documents = 125
+
+[[runs]]
+name = "docs-250"
+max_train_documents = 250

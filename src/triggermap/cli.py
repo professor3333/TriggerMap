@@ -213,19 +213,23 @@ def _evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
-def _gold_examples(gold: Path, processed: Path, split_manifest: Path) -> list[Any]:
+def _gold_examples(
+    gold: list[Path], processed: Path, split_manifest: Path, split: str = "train"
+) -> list[Any]:
     from triggermap.corpus.splits import load_split, select
-    from triggermap.eval.runner import load_gold
+    from triggermap.eval.runner import load_gold_files
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.schema.models import AdvisoryAnnotation
     from triggermap.text.preprocessing import compose_raw, preprocess
 
     corpus = {d.advisory_id: d for d in load_corpus(processed / CORPUS_FILE)}
     examples = []
-    records = load_gold(gold)
-    train_ids = set(select(sorted(records), load_split(split_manifest), "train"))
+    records = load_gold_files(gold)
+    if split == "test":
+        raise ValueError("gold examples for training or tuning never come from the test split")
+    wanted = set(select(sorted(records), load_split(split_manifest), split))  # type: ignore[arg-type]
     for aid, record in sorted(records.items()):
-        if aid not in train_ids:
+        if aid not in wanted:
             continue
         assert isinstance(record, AdvisoryAnnotation)
         doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
@@ -234,22 +238,101 @@ def _gold_examples(gold: Path, processed: Path, split_manifest: Path) -> list[An
 
 
 def _train(args: argparse.Namespace) -> int:
-    from triggermap.models.crf.model import CrfExtractor
-
     examples = _gold_examples(args.gold, args.processed, args.split_manifest)
     if not examples:
         raise SystemExit("no gold documents in the train split")
+    if args.model == "transformer":
+        import tomllib
+
+        from triggermap.corpus.splits import load_split
+        from triggermap.models.transformer.train import TrainConfig, train
+
+        if args.config is None:
+            raise SystemExit("--model transformer needs --config (see configs/experiments/)")
+        settings = tomllib.loads(args.config.read_text(encoding="utf-8"))["train"]
+        settings["split_assignment_sha256"] = load_split(args.split_manifest)["assignment_sha256"]
+        settings.setdefault("model_id", args.model_id)
+        settings["seed"] = args.seed if args.seed is not None else settings.get("seed", 0)
+        dev = _gold_examples(args.gold, args.processed, args.split_manifest, "dev")
+        transformer = train(TrainConfig(**settings), examples, dev, args.out)
+        best = transformer.metadata["best_dev_typed_f1"]
+        print(
+            f"trained {transformer.model_id} on {len(examples)} documents "
+            f"(dev typed F1 {best if best is not None else 'n/a'}); bundle at {args.out}"
+        )
+        return 0
+
+    from triggermap.models.crf.model import CrfExtractor
+
     model = CrfExtractor.train(
-        examples, args.out, model_id=args.model_id, use_pos=not args.no_pos, seed=args.seed
+        examples,
+        args.out,
+        model_id=args.model_id,
+        use_pos=not args.no_pos,
+        seed=args.seed or 0,
     )
     print(json.dumps(model.metadata["stats"], indent=2))
     print(f"trained {model.model_id} on {len(examples)} documents; bundle at {args.out}")
     return 0
 
 
+def _experiment(args: argparse.Namespace) -> int:
+    import tomllib
+
+    from triggermap.models.experiment import RunResult, evaluate_run, plan, render_report
+
+    config = tomllib.loads(args.config.read_text(encoding="utf-8"))
+    runs = plan(config)
+    if args.dry_run:
+        for run in runs:
+            changed = {k: run.settings[k] for k in sorted(run.settings) if k != "model_id"}
+            print(run.name, json.dumps(changed, sort_keys=True))
+        print(f"{len(runs)} runs planned")
+        return 0
+
+    from triggermap.corpus.splits import load_split
+    from triggermap.models.transformer.train import TrainConfig, train
+
+    split = load_split(args.split_manifest)
+    examples = _gold_examples(args.gold, args.processed, args.split_manifest)
+    dev = _gold_examples(args.gold, args.processed, args.split_manifest, "dev")
+    if not examples or not dev:
+        raise SystemExit("experiments need gold documents in both the train and dev splits")
+    results = []
+    from triggermap.models.transformer.extractor import TransformerExtractor
+
+    for run in runs:
+        bundle = args.out_root / run.name
+        if (bundle / "metadata.json").exists():  # resume: finished runs are not retrained
+            extractor = TransformerExtractor.load(bundle)
+            print(f"{run.name}: reusing existing bundle")
+        else:
+            settings = {**run.settings, "split_assignment_sha256": split["assignment_sha256"]}
+            extractor = train(TrainConfig(**settings), examples, dev, bundle)
+        intervals = evaluate_run(extractor, dev, split["group_of"], args.samples)
+        results.append(RunResult(run, intervals, extractor.metadata))
+        print(f"{run.name}: dev typed F1 {intervals['typed_f1'].estimate:.3f}")
+    report = args.report or Path("reports/experiments") / f"{args.config.stem}.md"
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.write_text(
+        render_report(
+            f"Experiment: {args.config.stem}",
+            results,
+            {
+                "Config": f"`{args.config}`",
+                "Gold": f"{len(args.gold)} file(s): {len(examples)} train, {len(dev)} dev docs",
+                "Split": f"`{args.split_manifest}` ({split['assignment_sha256'][:12]})",
+            },
+        ),
+        encoding="utf-8",
+    )
+    print(f"wrote {report}")
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
-    from triggermap.models.rules.extractor import RuleExtractor
+    from triggermap.models.registry import load_extractor
     from triggermap.schema.validate import validate_annotation
     from triggermap.text.preprocessing import compose_raw, preprocess
 
@@ -259,15 +342,10 @@ def _predict(args: argparse.Namespace) -> int:
         ids = [i["advisory_id"] for i in items if args.use in ("all", i["intended_use"])]
     else:
         ids = sorted(corpus)
-    extractor: Any
-    if args.model == "crf":
-        from triggermap.models.crf.model import CrfExtractor
-
-        if args.model_dir is None:
-            raise SystemExit("--model crf needs --model-dir")
-        extractor = CrfExtractor.load(args.model_dir)
-    else:
-        extractor = RuleExtractor()
+    try:
+        extractor = load_extractor(args.model, args.model_dir)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w", encoding="utf-8", newline="\n") as fh:
         for aid in ids:
@@ -282,7 +360,7 @@ def _predict(args: argparse.Namespace) -> int:
 
 
 def _view(args: argparse.Namespace) -> int:
-    from triggermap.models.rules.extractor import RuleExtractor
+    from triggermap.models.registry import load_extractor
     from triggermap.serve.render import render_review
     from triggermap.text.preprocessing import compose_raw, preprocess
 
@@ -302,13 +380,10 @@ def _view(args: argparse.Namespace) -> int:
         advisory_id, title, packages = record.advisory_id, record.summary, record.pypi_packages
         source_url = f"https://github.com/advisories/{record.advisory_id}"
     doc = preprocess(raw)
-    extractor: Any = RuleExtractor()
-    if args.model == "crf":
-        from triggermap.models.crf.model import CrfExtractor
-
-        if args.model_dir is None:
-            raise SystemExit("--model crf needs --model-dir")
-        extractor = CrfExtractor.load(args.model_dir)
+    try:
+        extractor = load_extractor(args.model, args.model_dir)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     extraction = extractor.extract(doc, advisory_id)
     html = render_review(doc, extraction, title=title, source_url=source_url, packages=packages)
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -415,8 +490,8 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.set_defaults(handler=_evaluate)
 
     predict = commands.add_parser("predict", help="run an extraction system over documents")
-    predict.add_argument("--model", choices=["rules", "crf"], default="rules")
-    predict.add_argument("--model-dir", type=Path, help="trained bundle (crf)")
+    predict.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    predict.add_argument("--model-dir", type=Path, help="trained bundle (crf, transformer)")
     predict.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     predict.add_argument("--sample", type=Path, help="sample manifest; default: whole corpus")
     predict.add_argument(
@@ -426,21 +501,33 @@ def build_parser() -> argparse.ArgumentParser:
     predict.set_defaults(handler=_predict)
 
     train = commands.add_parser("train", help="train a supervised baseline on gold records")
-    train.add_argument("--model", choices=["crf"], default="crf")
-    train.add_argument("--gold", type=Path, required=True, help="gold AdvisoryAnnotation JSONL")
+    train.add_argument("--model", choices=["crf", "transformer"], default="crf")
+    train.add_argument("--config", type=Path, help="TOML experiment config (transformer)")
+    train.add_argument("--gold", type=Path, nargs="+", required=True, help="gold JSONL file(s)")
     train.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     train.add_argument("--out", type=Path, required=True, help="bundle directory to write")
     train.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     train.add_argument("--model-id", default="crf-1")
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
-    train.add_argument("--seed", type=int, default=0)
+    train.add_argument("--seed", type=int, help="overrides the config seed")
     train.set_defaults(handler=_train)
+
+    experiment = commands.add_parser("experiment", help="run a grid of transformer trainings")
+    experiment.add_argument("--config", type=Path, required=True)
+    experiment.add_argument("--gold", type=Path, nargs="+", help="gold JSONL file(s)")
+    experiment.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    experiment.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    experiment.add_argument("--out-root", type=Path, default=Path("artifacts/experiments"))
+    experiment.add_argument("--report", type=Path)
+    experiment.add_argument("--samples", type=int, default=1000)
+    experiment.add_argument("--dry-run", action="store_true", help="print the planned runs")
+    experiment.set_defaults(handler=_experiment)
 
     view = commands.add_parser("view", help="render an evidence-linked review page")
     source = view.add_mutually_exclusive_group(required=True)
     source.add_argument("advisory", nargs="?", help="GHSA id from the processed corpus")
     source.add_argument("--text-file", type=Path, help="advisory text (Markdown) to review")
-    view.add_argument("--model", choices=["rules", "crf"], default="rules")
+    view.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
     view.add_argument("--model-dir", type=Path)
     view.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     view.add_argument("--out", type=Path, required=True)

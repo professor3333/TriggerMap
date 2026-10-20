@@ -16,6 +16,17 @@ def load_gold(path: Path) -> dict[str, Labelled]:
     return {r.advisory_id: r for r in records}
 
 
+def load_gold_files(paths: list[Path]) -> dict[str, Labelled]:
+    """Gold records from several files (e.g. pilot plus batches); a repeated id is an error."""
+    merged: dict[str, Labelled] = {}
+    for path in paths:
+        for aid, record in load_gold(path).items():
+            if aid in merged:
+                raise ValueError(f"{aid} appears in more than one gold file ({path})")
+            merged[aid] = record
+    return merged
+
+
 def load_predictions(path: Path) -> dict[str, Extraction]:
     out: dict[str, Extraction] = {}
     with path.open(encoding="utf-8") as fh:
