@@ -162,9 +162,33 @@ def test_evaluate_cli(scored, tmp_path: Path) -> None:  # type: ignore[no-untype
     gold_path, pred_path, out = tmp_path / "g.jsonl", tmp_path / "p.jsonl", tmp_path / "r.md"
     gold_path.write_text("".join(g.model_dump_json() + "\n" for g in gold_docs.values()))
     pred_path.write_text("".join(p.model_dump_json() + "\n" for p in predictions.values()))
+    from tests.factories import write_split_manifest
+
+    split = write_split_manifest(tmp_path / "split.json", {GA: "dev", GB: "dev", GC: "dev"})
     args = [str(gold_path), str(pred_path), "--clusters", "document", "--samples", "50"]
-    assert main(["evaluate", *args, "--out", str(out)]) == 0
+    assert main(["evaluate", *args, "--split-manifest", str(split), "--out", str(out)]) == 0
     report = out.read_text()
     assert "| Typed condition micro-F1 (span + category + role) | 0.250 |" in report
     assert "| REQUIRED | 0.500 | 1.000 | 0.667 | 2 |" in report
     assert "## Precision versus coverage" in report
+
+
+def test_test_split_is_locked_and_logged(scored, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tests.factories import write_split_manifest
+
+    gold_docs, predictions = scored
+    gold_path, pred_path = tmp_path / "g.jsonl", tmp_path / "p.jsonl"
+    gold_path.write_text("".join(g.model_dump_json() + "\n" for g in gold_docs.values()))
+    pred_path.write_text("".join(p.model_dump_json() + "\n" for p in predictions.values()))
+    split = write_split_manifest(tmp_path / "split.json", {GA: "dev", GB: "test", GC: "train"})
+    monkeypatch.chdir(tmp_path)
+    base = ["evaluate", str(gold_path), str(pred_path), "--split-manifest", str(split)]
+    base += ["--clusters", "document", "--samples", "20", "--out", "r.md"]
+    with pytest.raises(SystemExit, match="locked"):
+        main([*base, "--split", "test"])
+    assert not (tmp_path / "docs/test-access-log.md").exists()
+    assert main([*base, "--split", "test", "--release-evaluation", "v0.1 release"]) == 0
+    log = (tmp_path / "docs/test-access-log.md").read_text()
+    assert "v0.1 release" in log and "test" in log
+    assert main([*base, "--split", "dev"]) == 0
+    assert "Documents: 1 " in (tmp_path / "r.md").read_text()

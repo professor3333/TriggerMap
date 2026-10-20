@@ -14,6 +14,8 @@ DEFAULT_SNAPSHOT = Path("data/raw/advisory-database")
 DEFAULT_PROCESSED = Path("data/processed")
 DEFAULT_MANIFEST = Path("data/manifests/snapshot.json")
 DEFAULT_PILOT = Path("annotations/pilot/pilot_manifest.json")
+DEFAULT_SPLIT = Path("splits/pool-v1.json")
+TEST_ACCESS_LOG = Path("docs/test-access-log.md")
 
 
 def _ingest_fetch(args: argparse.Namespace) -> int:
@@ -58,9 +60,41 @@ def _corpus_sample_pilot(args: argparse.Namespace) -> int:
     snapshot = json.loads(args.manifest.read_text(encoding="utf-8"))
     docs = load_corpus(args.processed / CORPUS_FILE)
     params = PilotParams(seed=args.seed)
-    items = sample_pilot(docs, build_groups(docs), params)
+    # pilot-1 was drawn with package co-occurrence + exact duplicates only.
+    items = sample_pilot(docs, build_groups(docs, upstream=False), params)
     write_manifest(pilot_manifest(items, params, snapshot, PREPROCESSING_VERSION), args.out)
     print(f"wrote {len(items)} pilot items to {args.out}")
+    return 0
+
+
+def _corpus_split(args: argparse.Namespace) -> int:
+    from triggermap.corpus.groups import build_groups
+    from triggermap.corpus.neardup import NearDupParams, near_duplicate_pairs
+    from triggermap.corpus.splits import SplitParams, build_split
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus, write_manifest
+
+    params = SplitParams(version=args.version)
+    out = args.out or Path(f"splits/{params.version}.json")
+    if out.exists():
+        raise SystemExit(f"{out} exists and is frozen; choose a new --version instead")
+    docs = load_corpus(args.processed / CORPUS_FILE)
+    pairs = near_duplicate_pairs(
+        {d.advisory_id: d.details for d in docs},
+        NearDupParams(threshold=params.near_duplicate_threshold),
+    )
+    groups = build_groups(docs, upstream=True, near_duplicates=pairs)
+    pilot = json.loads(args.pilot.read_text(encoding="utf-8"))["items"] if args.pilot else []
+    snapshot = json.loads(args.manifest.read_text(encoding="utf-8"))
+    manifest = build_split(docs, groups, params, pilot)
+    manifest = {
+        "source_commit": snapshot["source"]["commit"],
+        "corpus_sha256": snapshot["outputs"][CORPUS_FILE],
+        "near_duplicate_pairs": len(pairs),
+        **manifest,
+    }
+    write_manifest(manifest, out)
+    print(json.dumps(manifest["splits"], indent=2))
+    print(f"froze {out}; {len(manifest['excluded_documents'])} annotated docs excluded")
     return 0
 
 
@@ -101,11 +135,24 @@ def _annotate_import(args: argparse.Namespace) -> int:
 
 
 def _evaluate(args: argparse.Namespace) -> int:
+    from triggermap.corpus.splits import load_split, select
     from triggermap.eval.report import render
     from triggermap.eval.runner import evaluate, load_gold, load_predictions
 
     gold = load_gold(args.gold)
     pred = load_predictions(args.pred)
+    if args.split == "test" and not args.release_evaluation:
+        raise SystemExit(
+            "the test split is locked: pass --release-evaluation '<reason>' for a declared "
+            "release evaluation (it is logged in docs/test-access-log.md)"
+        )
+    manifest = load_split(args.split_manifest)
+    kept = set(select(sorted(gold), manifest, args.split))
+    gold = {aid: record for aid, record in gold.items() if aid in kept}
+    if not gold:
+        raise SystemExit(f"no gold documents in the {args.split} split")
+    if args.split == "test":
+        _log_test_access(args, sorted({p.model_id for p in pred.values()}))
     cluster_of = None
     if args.clusters == "project":
         from triggermap.corpus.groups import build_groups
@@ -119,7 +166,7 @@ def _evaluate(args: argparse.Namespace) -> int:
         docs,
         intervals,
         {
-            "Gold": f"`{args.gold}`",
+            "Gold": f"`{args.gold}` ({args.split} split of `{args.split_manifest}`)",
             "Predictions": f"`{args.pred}` ({', '.join(model_ids) or 'none'})",
             "Bootstrap": f"{args.samples} resamples, {args.clusters} clusters, seed {args.seed}",
         },
@@ -133,7 +180,8 @@ def _evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
-def _gold_examples(gold: Path, processed: Path) -> list[Any]:
+def _gold_examples(gold: Path, processed: Path, split_manifest: Path) -> list[Any]:
+    from triggermap.corpus.splits import load_split, select
     from triggermap.eval.runner import load_gold
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.schema.models import AdvisoryAnnotation
@@ -141,7 +189,11 @@ def _gold_examples(gold: Path, processed: Path) -> list[Any]:
 
     corpus = {d.advisory_id: d for d in load_corpus(processed / CORPUS_FILE)}
     examples = []
-    for aid, record in sorted(load_gold(gold).items()):
+    records = load_gold(gold)
+    train_ids = set(select(sorted(records), load_split(split_manifest), "train"))
+    for aid, record in sorted(records.items()):
+        if aid not in train_ids:
+            continue
         assert isinstance(record, AdvisoryAnnotation)
         doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
         examples.append((doc, record))
@@ -151,7 +203,9 @@ def _gold_examples(gold: Path, processed: Path) -> list[Any]:
 def _train(args: argparse.Namespace) -> int:
     from triggermap.models.crf.model import CrfExtractor
 
-    examples = _gold_examples(args.gold, args.processed)
+    examples = _gold_examples(args.gold, args.processed, args.split_manifest)
+    if not examples:
+        raise SystemExit("no gold documents in the train split")
     model = CrfExtractor.train(
         examples, args.out, model_id=args.model_id, use_pos=not args.no_pos, seed=args.seed
     )
@@ -230,6 +284,23 @@ def _view(args: argparse.Namespace) -> int:
     return 0
 
 
+def _log_test_access(args: argparse.Namespace, model_ids: list[str]) -> None:
+    from datetime import UTC, datetime
+
+    if not TEST_ACCESS_LOG.exists():
+        TEST_ACCESS_LOG.parent.mkdir(parents=True, exist_ok=True)
+        TEST_ACCESS_LOG.write_text(
+            "# Test-set access log\n\nEvery evaluation on the locked test split, appended "
+            "automatically by `triggermap evaluate --split test`.\n\n"
+            "| UTC time | Models | Gold | Reason |\n|---|---|---|---|\n",
+            encoding="utf-8",
+        )
+    stamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M")
+    reason = args.release_evaluation.replace("|", "/")
+    with TEST_ACCESS_LOG.open("a", encoding="utf-8") as fh:
+        fh.write(f"| {stamp} | {', '.join(model_ids)} | `{args.gold}` | {reason} |\n")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="triggermap", description=__doc__)
     parser.add_argument("--version", action="version", version=f"triggermap {__version__}")
@@ -260,6 +331,13 @@ def build_parser() -> argparse.ArgumentParser:
     pilot.add_argument("--seed", type=int, default=20261020)
     pilot.add_argument("--out", type=Path, default=DEFAULT_PILOT)
     pilot.set_defaults(handler=_corpus_sample_pilot)
+    split = corpus_cmds.add_parser("split", help="freeze leakage-safe train/dev/test pools")
+    split.add_argument("--version", default="pool-v1")
+    split.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    split.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    split.add_argument("--pilot", type=Path, default=DEFAULT_PILOT)
+    split.add_argument("--out", type=Path)
+    split.set_defaults(handler=_corpus_split)
 
     annotate = commands.add_parser("annotate", help="Label Studio tasks and imports")
     annotate_cmds = annotate.add_subparsers(dest="subcommand", required=True)
@@ -285,6 +363,9 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     evaluate.add_argument("--samples", type=int, default=1000)
     evaluate.add_argument("--seed", type=int, default=0)
+    evaluate.add_argument("--split", choices=["dev", "test"], default="dev")
+    evaluate.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    evaluate.add_argument("--release-evaluation", metavar="REASON", help="unlock the test split")
     evaluate.add_argument("--title", default="Evaluation report")
     evaluate.add_argument("--out", type=Path)
     evaluate.set_defaults(handler=_evaluate)
@@ -305,6 +386,7 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--gold", type=Path, required=True, help="gold AdvisoryAnnotation JSONL")
     train.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     train.add_argument("--out", type=Path, required=True, help="bundle directory to write")
+    train.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     train.add_argument("--model-id", default="crf-1")
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
     train.add_argument("--seed", type=int, default=0)

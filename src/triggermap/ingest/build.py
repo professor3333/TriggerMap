@@ -17,7 +17,12 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from triggermap.ingest.records import AdvisoryDocument, OsvRecord, normalize_package_name
+from triggermap.ingest.records import (
+    AdvisoryDocument,
+    OsvRecord,
+    normalize_package_name,
+    upstream_repo,
+)
 from triggermap.ingest.snapshot import REPO_URL, REVIEWED_DIR
 from triggermap.text.preprocessing import PREPROCESSING_VERSION, compose_raw, content_hash
 
@@ -118,6 +123,7 @@ def _classify(rel: str, data: bytes, source_commit: str) -> AdvisoryDocument | Q
         source_path=rel,
         file_sha256=sha256_bytes(data),
         content_hash=content_hash(raw),
+        upstream_repo=upstream_repo(record.references),
     )
 
 

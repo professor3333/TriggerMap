@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -91,8 +92,16 @@ def test_train_and_predict_cli(tmp_path: Path) -> None:
     gold = tmp_path / "gold.jsonl"
     gold.write_text("".join(rec.model_dump_json() + "\n" for _, _, rec in data))
     bundle, preds = tmp_path / "bundle", tmp_path / "preds.jsonl"
+    from tests.factories import write_split_manifest
+
+    split = write_split_manifest(
+        tmp_path / "split.json",
+        {rec.advisory_id: ("train" if i < 15 else "dev") for i, (_, _, rec) in enumerate(data)},
+    )
     common = ["--processed", str(processed)]
-    assert main(["train", "--gold", str(gold), "--out", str(bundle), "--no-pos", *common]) == 0
+    train_args = ["--gold", str(gold), "--out", str(bundle), "--split-manifest", str(split)]
+    assert main(["train", *train_args, "--no-pos", *common]) == 0
+    assert json.loads((bundle / "metadata.json").read_text())["training_documents"] == 15
     assert (bundle / "tagger.crfsuite").exists() and (bundle / "metadata.json").exists()
     args = ["predict", "--model", "crf", "--model-dir", str(bundle), "--out", str(preds)]
     assert main([*args, *common]) == 0

@@ -48,6 +48,17 @@ class OsvRecord(BaseModel):
 
 
 _PEP503 = re.compile(r"[-_.]+")
+_GITHUB_REPO = re.compile(r"^https?://(?:www\.)?github\.com/([^/\s]+)/([^/\s#?]+)", re.IGNORECASE)
+
+
+def upstream_repo(references: list[OsvReference]) -> str | None:
+    """The upstream GitHub repository named by a PACKAGE reference, as ``owner/repo``."""
+    repos = sorted(
+        f"{m.group(1)}/{m.group(2).removesuffix('.git')}".lower()
+        for r in references
+        if r.type == "PACKAGE" and (m := _GITHUB_REPO.match(r.url))
+    )
+    return repos[0] if repos else None
 
 
 def normalize_package_name(name: str) -> str:
@@ -74,3 +85,4 @@ class AdvisoryDocument(BaseModel):
     source_path: str  # relative to the advisory-database repository root
     file_sha256: Sha256
     content_hash: Sha256  # SHA-256 of compose_raw(summary, details)
+    upstream_repo: str | None = None  # "owner/repo" from the GitHub PACKAGE reference

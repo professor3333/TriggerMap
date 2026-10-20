@@ -1,13 +1,14 @@
 """Leakage groups: advisories that must never be split across train/dev/test.
 
-Two relations are unioned:
+Relations unioned into leakage groups:
 - project: advisories naming a common PyPI package (``tensorflow`` and
-  ``tensorflow-gpu`` join because one advisory names both);
-- duplicate: identical text, identical details after whitespace/case folding, or a
-  shared alias (CVE/PYSEC id).
+  ``tensorflow-gpu`` join because one advisory names both) and, when enabled, a common
+  upstream GitHub repository;
+- duplicate: identical text, identical details after whitespace/case folding, a shared
+  alias (CVE/PYSEC id), or a near-duplicate pair (see ``neardup``).
 
-Near-duplicate detection (shingling) is added when splits are frozen; until then the
-pilot only relies on these exact relations.
+The pilot sample (pilot-1) was drawn with package co-occurrence and exact duplicates only;
+``sample-pilot`` keeps those settings so the committed sample stays reproducible.
 """
 
 from __future__ import annotations
@@ -59,17 +60,26 @@ def _keys(uf: UnionFind, docs: Sequence[AdvisoryDocument], node: str) -> dict[st
     return {aid: min(ids) for ids in members.values() for aid in ids}
 
 
-def build_groups(docs: Sequence[AdvisoryDocument]) -> Groups:
+def build_groups(
+    docs: Sequence[AdvisoryDocument],
+    *,
+    upstream: bool = True,
+    near_duplicates: Iterable[tuple[str, str, float]] = (),
+) -> Groups:
     project = UnionFind()
     duplicate = UnionFind()
     for doc in docs:
         node = ("doc", doc.advisory_id)
         project.union([node, *(("pkg", p) for p in doc.pypi_packages)])
+        if upstream and doc.upstream_repo:
+            project.union([node, ("repo", doc.upstream_repo)])
         keys: list[Hashable] = [node, ("hash", doc.content_hash)]
         if doc.details.strip():
             keys.append(("details", _fold(doc.details)))
         keys += [("alias", a) for a in doc.aliases]
         duplicate.union(keys)
+    for left, right, _ in near_duplicates:
+        duplicate.union([("doc", left), ("doc", right)])
     project_keys = _keys(project, docs, "doc")
     duplicate_keys = _keys(duplicate, docs, "doc")
 
