@@ -506,6 +506,69 @@ def _errors(args: argparse.Namespace) -> int:
     return 0
 
 
+def _app_sync(args: argparse.Namespace) -> int:
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+    from triggermap.serve.storage import AdvisoryRecord, Store
+    from triggermap.text.preprocessing import compose_raw
+
+    docs = load_corpus(args.processed / CORPUS_FILE)
+    store = Store(args.database)
+    count = store.upsert_advisories(
+        [
+            (
+                AdvisoryRecord(
+                    d.advisory_id,
+                    d.content_hash,
+                    compose_raw(d.summary, d.details),
+                    d.summary or d.advisory_id,
+                    d.pypi_packages,
+                    d.published,
+                    d.source_commit,
+                ),
+                d.aliases,
+            )
+            for d in docs
+        ]
+    )
+    if docs:
+        store.set_meta("snapshot_commit", docs[0].source_commit)
+    print(f"synced {count} advisories into {args.database} ({store.journal_mode()} journal)")
+    return 0
+
+
+def _app_create_user(args: argparse.Namespace) -> int:
+    from triggermap.serve.storage import Store
+
+    token = Store(args.database).create_user(args.name)
+    print(f"created user {args.name}; API token (shown once, store it safely):\n{token}")
+    return 0
+
+
+def _app_run(args: argparse.Namespace) -> int:
+    import logging
+    import sys
+
+    import uvicorn
+
+    # One structured access log (method, route, status, timing; never bodies) on stdout.
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    access = logging.getLogger("triggermap.access")
+    access.addHandler(handler)
+    access.setLevel(logging.INFO)
+    access.propagate = False
+    uvicorn.run(
+        "triggermap.serve.app:create_app",
+        factory=True,
+        host=args.host,
+        port=args.port,
+        workers=1,
+        log_level="info",
+        access_log=False,
+    )
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -709,6 +772,22 @@ def build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--seed", type=int, default=0)
     calibrate.add_argument("--out", type=Path, default=DEFAULT_POLICY)
     calibrate.set_defaults(handler=_calibrate)
+
+    app = commands.add_parser("app", help="review application: data, users, server")
+    app_cmds = app.add_subparsers(dest="subcommand", required=True)
+    default_db = Path("data/app/triggermap.db")
+    sync = app_cmds.add_parser("sync", help="load the advisory snapshot into the app database")
+    sync.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    sync.add_argument("--database", type=Path, default=default_db)
+    sync.set_defaults(handler=_app_sync)
+    create_user = app_cmds.add_parser("create-user", help="create a reviewer and API token")
+    create_user.add_argument("name")
+    create_user.add_argument("--database", type=Path, default=default_db)
+    create_user.set_defaults(handler=_app_create_user)
+    run = app_cmds.add_parser("run", help="serve the API (settings from TRIGGERMAP_* env vars)")
+    run.add_argument("--host", default="127.0.0.1")
+    run.add_argument("--port", type=int, default=8000)
+    run.set_defaults(handler=_app_run)
 
     errors = commands.add_parser("errors", help="write the error catalogue for a split")
     errors.add_argument("--gold", type=Path, nargs="+", required=True)

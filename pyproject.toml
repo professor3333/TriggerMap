@@ -31,9 +31,17 @@ neural = [
     "torch>=2.14,<2.15",
     "transformers>=5.18,<5.19",
 ]
+serve = [
+    "fastapi>=0.142.2,<0.143",
+    "prometheus-client>=0.26,<0.27",
+    "python-multipart>=0.0.32",
+    "starlette>=1.7,<1.8",
+    "uvicorn[standard]>=0.54,<0.55",
+]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1,<0.29",
     "hypothesis>=6.170.5",
     "mypy>=1.13",
     "pytest>=8.3",
