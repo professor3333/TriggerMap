@@ -16,6 +16,7 @@ DEFAULT_PROCESSED = Path("data/processed")
 DEFAULT_MANIFEST = Path("data/manifests/snapshot.json")
 DEFAULT_PILOT = Path("annotations/pilot/pilot_manifest.json")
 DEFAULT_SPLIT = Path("splits/pool-v1.json")
+MODEL_KINDS = ("rules", "crf", "transformer", "onnx")  # keep in sync with models.registry.KINDS
 DEFAULT_POLICY = Path("configs/review_policy.yaml")
 TEST_ACCESS_LOG = Path("docs/test-access-log.md")
 
@@ -619,6 +620,80 @@ def _app_verify(args: argparse.Namespace) -> int:
     return 0
 
 
+def _export_onnx(args: argparse.Namespace) -> int:
+    from triggermap.models.transformer.onnx_bundle import export_onnx, quantize_int8
+
+    out = export_onnx(args.bundle, args.out, opset=args.opset)
+    print(f"exported {out / 'model.onnx'}")
+    if args.int8:
+        quantized = quantize_int8(out, args.int8)
+        print(f"quantized {quantized / 'model.int8.onnx'} (dynamic INT8)")
+    return 0
+
+
+def _bench(args: argparse.Namespace) -> int:
+    if args.subcommand == "workload":
+        from transformers import AutoTokenizer
+
+        from triggermap.bench.workload import (
+            REFERENCE_REVISION,
+            REFERENCE_TOKENIZER,
+            build_workload,
+        )
+        from triggermap.corpus.splits import load_split
+        from triggermap.ingest.build import CORPUS_FILE, load_corpus, write_manifest
+
+        tokenizer = AutoTokenizer.from_pretrained(REFERENCE_TOKENIZER, revision=REFERENCE_REVISION)
+        workload = build_workload(
+            load_corpus(args.processed / CORPUS_FILE),
+            load_split(args.split_manifest),
+            tokenizer,
+            per_bucket=args.per_bucket,
+            natural=args.natural,
+        )
+        write_manifest(workload, args.out)
+        sizes = {k: len(v) for k, v in workload["buckets"].items()}
+        print(f"wrote {args.out}: {sizes}")
+    elif args.subcommand == "latency-bundle":
+        from triggermap.bench.latency_bundle import build
+
+        print(f"wrote latency-only bundle {build(args.base, args.revision, args.out)}")
+    elif args.subcommand == "run":
+        from triggermap.bench.environment import describe
+        from triggermap.bench.report import render, run_configs
+        from triggermap.bench.worker import parse_config
+
+        configs = [parse_config(spec) for spec in args.config]
+        checkpoint = args.out.with_suffix(".partial.jsonl")
+        results = run_configs(configs, args.workload, args.processed, args.repeats, checkpoint)
+        load = [json.loads(path.read_text()) for path in args.load_json or []]
+        environment = json.loads(args.environment.read_text()) if args.environment else describe()
+        workload = json.loads(args.workload.read_text())
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(
+            render(args.title, environment, workload, results, load, args.note or []),
+            encoding="utf-8",
+        )
+        args.out.with_suffix(".json").write_text(
+            json.dumps({"environment": environment, "results": results, "load": load}, indent=2)
+        )
+        print(f"wrote {args.out} and {args.out.with_suffix('.json')}")
+    else:
+        from triggermap.bench.load import load_test
+        from triggermap.ingest.build import CORPUS_FILE, load_corpus
+        from triggermap.text.preprocessing import compose_raw
+
+        workload = json.loads(args.workload.read_text())
+        wanted = [i["advisory_id"] for i in workload["buckets"]["natural"]]
+        corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
+        texts = [compose_raw(corpus[a].summary, corpus[a].details) for a in wanted]
+        result = load_test(args.url, texts, args.requests, args.concurrency) | {"label": args.label}
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2))
+    return 0
+
+
 def _predict(args: argparse.Namespace) -> int:
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
     from triggermap.models.registry import load_extractor
@@ -788,7 +863,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.set_defaults(handler=_evaluate)
 
     predict = commands.add_parser("predict", help="run an extraction system over documents")
-    predict.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    predict.add_argument("--model", choices=MODEL_KINDS, default="rules")
     predict.add_argument("--model-dir", type=Path, help="trained bundle (crf, transformer)")
     predict.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     predict.add_argument("--sample", type=Path, help="sample manifest; default: whole corpus")
@@ -854,7 +929,7 @@ def build_parser() -> argparse.ArgumentParser:
     create = release_cmds.add_parser("create", help="assemble an immutable release directory")
     create.add_argument("release_id")
     create.add_argument("--image", required=True, help="image reference, ideally by digest")
-    create.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    create.add_argument("--model", choices=MODEL_KINDS, default="rules")
     create.add_argument("--model-dir", type=Path)
     create.add_argument("--review-policy", type=Path, default=DEFAULT_POLICY)
     create.set_defaults(handler=_release)
@@ -872,6 +947,55 @@ def build_parser() -> argparse.ArgumentParser:
     status = release_cmds.add_parser("status", help="show current, previous and history")
     status.set_defaults(handler=_release)
 
+    bench = commands.add_parser("bench", help="CPU inference benchmarks and load tests")
+    bench_cmds = bench.add_subparsers(dest="subcommand", required=True)
+    default_workload = Path("reports/benchmarks/workload-v1.json")
+    workload = bench_cmds.add_parser("workload", help="build the declared benchmark workload")
+    workload.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    workload.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    workload.add_argument("--per-bucket", type=int, default=20)
+    workload.add_argument("--natural", type=int, default=100)
+    workload.add_argument("--out", type=Path, default=default_workload)
+    workload.set_defaults(handler=_bench)
+    latency = bench_cmds.add_parser("latency-bundle", help="pretrained encoder, untrained heads")
+    latency.add_argument("--base", required=True)
+    latency.add_argument("--revision")
+    latency.add_argument("--out", type=Path, required=True)
+    latency.set_defaults(handler=_bench)
+    run_bench = bench_cmds.add_parser("run", help="benchmark configurations in fresh processes")
+    run_bench.add_argument(
+        "--config", action="append", required=True, help="kind=onnx,dir=PATH,threads=2,batch=4"
+    )
+    run_bench.add_argument("--workload", type=Path, default=default_workload)
+    run_bench.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    run_bench.add_argument("--repeats", type=int, default=3)
+    run_bench.add_argument("--load-json", type=Path, action="append")
+    run_bench.add_argument(
+        "--environment", type=Path, help="environment JSON (e.g. from a container)"
+    )
+    run_bench.add_argument("--note", action="append")
+    run_bench.add_argument("--title", default="CPU inference benchmark")
+    run_bench.add_argument("--out", type=Path, required=True)
+    run_bench.set_defaults(handler=_bench)
+    load_cmd = bench_cmds.add_parser("load", help="HTTP load test against a running service")
+    load_cmd.add_argument("--url", default="http://127.0.0.1:8000")
+    load_cmd.add_argument("--workload", type=Path, default=default_workload)
+    load_cmd.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    load_cmd.add_argument("--requests", type=int, default=1000)
+    load_cmd.add_argument("--concurrency", type=int, default=4)
+    load_cmd.add_argument("--label", default="service")
+    load_cmd.add_argument("--out", type=Path, required=True)
+    load_cmd.set_defaults(handler=_bench)
+
+    export = commands.add_parser("export", help="export model bundles")
+    export_cmds = export.add_subparsers(dest="subcommand", required=True)
+    onnx = export_cmds.add_parser("onnx", help="transformer bundle -> ONNX (and dynamic INT8)")
+    onnx.add_argument("--bundle", type=Path, required=True)
+    onnx.add_argument("--out", type=Path, required=True)
+    onnx.add_argument("--int8", type=Path, help="also write a dynamically quantized bundle here")
+    onnx.add_argument("--opset", type=int, default=18)
+    onnx.set_defaults(handler=_export_onnx)
+
     errors = commands.add_parser("errors", help="write the error catalogue for a split")
     errors.add_argument("--gold", type=Path, nargs="+", required=True)
     errors.add_argument("--pred", type=Path, required=True)
@@ -883,7 +1007,7 @@ def build_parser() -> argparse.ArgumentParser:
     errors.set_defaults(handler=_errors)
 
     robust = commands.add_parser("robustness", help="formatting-perturbation consistency")
-    robust.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    robust.add_argument("--model", choices=MODEL_KINDS, default="rules")
     robust.add_argument("--model-dir", type=Path)
     robust.add_argument("--n", type=int, default=300, help="advisories to sample")
     robust.add_argument("--seed", type=int, default=0)
@@ -895,7 +1019,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     challenge = commands.add_parser("challenge", help="score the constructed challenge set")
     challenge.add_argument("--set", type=Path, default=Path("challenge/challenge_set.jsonl"))
-    challenge.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    challenge.add_argument("--model", choices=MODEL_KINDS, default="rules")
     challenge.add_argument("--model-dir", type=Path)
     challenge.add_argument("--out", type=Path)
     challenge.set_defaults(handler=_challenge)
@@ -915,7 +1039,7 @@ def build_parser() -> argparse.ArgumentParser:
     source = view.add_mutually_exclusive_group(required=True)
     source.add_argument("advisory", nargs="?", help="GHSA id from the processed corpus")
     source.add_argument("--text-file", type=Path, help="advisory text (Markdown) to review")
-    view.add_argument("--model", choices=["rules", "crf", "transformer"], default="rules")
+    view.add_argument("--model", choices=MODEL_KINDS, default="rules")
     view.add_argument("--model-dir", type=Path)
     view.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     view.add_argument("--review-policy", type=Path, default=DEFAULT_POLICY)

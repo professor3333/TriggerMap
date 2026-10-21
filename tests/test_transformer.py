@@ -288,3 +288,49 @@ def test_real_checkpoint_windows_and_training_step(
     model = train(cfg, [(doc, record)], [(doc, record)], tmp_path)
     assert model.metadata["base_revision"] == revision
     assert validate_annotation(model.extract(doc, record.advisory_id), doc.text) == []
+
+
+def test_cli_model_kinds_match_registry() -> None:
+    from triggermap.cli import MODEL_KINDS
+    from triggermap.models.registry import KINDS
+
+    assert MODEL_KINDS == KINDS
+
+
+def test_onnx_export_and_int8_parity(trained: TransformerExtractor, tmp_path: Path) -> None:
+    pytest.importorskip("onnxruntime")
+    from triggermap.models.registry import load_extractor
+    from triggermap.models.transformer.onnx_bundle import export_onnx, quantize_int8
+    from triggermap.serve.app import weights_digest
+
+    assert trained.directory is not None
+    fp32_dir = export_onnx(trained.directory, tmp_path / "onnx")
+    int8_dir = quantize_int8(fp32_dir, tmp_path / "int8")
+    fp32 = load_extractor("onnx", fp32_dir)
+    int8 = load_extractor("onnx", int8_dir)
+    assert fp32.model_id == trained.model_id and int8.model_id == f"{trained.model_id}-int8"
+
+    def signature(extraction):  # type: ignore[no-untyped-def]
+        conditions = [(c.span, c.category, c.role) for c in extraction.conditions]
+        return conditions + [(g.operator, g.members) for g in extraction.groups]
+
+    for _, pre, _ in DATA:
+        reference = signature(trained.extract(pre))
+        assert signature(fp32.extract(pre)) == reference
+        assert signature(int8.extract(pre)) == reference
+    assert (int8_dir / "model.int8.onnx").stat().st_size < (fp32_dir / "model.onnx").stat().st_size
+    assert weights_digest("onnx", int8_dir) != weights_digest("onnx", fp32_dir)
+
+
+def test_scope_index_matches_linear_scope_of() -> None:
+    from triggermap.models.structure import ScopeIndex, scope_of
+
+    text = (
+        "### Impact\nAffected deployments must:\n- use X; and\n- use Y\n\n"
+        "When debug is on and the proxy caches pages, data leaks. Another sentence here."
+    )
+    doc = preprocess(text)
+    index = ScopeIndex(doc)
+    for start in range(len(doc.text)):
+        span = (start, min(start + 3, len(doc.text)))
+        assert index.scope(span) == scope_of(doc, span)

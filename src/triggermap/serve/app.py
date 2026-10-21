@@ -125,7 +125,7 @@ def weights_digest(kind: str, model_dir: Path | None) -> str:
 
         return _digest(Path(extractor.__file__))
     assert model_dir is not None
-    for name in ("model.safetensors", "tagger.crfsuite"):
+    for name in ("model.safetensors", "tagger.crfsuite", "model.int8.onnx", "model.onnx"):
         if (model_dir / name).exists():
             return _digest(model_dir / name)
     raise FileNotFoundError(f"no weights file in {model_dir}")

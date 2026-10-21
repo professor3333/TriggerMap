@@ -51,6 +51,11 @@ def create_release(
         raise FileExistsError(f"release {release_id} exists; releases are immutable")
     if model_kind != "rules" and model_dir is None:
         raise ValueError(f"a {model_kind} release needs a model bundle")
+    meta_file = model_dir / "metadata.json" if model_dir is not None else None
+    if meta_file is not None and meta_file.exists():
+        untrained = json.loads(meta_file.read_text()).get("untrained_heads")
+        if untrained:
+            raise ValueError("latency-only bundles (untrained heads) can never be released")
     target.mkdir(parents=True)
     if model_dir is not None:
         shutil.copytree(model_dir, target / "model")

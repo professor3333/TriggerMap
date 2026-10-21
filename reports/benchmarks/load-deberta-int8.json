@@ -1,0 +1,21 @@
+{
+  "requests": 1000,
+  "concurrency": 4,
+  "distinct_texts": 100,
+  "cache": "bypassed (unique raw text per request)",
+  "succeeded": 844,
+  "success_rate": 0.844,
+  "status_counts": {
+    "200": 844,
+    "422": 148,
+    "503": 8
+  },
+  "latency_s": {
+    "p50": 0.3594,
+    "p95": 2.6046,
+    "p99": 6.5876
+  },
+  "throughput_rps": 3.6,
+  "elapsed_s": 277.78,
+  "label": "deberta-v3-small INT8 ONNX, latency-only (uvicorn, 1 worker, 2 concurrent extractions)"
+}

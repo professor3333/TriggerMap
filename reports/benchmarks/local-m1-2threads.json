@@ -1,0 +1,479 @@
+{
+  "environment": {
+    "measured_at": "2026-10-21T02:59:31+00:00",
+    "system": "Darwin",
+    "machine": "arm64",
+    "cpu_model": "Apple M1",
+    "logical_cpus": 8,
+    "cpu_limit": null,
+    "memory_gb": 8.0,
+    "in_container": false,
+    "python": "3.12.6",
+    "git_commit": "bed2183",
+    "matches_target_host": false
+  },
+  "results": [
+    {
+      "config": {
+        "kind": "rules",
+        "model_dir": null,
+        "threads": null,
+        "batch_size": null,
+        "label": null,
+        "name": "rules"
+      },
+      "model_id": "rules-2",
+      "cold_start": {
+        "imports_s": 0.59,
+        "load_s": 0.017,
+        "first_extraction_s": 0.049,
+        "total_s": 0.656
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0021,
+          "p95": 0.0205,
+          "max": 0.0431,
+          "mean": 0.0051,
+          "docs_per_s": 195.214
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 0.0072,
+          "p95": 0.0379,
+          "max": 0.1091,
+          "mean": 0.014
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.0029,
+          "p95": 0.0279,
+          "max": 0.0372,
+          "mean": 0.0062
+        }
+      },
+      "peak_rss_mb": 69.1
+    },
+    {
+      "config": {
+        "kind": "transformer",
+        "model_dir": "artifacts/latency/distilbert",
+        "threads": 2,
+        "batch_size": 4,
+        "label": "distilbert-torch-t2-b4",
+        "name": "distilbert-torch-t2-b4"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency",
+      "cold_start": {
+        "imports_s": 5.223,
+        "load_s": 14.409,
+        "first_extraction_s": 0.182,
+        "total_s": 19.813
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0524,
+          "p95": 0.6991,
+          "max": 1.5434,
+          "mean": 0.1664,
+          "docs_per_s": 6.008
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 0.5601,
+          "p95": 0.9152,
+          "max": 1.0104,
+          "mean": 0.5745
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.1706,
+          "p95": 0.32,
+          "max": 0.3351,
+          "mean": 0.1841
+        }
+      },
+      "peak_rss_mb": 474.5
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/distilbert-onnx",
+        "threads": 2,
+        "batch_size": 1,
+        "label": "distilbert-onnx-t2-b1",
+        "name": "distilbert-onnx-t2-b1"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency",
+      "cold_start": {
+        "imports_s": 0.335,
+        "load_s": 6.067,
+        "first_extraction_s": 0.217,
+        "total_s": 6.619
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.1645,
+          "p95": 1.8208,
+          "max": 4.6348,
+          "mean": 0.4905,
+          "docs_per_s": 2.039
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 1.5516,
+          "p95": 2.7369,
+          "max": 3.3184,
+          "mean": 1.7211
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.3788,
+          "p95": 0.5198,
+          "max": 0.5568,
+          "mean": 0.393
+        }
+      },
+      "peak_rss_mb": 536.4
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/distilbert-onnx",
+        "threads": 2,
+        "batch_size": 4,
+        "label": "distilbert-onnx-t2-b4",
+        "name": "distilbert-onnx-t2-b4"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency",
+      "cold_start": {
+        "imports_s": 0.254,
+        "load_s": 6.854,
+        "first_extraction_s": 0.406,
+        "total_s": 7.515
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.1646,
+          "p95": 2.3159,
+          "max": 4.8793,
+          "mean": 0.5877,
+          "docs_per_s": 1.702
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 1.8062,
+          "p95": 2.5479,
+          "max": 3.0085,
+          "mean": 1.8454
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.6207,
+          "p95": 0.7394,
+          "max": 0.7628,
+          "mean": 0.5955
+        }
+      },
+      "peak_rss_mb": 522.1
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/distilbert-onnx",
+        "threads": 2,
+        "batch_size": 8,
+        "label": "distilbert-onnx-t2-b8",
+        "name": "distilbert-onnx-t2-b8"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency",
+      "cold_start": {
+        "imports_s": 0.249,
+        "load_s": 5.427,
+        "first_extraction_s": 0.223,
+        "total_s": 5.899
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.1503,
+          "p95": 2.1218,
+          "max": 5.9498,
+          "mean": 0.573,
+          "docs_per_s": 1.745
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 1.9194,
+          "p95": 2.2902,
+          "max": 2.3077,
+          "mean": 1.9102
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.7909,
+          "p95": 2.5553,
+          "max": 5.3193,
+          "mean": 1.1009
+        }
+      },
+      "peak_rss_mb": 523.8
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/distilbert-onnx",
+        "threads": 1,
+        "batch_size": 4,
+        "label": "distilbert-onnx-t1-b4",
+        "name": "distilbert-onnx-t1-b4"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency",
+      "cold_start": {
+        "imports_s": 0.356,
+        "load_s": 6.94,
+        "first_extraction_s": 0.612,
+        "total_s": 7.909
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.2844,
+          "p95": 3.809,
+          "max": 10.2718,
+          "mean": 0.9619,
+          "docs_per_s": 1.04
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 3.1076,
+          "p95": 4.0011,
+          "max": 5.9382,
+          "mean": 3.2163
+        },
+        "~512": {
+          "n": 40,
+          "p50": 1.1203,
+          "p95": 1.4394,
+          "max": 1.65,
+          "mean": 1.1215
+        }
+      },
+      "peak_rss_mb": 420.0
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/distilbert-int8",
+        "threads": 2,
+        "batch_size": 4,
+        "label": "distilbert-int8-t2-b4",
+        "name": "distilbert-int8-t2-b4"
+      },
+      "model_id": "distilbert-base-cased-untrained-latency-int8",
+      "cold_start": {
+        "imports_s": 0.265,
+        "load_s": 5.297,
+        "first_extraction_s": 0.125,
+        "total_s": 5.688
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0534,
+          "p95": 0.7565,
+          "max": 1.9314,
+          "mean": 0.1889,
+          "docs_per_s": 5.294
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 0.5787,
+          "p95": 0.7531,
+          "max": 0.905,
+          "mean": 0.6168
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.2658,
+          "p95": 0.3944,
+          "max": 0.4199,
+          "mean": 0.2708
+        }
+      },
+      "peak_rss_mb": 417.5
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/deberta-int8",
+        "threads": 2,
+        "batch_size": 4,
+        "label": "deberta-int8-t2-b4",
+        "name": "deberta-int8-t2-b4"
+      },
+      "model_id": "deberta-v3-small-untrained-latency-int8",
+      "cold_start": {
+        "imports_s": 0.272,
+        "load_s": 7.402,
+        "first_extraction_s": 0.194,
+        "total_s": 7.868
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0826,
+          "p95": 1.5515,
+          "max": 3.3943,
+          "mean": 0.3492,
+          "docs_per_s": 2.864
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 0.9481,
+          "p95": 1.4051,
+          "max": 1.4768,
+          "mean": 1.0114
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.2587,
+          "p95": 0.5377,
+          "max": 0.6201,
+          "mean": 0.2991
+        }
+      },
+      "peak_rss_mb": 538.4
+    },
+    {
+      "config": {
+        "kind": "onnx",
+        "model_dir": "artifacts/latency/deberta-onnx",
+        "threads": 2,
+        "batch_size": 4,
+        "label": "deberta-onnx-t2-b4",
+        "name": "deberta-onnx-t2-b4"
+      },
+      "model_id": "deberta-v3-small-untrained-latency",
+      "cold_start": {
+        "imports_s": 0.24,
+        "load_s": 13.921,
+        "first_extraction_s": 0.857,
+        "total_s": 15.018
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.1713,
+          "p95": 3.0726,
+          "max": 6.9619,
+          "mean": 0.7212,
+          "docs_per_s": 1.387
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 2.5113,
+          "p95": 3.4969,
+          "max": 3.9013,
+          "mean": 2.5345
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.4649,
+          "p95": 1.1856,
+          "max": 1.4439,
+          "mean": 0.6212
+        }
+      },
+      "peak_rss_mb": 595.9
+    },
+    {
+      "config": {
+        "kind": "transformer",
+        "model_dir": "artifacts/latency/deberta",
+        "threads": 2,
+        "batch_size": 1,
+        "label": "deberta-torch-t2-b1",
+        "name": "deberta-torch-t2-b1"
+      },
+      "model_id": "deberta-v3-small-untrained-latency",
+      "cold_start": {
+        "imports_s": 2.016,
+        "load_s": 11.9,
+        "first_extraction_s": 0.308,
+        "total_s": 14.224
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0781,
+          "p95": 0.8131,
+          "max": 2.1794,
+          "mean": 0.2223,
+          "docs_per_s": 4.499
+        },
+        "~2000": {
+          "n": 40,
+          "p50": 0.6424,
+          "p95": 0.7623,
+          "max": 0.8044,
+          "mean": 0.6358
+        },
+        "~512": {
+          "n": 40,
+          "p50": 0.1426,
+          "p95": 0.1951,
+          "max": 0.2337,
+          "mean": 0.1544
+        }
+      },
+      "peak_rss_mb": 700.7
+    }
+  ],
+  "load": [
+    {
+      "requests": 1000,
+      "concurrency": 4,
+      "distinct_texts": 100,
+      "cache": "bypassed (unique raw text per request)",
+      "succeeded": 1000,
+      "success_rate": 1.0,
+      "status_counts": {
+        "200": 1000
+      },
+      "latency_s": {
+        "p50": 0.0084,
+        "p95": 0.0254,
+        "p99": 0.0371
+      },
+      "throughput_rps": 373.08,
+      "elapsed_s": 2.68,
+      "label": "rules-2 (uvicorn, 1 worker)"
+    },
+    {
+      "requests": 1000,
+      "concurrency": 4,
+      "distinct_texts": 100,
+      "cache": "bypassed (unique raw text per request)",
+      "succeeded": 844,
+      "success_rate": 0.844,
+      "status_counts": {
+        "200": 844,
+        "422": 148,
+        "503": 8
+      },
+      "latency_s": {
+        "p50": 0.3594,
+        "p95": 2.6046,
+        "p99": 6.5876
+      },
+      "throughput_rps": 3.6,
+      "elapsed_s": 277.78,
+      "label": "deberta-v3-small INT8 ONNX, latency-only (uvicorn, 1 worker, 2 concurrent extractions)"
+    }
+  ]
+}

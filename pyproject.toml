@@ -38,6 +38,18 @@ serve = [
     "starlette>=1.7,<1.8",
     "uvicorn[standard]>=0.54,<0.55",
 ]
+# ONNX serving runtime: no PyTorch.
+onnx = [
+    "onnxruntime>=1.30,<1.31",
+    "protobuf>=5",
+    "sentencepiece>=0.2",
+    "transformers>=5.18,<5.19",
+]
+# Offline export and quantization (use together with `neural`).
+export = [
+    "onnx>=1.23.2,<1.24",
+    "onnxscript>=0.7.2,<0.8",
+]
 
 [dependency-groups]
 dev = [
@@ -83,7 +95,7 @@ torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
 en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
 [[tool.mypy.overrides]]
-module = ["pycrfsuite", "sklearn.*", "joblib", "mlflow", "mlflow.*", "safetensors.*"]
+module = ["pycrfsuite", "sklearn.*", "joblib", "mlflow", "mlflow.*", "safetensors.*", "onnxruntime", "onnxruntime.*", "onnx"]
 ignore_missing_imports = true
 
 [[tool.uv.index]]

@@ -8,7 +8,7 @@ from typing import Protocol
 from triggermap.schema.models import Extraction
 from triggermap.text.preprocessing import PreprocessedDocument
 
-KINDS = ("rules", "crf", "transformer")
+KINDS = ("rules", "crf", "transformer", "onnx")
 
 
 class Extractor(Protocol):
@@ -32,4 +32,8 @@ def load_extractor(kind: str, model_dir: Path | None = None, device: str = "auto
         from triggermap.models.transformer.extractor import TransformerExtractor
 
         return TransformerExtractor.load(model_dir, device=device)
+    if kind == "onnx":
+        from triggermap.models.transformer.onnx_bundle import OnnxExtractor
+
+        return OnnxExtractor.load(model_dir)
     raise ValueError(f"unknown model kind {kind!r}; expected one of {KINDS}")

@@ -159,7 +159,7 @@ item can be highlighted in the original advisory.
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
-| 6 · Production | CPU benchmarks, ONNX/INT8, monitoring, hosted release | ⏳ |
+| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
 
 Results will be published here only once measured. Until then this README reports no accuracy numbers.
 
@@ -283,6 +283,23 @@ rollback` restores all three at once, and `triggermap app verify` checks a runni
 against its release manifest end to end. Rollback is exercised by
 [`deploy/rollback_drill.sh`](deploy/rollback_drill.sh); the runbook is in
 [`docs/deployment.md`](docs/deployment.md).
+
+## Serving cost (local proxy)
+
+Measured on an 8 GB Apple M1 with inference limited to 2 threads. This is **not the target
+host**, and the transformer bundles have untrained heads, so latency and memory are real but
+accuracy is not measured. Details and caveats: [`docs/benchmarks.md`](docs/benchmarks.md).
+
+| Configuration | p95, ~512 tokens | p95, ~2,000 tokens | Peak memory |
+|---|---:|---:|---:|
+| rules-2 | 0.03 s | 0.04 s | 69 MB |
+| DistilBERT, PyTorch | 0.32 s | 0.92 s | 475 MB |
+| DeBERTa-v3-small, PyTorch | 0.20 s | 0.76 s | 701 MB |
+| DeBERTa-v3-small, ONNX INT8 | 0.54 s | 1.41 s | 538 MB |
+
+ONNX export is numerically exact against PyTorch (maximum logit difference ≈ 5 × 10⁻⁶). The
+rules service handled 1,000 of 1,000 load-test requests. The plan's targets (p95 ≤ 2.5 s and
+≤ 8 s, ≤ 3 GB) will be judged only on the documented 2 vCPU / 4 GB x86-64 host.
 
 ## Corpus at a glance
 

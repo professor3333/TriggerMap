@@ -71,3 +71,11 @@ def test_crf_release_copies_the_bundle(tmp_path: Path) -> None:
     assert manifest["model_id"] == "crf-x" and (target / "model/tagger.crfsuite").exists()
     settings = Settings(database=tmp_path / "db.sqlite", **release_settings(target))
     assert Service(settings).extractor.model_id == "crf-x"
+
+
+def test_latency_only_bundles_cannot_be_released(tmp_path: Path) -> None:
+    bundle = tmp_path / "latency"
+    bundle.mkdir()
+    (bundle / "metadata.json").write_text(json.dumps({"model_id": "x", "untrained_heads": True}))
+    with pytest.raises(ValueError, match="never be released"):
+        releases.create_release(tmp_path / "rel", "lat", "img", "onnx", bundle, POLICY)

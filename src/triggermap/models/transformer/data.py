@@ -16,7 +16,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from triggermap.models.structure import context_for, scope_of
+from triggermap.models.structure import ScopeIndex, context_for
 from triggermap.schema.models import AdvisoryAnnotation, Category, Role
 from triggermap.text.preprocessing import PreprocessedDocument
 
@@ -161,8 +161,14 @@ def encode_window(
     )
 
 
-def label_window(doc: PreprocessedDocument, window: Window, record: AdvisoryAnnotation) -> None:
+def label_window(
+    doc: PreprocessedDocument,
+    window: Window,
+    record: AdvisoryAnnotation,
+    scopes: ScopeIndex | None = None,
+) -> None:
     """Fill BIO tags, span targets and pair targets from a gold record."""
+    scopes = scopes or ScopeIndex(doc)
     window.bio = [IGNORE if o is None else 0 for o in window.offsets]
     by_start = {o[0]: i for i, o in enumerate(window.offsets) if o is not None}
     by_end = {o[1]: i for i, o in enumerate(window.offsets) if o is not None}
@@ -196,7 +202,7 @@ def label_window(doc: PreprocessedDocument, window: Window, record: AdvisoryAnno
     spans = {c.id: c.span for c in record.conditions}
     for i in range(len(window.spans) - 1):
         a, b = window.spans[i], window.spans[i + 1]
-        if not scope_of(doc, spans[a.condition_id]).same(scope_of(doc, spans[b.condition_id])):
+        if not scopes.scope(spans[a.condition_id]).same(scopes.scope(spans[b.condition_id])):
             continue
         ga, gb = group_of.get(a.condition_id), group_of.get(b.condition_id)
         label = (
@@ -218,8 +224,9 @@ def make_windows(
     if record is not None:
         if record.content_hash != doc.content_hash:
             raise ValueError(f"{record.advisory_id}: annotation is for different text")
+        scopes = ScopeIndex(doc)
         for window in windows:
-            label_window(doc, window, record)
+            label_window(doc, window, record, scopes)
     return windows
 
 

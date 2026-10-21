@@ -56,3 +56,6 @@ htmlcov/
 # Deployment state (releases are assembled per host; only the README is committed)
 deploy/releases/*
 !deploy/releases/README.md
+
+# Benchmark checkpoints (resumable runs)
+reports/benchmarks/*.partial.jsonl

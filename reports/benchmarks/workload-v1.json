@@ -1,0 +1,584 @@
+{
+  "buckets": {
+    "natural": [
+      {
+        "advisory_id": "GHSA-j44v-mmf2-xvm9",
+        "tokens": 346
+      },
+      {
+        "advisory_id": "GHSA-rp2v-v467-q9vq",
+        "tokens": 272
+      },
+      {
+        "advisory_id": "GHSA-78f9-r8mh-4xm2",
+        "tokens": 1084
+      },
+      {
+        "advisory_id": "GHSA-3wvg-mj6g-m9cv",
+        "tokens": 59
+      },
+      {
+        "advisory_id": "GHSA-mh74-4m5g-fcjx",
+        "tokens": 131
+      },
+      {
+        "advisory_id": "GHSA-f366-4rvv-95x2",
+        "tokens": 401
+      },
+      {
+        "advisory_id": "GHSA-rr46-m366-gm44",
+        "tokens": 49
+      },
+      {
+        "advisory_id": "GHSA-74xw-82v7-hmrm",
+        "tokens": 82
+      },
+      {
+        "advisory_id": "GHSA-p944-4xh2-x776",
+        "tokens": 797
+      },
+      {
+        "advisory_id": "GHSA-7r34-79r5-rcc9",
+        "tokens": 1986
+      },
+      {
+        "advisory_id": "GHSA-9q5r-wfvf-rr7f",
+        "tokens": 639
+      },
+      {
+        "advisory_id": "GHSA-jj7c-jrv4-c65x",
+        "tokens": 239
+      },
+      {
+        "advisory_id": "GHSA-hw9r-6m78-w6h3",
+        "tokens": 140
+      },
+      {
+        "advisory_id": "GHSA-mcg6-h362-cmq5",
+        "tokens": 534
+      },
+      {
+        "advisory_id": "GHSA-fpwp-69xv-c67f",
+        "tokens": 92
+      },
+      {
+        "advisory_id": "GHSA-m7m4-4vm8-55wg",
+        "tokens": 119
+      },
+      {
+        "advisory_id": "GHSA-3wwm-hjv7-23r3",
+        "tokens": 2035
+      },
+      {
+        "advisory_id": "GHSA-m2v9-299j-rv96",
+        "tokens": 87
+      },
+      {
+        "advisory_id": "GHSA-9g3v-v24q-jj5p",
+        "tokens": 70
+      },
+      {
+        "advisory_id": "GHSA-g6c9-f4xm-9j4x",
+        "tokens": 141
+      },
+      {
+        "advisory_id": "GHSA-22jm-p2vv-j2hc",
+        "tokens": 55
+      },
+      {
+        "advisory_id": "GHSA-g49j-j489-3xpf",
+        "tokens": 103
+      },
+      {
+        "advisory_id": "GHSA-gppg-gqw8-wh9g",
+        "tokens": 135
+      },
+      {
+        "advisory_id": "GHSA-7hfw-26vp-jp8m",
+        "tokens": 223
+      },
+      {
+        "advisory_id": "GHSA-pxxv-rv32-2qgv",
+        "tokens": 101
+      },
+      {
+        "advisory_id": "GHSA-4v9q-cgpw-cf38",
+        "tokens": 246
+      },
+      {
+        "advisory_id": "GHSA-hxwh-jpp2-84pm",
+        "tokens": 117
+      },
+      {
+        "advisory_id": "GHSA-9773-3fqg-8w25",
+        "tokens": 155
+      },
+      {
+        "advisory_id": "GHSA-68w8-qjq3-2gfm",
+        "tokens": 149
+      },
+      {
+        "advisory_id": "GHSA-4hh5-2678-83fx",
+        "tokens": 41
+      },
+      {
+        "advisory_id": "GHSA-269j-37ww-cmh3",
+        "tokens": 69
+      },
+      {
+        "advisory_id": "GHSA-gpvv-69j7-gwj8",
+        "tokens": 102
+      },
+      {
+        "advisory_id": "GHSA-6v6w-h8m6-7mv2",
+        "tokens": 94
+      },
+      {
+        "advisory_id": "GHSA-rh9c-rqvg-f7pr",
+        "tokens": 1869
+      },
+      {
+        "advisory_id": "GHSA-8qvm-5x2c-j2w7",
+        "tokens": 340
+      },
+      {
+        "advisory_id": "GHSA-xfjq-9rxq-ph6m",
+        "tokens": 103
+      },
+      {
+        "advisory_id": "GHSA-g8gc-6c4h-jg86",
+        "tokens": 744
+      },
+      {
+        "advisory_id": "GHSA-67rv-mg8q-5pf3",
+        "tokens": 200
+      },
+      {
+        "advisory_id": "GHSA-pc36-qwjq-x68c",
+        "tokens": 863
+      },
+      {
+        "advisory_id": "GHSA-r6x4-923q-g947",
+        "tokens": 1753
+      },
+      {
+        "advisory_id": "GHSA-cjcx-jfp2-f7m2",
+        "tokens": 373
+      },
+      {
+        "advisory_id": "GHSA-4x83-5gw5-q346",
+        "tokens": 81
+      },
+      {
+        "advisory_id": "GHSA-pp3g-xmm4-5cw9",
+        "tokens": 58
+      },
+      {
+        "advisory_id": "GHSA-3r9x-f23j-gc73",
+        "tokens": 1459
+      },
+      {
+        "advisory_id": "GHSA-pvrc-hg3f-58r6",
+        "tokens": 541
+      },
+      {
+        "advisory_id": "GHSA-mrmm-qmrj-xgp6",
+        "tokens": 23
+      },
+      {
+        "advisory_id": "GHSA-rh4j-5rhw-hr54",
+        "tokens": 242
+      },
+      {
+        "advisory_id": "GHSA-8w3f-4r8f-pf53",
+        "tokens": 611
+      },
+      {
+        "advisory_id": "GHSA-588w-w6mv-3cw5",
+        "tokens": 112
+      },
+      {
+        "advisory_id": "GHSA-6cr4-ccf3-x7h4",
+        "tokens": 643
+      },
+      {
+        "advisory_id": "GHSA-mwf2-qr4v-94h2",
+        "tokens": 158
+      },
+      {
+        "advisory_id": "GHSA-q46g-v7r4-9vhr",
+        "tokens": 65
+      },
+      {
+        "advisory_id": "GHSA-j86v-p27c-73fm",
+        "tokens": 451
+      },
+      {
+        "advisory_id": "GHSA-pq5c-rjhq-qp7p",
+        "tokens": 1059
+      },
+      {
+        "advisory_id": "GHSA-66hx-chf7-3332",
+        "tokens": 2165
+      },
+      {
+        "advisory_id": "GHSA-42vr-xj54-vc7v",
+        "tokens": 3049
+      },
+      {
+        "advisory_id": "GHSA-2f96-g7mh-g2hx",
+        "tokens": 1775
+      },
+      {
+        "advisory_id": "GHSA-xmq7-7fxm-rr79",
+        "tokens": 1145
+      },
+      {
+        "advisory_id": "GHSA-7xx3-qp5w-fw96",
+        "tokens": 67
+      },
+      {
+        "advisory_id": "GHSA-24qx-w28j-9m6p",
+        "tokens": 269
+      },
+      {
+        "advisory_id": "GHSA-46x4-9jmv-jc8p",
+        "tokens": 75
+      },
+      {
+        "advisory_id": "GHSA-j59j-h3g7-cpmf",
+        "tokens": 72
+      },
+      {
+        "advisory_id": "GHSA-mhpg-c27v-6mxr",
+        "tokens": 1212
+      },
+      {
+        "advisory_id": "GHSA-527m-2xhr-j27g",
+        "tokens": 1083
+      },
+      {
+        "advisory_id": "GHSA-rcf8-g8jv-vg6p",
+        "tokens": 318
+      },
+      {
+        "advisory_id": "GHSA-w67g-6gjv-c599",
+        "tokens": 164
+      },
+      {
+        "advisory_id": "GHSA-fwcf-753v-fgcj",
+        "tokens": 264
+      },
+      {
+        "advisory_id": "GHSA-84jm-4cf3-9jfm",
+        "tokens": 460
+      },
+      {
+        "advisory_id": "GHSA-hm45-mgqm-gjm4",
+        "tokens": 219
+      },
+      {
+        "advisory_id": "GHSA-x5cx-w6p2-mxf2",
+        "tokens": 174
+      },
+      {
+        "advisory_id": "GHSA-fq2m-6wqh-x44g",
+        "tokens": 5772
+      },
+      {
+        "advisory_id": "GHSA-w6j9-cwv2-h6wq",
+        "tokens": 2118
+      },
+      {
+        "advisory_id": "GHSA-jf6q-chmf-3h3v",
+        "tokens": 3112
+      },
+      {
+        "advisory_id": "GHSA-xmpv-j7p2-j873",
+        "tokens": 400
+      },
+      {
+        "advisory_id": "GHSA-c56v-8w4g-3mfm",
+        "tokens": 234
+      },
+      {
+        "advisory_id": "GHSA-6h52-4vmh-8x4f",
+        "tokens": 66
+      },
+      {
+        "advisory_id": "GHSA-3x9g-8vmp-wqvf",
+        "tokens": 218
+      },
+      {
+        "advisory_id": "GHSA-c98p-7wgm-6p64",
+        "tokens": 154
+      },
+      {
+        "advisory_id": "GHSA-9356-575x-2w9m",
+        "tokens": 190
+      },
+      {
+        "advisory_id": "GHSA-cjv4-7hp2-2x9h",
+        "tokens": 271
+      },
+      {
+        "advisory_id": "GHSA-4fg5-j4mm-wfpg",
+        "tokens": 43
+      },
+      {
+        "advisory_id": "GHSA-hjq6-52gw-2g7p",
+        "tokens": 1058
+      },
+      {
+        "advisory_id": "GHSA-qg3f-8x3j-ggf2",
+        "tokens": 793
+      },
+      {
+        "advisory_id": "GHSA-j5h9-9r39-43q5",
+        "tokens": 51
+      },
+      {
+        "advisory_id": "GHSA-7fvx-3jfc-2cpc",
+        "tokens": 347
+      },
+      {
+        "advisory_id": "GHSA-547m-23x7-cxg5",
+        "tokens": 54
+      },
+      {
+        "advisory_id": "GHSA-5m2m-27cg-7v4v",
+        "tokens": 204
+      },
+      {
+        "advisory_id": "GHSA-qw5h-7f53-xrp6",
+        "tokens": 201
+      },
+      {
+        "advisory_id": "GHSA-x422-6qhv-p29g",
+        "tokens": 40
+      },
+      {
+        "advisory_id": "GHSA-h33q-mhmp-8p67",
+        "tokens": 1126
+      },
+      {
+        "advisory_id": "GHSA-5cx2-vq3h-x52c",
+        "tokens": 97
+      },
+      {
+        "advisory_id": "GHSA-x6m9-gxvr-7jpv",
+        "tokens": 663
+      },
+      {
+        "advisory_id": "GHSA-8cxv-76p7-jxwr",
+        "tokens": 383
+      },
+      {
+        "advisory_id": "GHSA-xwg2-qc6c-7c3q",
+        "tokens": 71
+      },
+      {
+        "advisory_id": "GHSA-8p5c-f328-9fvv",
+        "tokens": 41
+      },
+      {
+        "advisory_id": "GHSA-462w-v97r-4m45",
+        "tokens": 180
+      },
+      {
+        "advisory_id": "GHSA-v3m2-pg96-w33m",
+        "tokens": 236
+      },
+      {
+        "advisory_id": "GHSA-g7p5-89mh-248h",
+        "tokens": 1812
+      },
+      {
+        "advisory_id": "GHSA-fq23-g58m-799r",
+        "tokens": 1711
+      },
+      {
+        "advisory_id": "GHSA-6vmq-24h2-pj7j",
+        "tokens": 1775
+      }
+    ],
+    "~2000": [
+      {
+        "advisory_id": "GHSA-7r34-79r5-rcc9",
+        "tokens": 1986
+      },
+      {
+        "advisory_id": "GHSA-3wwm-hjv7-23r3",
+        "tokens": 2035
+      },
+      {
+        "advisory_id": "GHSA-rh9c-rqvg-f7pr",
+        "tokens": 1869
+      },
+      {
+        "advisory_id": "GHSA-r6x4-923q-g947",
+        "tokens": 1753
+      },
+      {
+        "advisory_id": "GHSA-66hx-chf7-3332",
+        "tokens": 2165
+      },
+      {
+        "advisory_id": "GHSA-2f96-g7mh-g2hx",
+        "tokens": 1775
+      },
+      {
+        "advisory_id": "GHSA-w6j9-cwv2-h6wq",
+        "tokens": 2118
+      },
+      {
+        "advisory_id": "GHSA-g7p5-89mh-248h",
+        "tokens": 1812
+      },
+      {
+        "advisory_id": "GHSA-6vmq-24h2-pj7j",
+        "tokens": 1775
+      },
+      {
+        "advisory_id": "GHSA-6g6r-q6gw-w8fg",
+        "tokens": 1952
+      },
+      {
+        "advisory_id": "GHSA-3gq4-3j92-5w49",
+        "tokens": 1971
+      },
+      {
+        "advisory_id": "GHSA-cw6x-m8jw-qmrh",
+        "tokens": 2160
+      },
+      {
+        "advisory_id": "GHSA-j92p-c242-7hfx",
+        "tokens": 1770
+      },
+      {
+        "advisory_id": "GHSA-2mq9-hm29-8qch",
+        "tokens": 1858
+      },
+      {
+        "advisory_id": "GHSA-v3x9-6gg8-c2c9",
+        "tokens": 2055
+      },
+      {
+        "advisory_id": "GHSA-rcjh-r59h-gq37",
+        "tokens": 1766
+      },
+      {
+        "advisory_id": "GHSA-w66g-j6c4-hcfc",
+        "tokens": 1759
+      },
+      {
+        "advisory_id": "GHSA-cfh6-pv5c-38jv",
+        "tokens": 1895
+      },
+      {
+        "advisory_id": "GHSA-m5x5-28jr-gpjj",
+        "tokens": 2015
+      },
+      {
+        "advisory_id": "GHSA-cfxv-8fw8-rwpv",
+        "tokens": 1755
+      }
+    ],
+    "~512": [
+      {
+        "advisory_id": "GHSA-mcg6-h362-cmq5",
+        "tokens": 534
+      },
+      {
+        "advisory_id": "GHSA-pvrc-hg3f-58r6",
+        "tokens": 541
+      },
+      {
+        "advisory_id": "GHSA-j86v-p27c-73fm",
+        "tokens": 451
+      },
+      {
+        "advisory_id": "GHSA-84jm-4cf3-9jfm",
+        "tokens": 460
+      },
+      {
+        "advisory_id": "GHSA-5925-88xh-6h99",
+        "tokens": 544
+      },
+      {
+        "advisory_id": "GHSA-ffj4-jq7m-9g6v",
+        "tokens": 562
+      },
+      {
+        "advisory_id": "GHSA-h7ff-cfc9-wmmh",
+        "tokens": 515
+      },
+      {
+        "advisory_id": "GHSA-432c-wxpg-m4q3",
+        "tokens": 566
+      },
+      {
+        "advisory_id": "GHSA-4r3p-w3mc-5v34",
+        "tokens": 534
+      },
+      {
+        "advisory_id": "GHSA-393f-2jr3-cp69",
+        "tokens": 492
+      },
+      {
+        "advisory_id": "GHSA-p2cq-cprg-frvm",
+        "tokens": 490
+      },
+      {
+        "advisory_id": "GHSA-49rq-hwc3-x77w",
+        "tokens": 508
+      },
+      {
+        "advisory_id": "GHSA-gjrg-mpp7-g774",
+        "tokens": 531
+      },
+      {
+        "advisory_id": "GHSA-cjc7-49v2-jp64",
+        "tokens": 569
+      },
+      {
+        "advisory_id": "GHSA-jhq9-wm9m-cf89",
+        "tokens": 458
+      },
+      {
+        "advisory_id": "GHSA-c336-7962-wfj2",
+        "tokens": 469
+      },
+      {
+        "advisory_id": "GHSA-3p37-3636-q8wv",
+        "tokens": 535
+      },
+      {
+        "advisory_id": "GHSA-gwp4-mcv4-w95j",
+        "tokens": 490
+      },
+      {
+        "advisory_id": "GHSA-8wr4-2wm6-w3pr",
+        "tokens": 518
+      },
+      {
+        "advisory_id": "GHSA-j2pw-vp55-fqqj",
+        "tokens": 568
+      }
+    ]
+  },
+  "natural_token_distribution": {
+    "max": 5772,
+    "p10": 59,
+    "p50": 234,
+    "p90": 1775,
+    "p99": 3112
+  },
+  "seed": 0,
+  "source": "train and dev pools of splits/pool-v1.json",
+  "tokenizer": {
+    "name": "distilbert/distilbert-base-cased",
+    "revision": "6ea81172465e8b0ad3fddeed32b986cdcdcffcf0"
+  },
+  "version": "workload-v1"
+}

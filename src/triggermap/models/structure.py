@@ -6,6 +6,7 @@ classifiers only ever compare consecutive conditions that share a scope.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass
 
 from triggermap.text.markdown import BlockKind
@@ -37,6 +38,33 @@ def scope_of(doc: PreprocessedDocument, span: tuple[int, int]) -> Scope:
                 return Scope("list", block.list_id, lead)
             return Scope("sentence", index, "")
     return Scope("none", -1, "")
+
+
+class ScopeIndex:
+    """``scope_of`` for many spans of one document: O(log n) per lookup instead of O(n)."""
+
+    def __init__(self, doc: PreprocessedDocument) -> None:
+        self.doc = doc
+        self.starts = [sentence.start for sentence in doc.sentences]
+        self.first_block: dict[int, int] = {}
+        for index, block in enumerate(doc.canonical.blocks):
+            if block.list_id is not None:
+                self.first_block.setdefault(block.list_id, index)
+
+    def scope(self, span: tuple[int, int]) -> Scope:
+        index = bisect_right(self.starts, span[0]) - 1
+        if index < 0 or span[0] >= self.doc.sentences[index].end:
+            return Scope("none", -1, "")
+        sentence = self.doc.sentences[index]
+        block = self.doc.canonical.blocks[sentence.block]
+        if block.kind is BlockKind.LIST_ITEM and block.list_id is not None:
+            first = self.first_block[block.list_id]
+            lead = ""
+            if first > 0:
+                previous = self.doc.canonical.blocks[first - 1]
+                lead = self.doc.text[previous.start : previous.end]
+            return Scope("list", block.list_id, lead)
+        return Scope("sentence", index, "")
 
 
 def context_for(doc: PreprocessedDocument, position: int) -> str:
