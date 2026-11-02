@@ -28,7 +28,7 @@ Each record's `origin` states how its labels were made, read from Label Studio's
 
 | Origin | Meaning |
 |---|---|
-| `manual` | Labelled by hand, with no model draft. |
+| `manual` | Submitted without a Label Studio pre-annotation (labelled by hand in the tool). |
 | `model_draft_accepted` | A model pre-annotation submitted with its labels unchanged (`origin_model` names it). |
 | `model_draft_edited` | A model pre-annotation that a person changed before submitting. |
 

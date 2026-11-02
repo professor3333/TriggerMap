@@ -170,6 +170,39 @@ def _annotate_import(args: argparse.Namespace) -> int:
     return 1 if problems else 0
 
 
+def _annotate_gate(args: argparse.Namespace) -> int:
+    from collections import Counter
+
+    from triggermap.annotate.gate import gate, render_gate, strata_of
+    from triggermap.annotate.importer import load_export
+    from triggermap.corpus.splits import load_split
+    from triggermap.eval.runner import load_gold
+    from triggermap.schema import AdvisoryAnnotation
+
+    assignment = load_split(args.split_manifest)["assignment"]
+    records = [
+        r
+        for r in load_gold(args.gold).values()
+        if isinstance(r, AdvisoryAnnotation) and assignment.get(r.advisory_id) != "test"
+    ]
+    rows, sizes = gate(records, strata_of(json.loads(args.sample.read_text("utf-8"))), assignment)
+    origins = Counter(r.origin.value if r.origin else "unrecorded" for r in records)
+    lead_times: list[float] = []
+    if args.export:
+        for task in load_export(args.export):
+            for ann in task.get("annotations", []):
+                lead = ann.get("lead_time")
+                manual = ann.get("parent_prediction") is None and not ann.get("was_cancelled")
+                if manual and isinstance(lead, int | float):
+                    lead_times.append(float(lead))
+    source = f"`{args.gold}`, split `{args.split_manifest}`"
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(render_gate(rows, sizes, origins, lead_times, source=source), "utf-8")
+    unsupported = [r.label for r in rows if r.supported is False]
+    print(f"wrote {args.out}; unsupported: {', '.join(unsupported) or 'none'}")
+    return 0
+
+
 def _evaluate(args: argparse.Namespace) -> int:
     from triggermap.corpus.splits import load_split, select
     from triggermap.eval.report import render
@@ -855,6 +888,14 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--out", type=Path, default=Path("annotations/pilot/pilot-1.jsonl"))
     imp.add_argument("--report", type=Path)
     imp.set_defaults(handler=_annotate_import)
+
+    gate_cmd = annotate_cmds.add_parser("gate", help="pilot decision gate: projected support")
+    gate_cmd.add_argument("--gold", type=Path, default=Path("annotations/pilot/pilot-1.jsonl"))
+    gate_cmd.add_argument("--sample", type=Path, default=DEFAULT_PILOT)
+    gate_cmd.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    gate_cmd.add_argument("--export", type=Path, help="Label Studio JSON export (for pace)")
+    gate_cmd.add_argument("--out", type=Path, default=Path("docs/pilot_gate.md"))
+    gate_cmd.set_defaults(handler=_annotate_gate)
 
     evaluate = commands.add_parser("evaluate", help="score predictions against gold")
     evaluate.add_argument("gold", type=Path, help="gold AdvisoryAnnotation JSONL")

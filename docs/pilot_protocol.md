@@ -70,7 +70,14 @@ agreement.
 
 ## Decision gate
 
-These are proposed criteria for review together after the pilot:
+The measured result is in [`pilot_gate.md`](pilot_gate.md), generated from the non-test pilot
+records with:
+
+```bash
+uv run triggermap annotate gate --export data/label_studio/export.json
+```
+
+The criteria:
 
 - **Pace.** The measured median minutes per document sets the realistic size of the gold set
   within the 80–130 hour budget.

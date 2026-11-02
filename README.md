@@ -154,7 +154,7 @@ item can be highlighted in the original advisory.
 | Phase | Scope | Status |
 |---|---|:---:|
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
-| 1 · Pilot | 100-document pilot imported (22 hand-labelled, 78 accepted model drafts); guideline revision, decision gate | 🟨 labels in · gate pending |
+| 1 · Pilot | 100-document pilot imported (22 hand-labelled, 78 accepted model drafts); [decision gate](docs/pilot_gate.md) measured; guidelines v0.2 drafted, frozen at `pilot-2` | 🟨 revision in progress |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
@@ -251,13 +251,16 @@ JSON report. The same features are available as a JSON API: `POST /v1/extraction
 uv run triggermap corpus sample-pilot      # reproduce the pilot sample (seed 20261020)
 uv run triggermap annotate tasks           # Label Studio tasks for the sample
 uv run triggermap annotate import data/label_studio/export.json --annotator A1
+uv run triggermap annotate gate --export data/label_studio/export.json   # docs/pilot_gate.md
 ```
 
 The importer validates every exported annotation (offsets, labels, groups, document status),
 records its origin (manual, or a model draft accepted or edited), writes only clean records, and
 reports problems, label counts, origins and annotation pace. The procedure
 is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md), and the labelling rules are in
-[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md).
+[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md). The gate projects each role
+and group operator to 800 documents from the non-test pilot records and marks classes below 50
+as unsupported.
 
 ## How results will be measured
 
