@@ -12,7 +12,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-ANNOTATION_SCHEMA_VERSION = "1.1"  # 1.1 adds AnnotationOrigin (additive)
+ANNOTATION_SCHEMA_VERSION = "1.2"  # 1.1 adds AnnotationOrigin; 1.2 adds model_draft_revised
 
 
 class Category(StrEnum):
@@ -45,13 +45,16 @@ class AnnotationOrigin(StrEnum):
     """How a record's labels came to exist, read from the annotation tool's own fields.
 
     ``model_draft_accepted`` means a model pre-annotation was submitted with its labels
-    unchanged; ``model_draft_edited`` means a person changed at least one label first.
-    Neither is human adjudication: that is recorded separately in ``adjudicated``.
+    unchanged. A changed draft is ``model_draft_edited`` only when the annotation tool recorded
+    working time (a person edited it in the interface); a draft changed with no recorded time
+    (saved through an API or script) is ``model_draft_revised``, which is not evidence of
+    human editing. None of these is human adjudication, recorded separately in ``adjudicated``.
     """
 
     MANUAL = "manual"
     MODEL_DRAFT_ACCEPTED = "model_draft_accepted"
     MODEL_DRAFT_EDITED = "model_draft_edited"
+    MODEL_DRAFT_REVISED = "model_draft_revised"
 
 
 class ReviewAnswer(StrEnum):

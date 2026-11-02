@@ -236,10 +236,12 @@ def _notes(text: str) -> dict[str, Any]:
     return {"from_name": "notes", "to_name": "text", "type": "textarea", "value": {"text": [text]}}
 
 
-def _from_draft(corpus: dict[str, Any], draft: list[Any], final: list[Any]) -> dict[str, Any]:
+def _from_draft(
+    corpus: dict[str, Any], draft: list[Any], final: list[Any], lead_time: float | None = None
+) -> dict[str, Any]:
     task = task_with(corpus, final)
     prediction = {"id": 7, "model_version": "draft-v1", "result": draft}
-    task["annotations"][0].update(parent_prediction=7, prediction=prediction, lead_time=None)
+    task["annotations"][0].update(parent_prediction=7, prediction=prediction, lead_time=lead_time)
     return task
 
 
@@ -261,7 +263,7 @@ def test_unchanged_model_draft_is_recorded_as_accepted(corpus: dict[str, Any]) -
     assert conv.record.origin_model == "draft-v1"
     report = render_report([conv], {AID: {"stratum": "random", "words": 50}}, 1)
     assert "| model_draft_accepted | 1 |" in report
-    assert "agreement with that model, not accuracy" in report
+    assert "agreement with the drafting process, not accuracy" in report
     assert "No lead times recorded." in report
 
 
@@ -279,11 +281,18 @@ def test_unchanged_model_draft_is_recorded_as_accepted(corpus: dict[str, Any]) -
     ],
     ids=["removed-span", "changed-role", "removed-relation"],
 )
-def test_edited_model_draft_is_recorded_as_edited(corpus: dict[str, Any], change: Any) -> None:
+def test_changed_model_draft_is_edited_only_with_recorded_time(
+    corpus: dict[str, Any], change: Any
+) -> None:
+    """A change saved with no annotation time (API, script) is not evidence of a human edit."""
     text = build_task(corpus[AID], order=0)["data"]["text"]
     draft = reference_results(text)
-    conv = convert_task(_from_draft(corpus, draft, change(draft)), corpus, "p", "A1")
-    assert conv.origin == AnnotationOrigin.MODEL_DRAFT_EDITED
+    timed = convert_task(_from_draft(corpus, draft, change(draft), 95.0), corpus, "p", "A1")
+    assert timed.origin == AnnotationOrigin.MODEL_DRAFT_EDITED
+    untimed = convert_task(_from_draft(corpus, draft, change(draft)), corpus, "p", "A1")
+    assert untimed.origin == AnnotationOrigin.MODEL_DRAFT_REVISED
+    report = render_report([untimed], {AID: {"stratum": "random", "words": 50}}, 1)
+    assert "| model_draft_revised | 1 |" in report and "not evidence of human editing" in report
 
 
 def test_draft_missing_from_export_is_not_called_accepted(corpus: dict[str, Any]) -> None:
@@ -292,3 +301,5 @@ def test_draft_missing_from_export_is_not_called_accepted(corpus: dict[str, Any]
     task["annotations"][0]["parent_prediction"] = 99
     task["predictions"] = [3]  # Label Studio exports bare ids here
     assert convert_task(task, corpus, "p", "A1").origin == AnnotationOrigin.MODEL_DRAFT_EDITED
+    task["annotations"][0]["lead_time"] = None
+    assert convert_task(task, corpus, "p", "A1").origin == AnnotationOrigin.MODEL_DRAFT_REVISED

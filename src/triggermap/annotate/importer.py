@@ -82,11 +82,13 @@ def render_report(
         if models:
             lines += [f"- Draft model `{m}`: {n} records" for m, n in sorted(models.items())]
             lines.append("")
-        if origins.get("model_draft_accepted"):
+        if origins.get("model_draft_accepted") or origins.get("model_draft_revised"):
             lines += [
-                "Records with origin `model_draft_accepted` carry a model's labels unchanged. "
-                "Scores against them measure agreement with that model, not accuracy; "
-                "report them separately from `manual` records.",
+                "Records with origin `model_draft_accepted` carry a model's labels unchanged, "
+                "and `model_draft_revised` records were changed with no annotation time "
+                "recorded (not evidence of human editing). Scores against either measure "
+                "agreement with the drafting process, not accuracy; report them separately "
+                "from `manual` records.",
                 "",
             ]
 

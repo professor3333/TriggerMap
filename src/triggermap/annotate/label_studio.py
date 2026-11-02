@@ -157,10 +157,11 @@ def convert_task(
 def annotation_origin(
     task: Mapping[str, Any], annotation: Mapping[str, Any]
 ) -> tuple[AnnotationOrigin, str | None]:
-    """Manual, or a model draft accepted unchanged / edited, from the export's own fields.
+    """Manual, or a model draft accepted / edited / revised, from the export's own fields.
 
     Only labels count as changes (spans, categories, roles, relations, document status);
-    the free-text notes field does not.
+    the free-text notes field does not. A changed draft counts as edited by a person only
+    when Label Studio recorded working time on it (``lead_time``); otherwise it is revised.
     """
     parent = annotation.get("parent_prediction")
     if parent is None:
@@ -175,15 +176,16 @@ def annotation_origin(
             ),
             None,
         )
+    lead_time = annotation.get("lead_time")
+    timed = isinstance(lead_time, int | float) and lead_time > 0
+    changed = AnnotationOrigin.MODEL_DRAFT_EDITED if timed else AnnotationOrigin.MODEL_DRAFT_REVISED
     if prediction is None:  # linked draft not in the export: cannot prove it was unchanged
-        return AnnotationOrigin.MODEL_DRAFT_EDITED, None
+        return changed, None
     model = prediction.get("model_version")
     unchanged = _label_items(annotation.get("result", [])) == _label_items(
         prediction.get("result", [])
     )
-    origin = (
-        AnnotationOrigin.MODEL_DRAFT_ACCEPTED if unchanged else AnnotationOrigin.MODEL_DRAFT_EDITED
-    )
+    origin = AnnotationOrigin.MODEL_DRAFT_ACCEPTED if unchanged else changed
     return origin, str(model) if model else None
 
 

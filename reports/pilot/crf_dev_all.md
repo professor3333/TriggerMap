@@ -1,33 +1,33 @@
-# Pilot dev: crf, gold origin all
+# Pilot-2 dev: crf, gold origin all
 
-- Gold: `annotations/pilot/pilot-1.jsonl` (dev split of `splits/pool-v1.json`; origin: all; 38 documents)
-- Predictions: `reports/pilot/predictions/crf-pilot-1.jsonl` (crf-1)
+- Gold: `annotations/pilot/pilot-2.jsonl` (dev split of `splits/pool-v1.json`; origin: all; 38 documents)
+- Predictions: `reports/pilot/predictions/crf-pilot-2.jsonl` (crf-pilot-2)
 - Bootstrap: 1000 resamples, project clusters, seed 0
-- Documents: 38 (34 with gold conditions, 4 without)
+- Documents: 38 (35 with gold conditions, 3 without)
 
 ## Headline metrics (95% bootstrap intervals)
 
 | Metric | Estimate | 95% CI |
 |---|---:|:---:|
-| Typed condition micro-F1 (span + category + role) | 0.065 | [0.013, 0.133] |
-| Exact span F1 | 0.090 | [0.025, 0.161] |
-| Exact span precision | 0.179 | [0.050, 0.308] |
-| Exact span recall | 0.060 | [0.016, 0.114] |
-| Role macro-F1 (roles with gold support) | 0.031 | [0.009, 0.064] |
-| Category macro-F1 | 0.070 | [0.011, 0.139] |
+| Typed condition micro-F1 (span + category + role) | 0.093 | [0.029, 0.185] |
+| Exact span F1 | 0.119 | [0.041, 0.210] |
+| Exact span precision | 0.250 | [0.107, 0.407] |
+| Exact span recall | 0.078 | [0.025, 0.144] |
+| Role macro-F1 (roles with gold support) | 0.041 | [0.015, 0.093] |
+| Category macro-F1 | 0.083 | [0.019, 0.166] |
 | Group exact-match F1 | 0.000 | [0.000, 0.000] |
-| Complete-document exact match, documents with conditions | 0.029 | [0.000, 0.091] |
-| Complete-document exact match, documents without conditions | 0.750 | [0.000, 1.000] |
-| False prerequisite rate (lower is better) | 0.487 | [0.378, 0.606] |
-| Reversed meaning rate (lower is better) | 0.050 | [0.000, 0.158] |
-| Category accuracy on exactly matched spans | 0.714 | [0.333, 1.000] |
+| Complete-document exact match, documents with conditions | 0.057 | [0.000, 0.176] |
+| Complete-document exact match, documents without conditions | 1.000 | [0.000, 1.000] |
+| False prerequisite rate (lower is better) | 0.361 | [0.231, 0.479] |
+| Reversed meaning rate (lower is better) | 0.043 | [0.000, 0.143] |
+| Category accuracy on exactly matched spans | 0.778 | [0.500, 1.000] |
 | Role accuracy on exactly matched spans | 1.000 | [1.000, 1.000] |
 
 ## Per-role results (exact span + role)
 
 | Label | Precision | Recall | F1 | Gold support |
 |---|---:|---:|---:|---:|
-| REQUIRED | 0.179 | 0.064 | 0.094 | 110 |
+| REQUIRED | 0.250 | 0.083 | 0.124 | 109 |
 | EXCEPTION | 0.000 | 0.000 | 0.000 | 0 |
 | NOT_REQUIRED | 0.000 | 0.000 | 0.000 | 3 |
 | UNCERTAIN | 0.000 | 0.000 | 0.000 | 3 |
@@ -36,8 +36,8 @@
 
 | Label | Precision | Recall | F1 | Gold support |
 |---|---:|---:|---:|---:|
-| CONFIGURATION | 0.500 | 0.077 | 0.133 | 13 |
-| USAGE | 0.074 | 0.030 | 0.043 | 67 |
+| CONFIGURATION | 0.500 | 0.083 | 0.143 | 12 |
+| USAGE | 0.167 | 0.060 | 0.088 | 67 |
 | ACCESS | 0.250 | 0.065 | 0.103 | 31 |
 | PLATFORM | 0.000 | 0.000 | 0.000 | 5 |
 
@@ -45,13 +45,13 @@
 
 | Coverage | Confidence ≥ | Typed precision | Retained recall |
 |---:|---:|---:|---:|
-| 10% | 0.918 | 0.250 | 0.009 |
-| 21% | 0.777 | 0.250 | 0.017 |
-| 31% | 0.693 | 0.333 | 0.034 |
-| 41% | 0.587 | 0.250 | 0.034 |
-| 51% | 0.550 | 0.200 | 0.034 |
-| 59% | 0.531 | 0.174 | 0.034 |
-| 69% | 0.499 | 0.148 | 0.034 |
-| 79% | 0.437 | 0.129 | 0.034 |
-| 90% | 0.364 | 0.114 | 0.034 |
-| 100% | 0.246 | 0.128 | 0.043 |
+| 11% | 0.882 | 0.000 | 0.000 |
+| 19% | 0.826 | 0.286 | 0.017 |
+| 31% | 0.649 | 0.273 | 0.026 |
+| 39% | 0.615 | 0.214 | 0.026 |
+| 50% | 0.571 | 0.222 | 0.035 |
+| 61% | 0.544 | 0.273 | 0.052 |
+| 69% | 0.523 | 0.240 | 0.052 |
+| 81% | 0.488 | 0.207 | 0.052 |
+| 89% | 0.458 | 0.219 | 0.061 |
+| 100% | 0.203 | 0.194 | 0.061 |

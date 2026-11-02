@@ -1,6 +1,6 @@
-# Pilot dev: rules, gold origin manual
+# Pilot-2 dev: rules, gold origin manual
 
-- Gold: `annotations/pilot/pilot-1.jsonl` (dev split of `splits/pool-v1.json`; origin: manual; 10 documents)
+- Gold: `annotations/pilot/pilot-2.jsonl` (dev split of `splits/pool-v1.json`; origin: manual; 10 documents)
 - Predictions: `reports/pilot/predictions/rules-2.jsonl` (rules-2)
 - Bootstrap: 1000 resamples, project clusters, seed 0
 - Documents: 10 (9 with gold conditions, 1 without)
