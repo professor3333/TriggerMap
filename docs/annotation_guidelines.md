@@ -1,9 +1,9 @@
 # Annotation guidelines
 
-**Version 0.2 (post-pilot draft).** Label schema v1 (record schema 1.1), preprocessing version 1.
-Version 0.2 resolves the questions raised by the pilot (rules **R1–R8**, cite them in notes). It is
-frozen when the revised pilot is imported as `pilot-2` (section 13), and batch annotation follows
-it. Every change is recorded in the [changelog](#changelog), and annotations record the guideline
+**Version 0.2 (frozen 2026-11-02).** Label schema v1 (record schema 1.2), preprocessing version 1.
+Version 0.2 resolves the questions raised by the pilot (rules **R1–R8**, cite them in notes).
+All batch annotation follows it. The pilot itself was labelled under v0.1 and has **not** been
+migrated to v0.2 (section 13). Every change is recorded in the [changelog](#changelog), and annotations record the guideline
 version they followed.
 
 ## 1. Goal
@@ -279,7 +279,7 @@ role and group operator to the planned 800 documents. Classes projected below 50
 | Class | Pilot gate result | What it means |
 |---|---|---|
 | `UNCERTAIN` | unsupported | Keep annotating as before. Models do not claim it; it is a *Review required* state. |
-| `ANY` | unsupported | Keep annotating. Predicted `ANY` groups are shown for review, and results are reported as low-support. |
+| `ANY` | just supported (51 projected in `pilot-2`) | Keep annotating. Results are reported with their support. |
 | `UNRESOLVED` | unsupported | Keep annotating; always *Review required*. |
 | `EXCEPTION` | supported in training only | No exceptions occurred in the natural pilot documents, so dev/test support will be very small. Training examples come from enriched batches. |
 
@@ -288,20 +288,21 @@ adapt examples to fill a class.
 
 ## 13. Migrating the pilot to v0.2
 
-`pilot-1` was labelled under v0.1 and stays as it is. Before batch-01:
+Both pilot versions were labelled under **v0.1**:
 
-1. In Label Studio, re-check every pilot task that R1–R8 could affect: any note or draft review
-   flag about crafted input, ineffective protections, hedging, impact-specific or
-   variant-specific conditions, request parameters, lifecycle events or references. Edit,
-   resubmit, and cite the rule in the note ("R5").
-2. Export and import as a new version:
-   `triggermap annotate import data/label_studio/export.json --annotator A1 --annotation-version pilot-2 --out annotations/pilot/pilot-2.jsonl`.
-3. Regenerate the gate (`triggermap annotate gate --gold annotations/pilot/pilot-2.jsonl --export data/label_studio/export.json`).
-   Version 0.2 is frozen at that point.
+| Version | What it is |
+|---|---|
+| `pilot-1` | 22 hand-labelled records and 78 model drafts submitted unchanged. |
+| `pilot-2` | `pilot-1` after the 43 flagged drafts were revised through the Label Studio API, with no annotation time recorded: 26 label changes (`model_draft_revised`) and 17 notes-only changes. The revision notes cite v0.1, not R1–R8. |
+
+Version 0.2 was frozen without migrating the pilot, so that batch annotation could start. A
+pilot record may therefore disagree with v0.2 on the cases R1–R8 settle. A future migration
+re-checks those tasks in the Label Studio interface, cites the rule in each note, and imports
+the result as `pilot-3`.
 
 ## Changelog
 
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-10-20 | Pilot draft. |
-| 0.2 | 2026-11-02 | Post-pilot draft. R1 input vs payload construction; R2 attacker-set request parameters are ACCESS; R3 environment events are PLATFORM; R4 hedging; R5 ineffective protections are NOT_REQUIRED; R6 exceptions remove exposure, not impact; R7 variant/escalation-specific conditions are UNCERTAIN; R8 references. New "not conditions" rows, unspecified qualifiers, unsupported classes from the pilot gate (UNCERTAIN, ANY, UNRESOLVED), pilot migration to `pilot-2`. |
+| 0.2 | 2026-11-02 | Post-pilot draft. R1 input vs payload construction; R2 attacker-set request parameters are ACCESS; R3 environment events are PLATFORM; R4 hedging; R5 ineffective protections are NOT_REQUIRED; R6 exceptions remove exposure, not impact; R7 variant/escalation-specific conditions are UNCERTAIN; R8 references. New "not conditions" rows, unspecified qualifiers, unsupported classes from the pilot gate (UNCERTAIN, ANY, UNRESOLVED), pilot migration procedure. Frozen the same day for batch annotation; the pilot is not migrated (section 13). |

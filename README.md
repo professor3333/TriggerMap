@@ -154,7 +154,7 @@ item can be highlighted in the original advisory.
 | Phase | Scope | Status |
 |---|---|:---:|
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
-| 1 · Pilot | 100-document pilot imported (22 hand-labelled, 78 accepted model drafts); [decision gate](docs/pilot_gate.md) measured; guidelines v0.2 drafted, frozen at `pilot-2` | 🟨 revision in progress |
+| 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
@@ -163,18 +163,20 @@ item can be highlighted in the original advisory.
 
 ### Preliminary pilot results (dev split only)
 
-Measured on the **10 hand-labelled pilot documents in the dev split** (17 gold conditions). These
-are early, small-sample baselines, not final results: the intervals are wide, the CRF was trained
-on only 39 pilot documents, and the test split has not been touched.
+Measured on the **10 hand-labelled pilot documents in the dev split** (17 gold conditions,
+`pilot-2`). These are early, small-sample baselines, not final results: the intervals are wide,
+the CRF was trained on only 39 pilot documents (32 of them from model drafts), and the test
+split has not been touched.
 
 | System | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
 |---|---:|---:|---:|
 | Rules (`rules-2`) | 0.095 [0.000, 0.333] | 0.095 [0.000, 0.333] | 0.750 [0.000, 1.000] |
-| CRF (`crf-1`, pilot train split) | 0.154 [0.000, 0.385] | 0.154 [0.000, 0.385] | 0.556 [0.200, 0.750] |
+| CRF (`crf-pilot-2`, pilot train split) | 0.231 [0.062, 0.417] | 0.231 [0.062, 0.417] | 0.444 [0.000, 0.667] |
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
-the 28 accepted model drafts (which measure agreement with that draft model, not accuracy), are
-in [`reports/pilot/`](reports/pilot/README.md).
+the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
+are in [`reports/pilot/`](reports/pilot/README.md). Release targets, declared before any test
+result, are in [`docs/targets.md`](docs/targets.md).
 
 ## Quickstart
 
