@@ -147,21 +147,34 @@ item can be highlighted in the original advisory.
 | 🕳️ | **Missing information stays visible** | "No explicit conditions found" is never shown as "conditions do not apply". Unsupported structure is flagged for review rather than dropped. |
 | ↔️ | **Negation scope matters** | "does *not* set Cache-Control" is a required absence; "symlinks need *not* exist" removes a prerequisite. These are different labels. |
 | 🧪 | **Honest evaluation** | Project- and alias-grouped splits, a frozen blind test set, bootstrap confidence intervals, and strong baselines. |
-| 🧑‍⚖️ | **Humans own the labels** | Gold annotations are hand-made. Reviewer corrections reach training only after adjudication. |
+| 🧑‍⚖️ | **Label origin is recorded** | Every annotation record states how it was made: by hand, or a model draft accepted or edited. Scores are reported separately by origin. Reviewer corrections reach training only after adjudication. |
 
 ## Project status
 
 | Phase | Scope | Status |
 |---|---|:---:|
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
-| 1 · Pilot | 100-document pilot annotation, guideline revision, decision gate | 🟨 in progress |
-| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · scores await pilot labels |
+| 1 · Pilot | 100-document pilot imported (22 hand-labelled, 78 accepted model drafts); guideline revision, decision gate | 🟨 labels in · gate pending |
+| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
 
-Results will be published here only once measured. Until then this README reports no accuracy numbers.
+### Preliminary pilot results (dev split only)
+
+Measured on the **10 hand-labelled pilot documents in the dev split** (17 gold conditions). These
+are early, small-sample baselines, not final results: the intervals are wide, the CRF was trained
+on only 39 pilot documents, and the test split has not been touched.
+
+| System | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
+|---|---:|---:|---:|
+| Rules (`rules-2`) | 0.095 [0.000, 0.333] | 0.095 [0.000, 0.333] | 0.750 [0.000, 1.000] |
+| CRF (`crf-1`, pilot train split) | 0.154 [0.000, 0.385] | 0.154 [0.000, 0.385] | 0.556 [0.200, 0.750] |
+
+95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
+the 28 accepted model drafts (which measure agreement with that draft model, not accuracy), are
+in [`reports/pilot/`](reports/pilot/README.md).
 
 ## Quickstart
 
@@ -241,7 +254,8 @@ uv run triggermap annotate import data/label_studio/export.json --annotator A1
 ```
 
 The importer validates every exported annotation (offsets, labels, groups, document status),
-writes only clean records, and reports problems, label counts and annotation pace. The procedure
+records its origin (manual, or a model draft accepted or edited), writes only clean records, and
+reports problems, label counts, origins and annotation pace. The procedure
 is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md), and the labelling rules are in
 [`docs/annotation_guidelines.md`](docs/annotation_guidelines.md).
 

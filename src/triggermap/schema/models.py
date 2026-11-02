@@ -12,7 +12,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-ANNOTATION_SCHEMA_VERSION = "1"
+ANNOTATION_SCHEMA_VERSION = "1.1"  # 1.1 adds AnnotationOrigin (additive)
 
 
 class Category(StrEnum):
@@ -39,6 +39,19 @@ class DocumentStatus(StrEnum):
     HAS_CONDITIONS = "HAS_CONDITIONS"
     NO_EXPLICIT_CONDITION = "NO_EXPLICIT_CONDITION"
     UNSUPPORTED_STRUCTURE = "UNSUPPORTED_STRUCTURE"
+
+
+class AnnotationOrigin(StrEnum):
+    """How a record's labels came to exist, read from the annotation tool's own fields.
+
+    ``model_draft_accepted`` means a model pre-annotation was submitted with its labels
+    unchanged; ``model_draft_edited`` means a person changed at least one label first.
+    Neither is human adjudication: that is recorded separately in ``adjudicated``.
+    """
+
+    MANUAL = "manual"
+    MODEL_DRAFT_ACCEPTED = "model_draft_accepted"
+    MODEL_DRAFT_EDITED = "model_draft_edited"
 
 
 class ReviewAnswer(StrEnum):
@@ -97,6 +110,8 @@ class AdvisoryAnnotation(_Frozen):
     groups: tuple[Group, ...] = ()
     annotator: str | None = None
     adjudicated: bool = False
+    origin: AnnotationOrigin | None = None  # None: recorded before schema 1.1
+    origin_model: str | None = None  # model version of the draft, when there was one
     notes: str | None = None
 
 

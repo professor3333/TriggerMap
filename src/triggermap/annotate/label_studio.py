@@ -4,6 +4,8 @@ Tasks carry the canonical text (what annotators label), the raw Markdown for ref
 and the provenance needed to reject stale tasks on import. The converter never changes
 a label: it maps offsets, rebuilds groups from relations and reports every problem.
 The one mechanical normalisation, trimming whitespace at span edges, is reported.
+Each record states its origin (manual, or a model draft accepted or edited), read from
+the annotation's link to the prediction it started from.
 """
 
 from __future__ import annotations
@@ -18,6 +20,7 @@ from triggermap.corpus.groups import UnionFind
 from triggermap.ingest.records import AdvisoryDocument
 from triggermap.schema.models import (
     AdvisoryAnnotation,
+    AnnotationOrigin,
     Category,
     Condition,
     DocumentStatus,
@@ -69,6 +72,7 @@ class Conversion:
     issues: list[Issue] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)  # informational, never blocking
     lead_time: float | None = None
+    origin: AnnotationOrigin | None = None
 
 
 @dataclass
@@ -117,6 +121,8 @@ def convert_task(
         conv.notes.append(f"{len(annotations)} annotations; used the most recently updated")
     lead_time = annotation.get("lead_time")
     conv.lead_time = float(lead_time) if isinstance(lead_time, int | float) else None
+    origin, origin_model = annotation_origin(task, annotation)
+    conv.origin = origin
 
     regions, relations, status, note_text = _read_results(annotation.get("result", []), conv)
     conditions, id_map = _conditions(regions, pre.text, conv)
@@ -136,6 +142,8 @@ def convert_task(
             conditions=tuple(conditions),
             groups=tuple(groups),
             annotator=annotator,
+            origin=origin,
+            origin_model=origin_model,
             notes=note_text,
         )
     except (ValidationError, ValueError) as exc:
@@ -144,6 +152,67 @@ def convert_task(
     conv.issues += validate_annotation(record, pre.text)
     conv.record = record
     return conv
+
+
+def annotation_origin(
+    task: Mapping[str, Any], annotation: Mapping[str, Any]
+) -> tuple[AnnotationOrigin, str | None]:
+    """Manual, or a model draft accepted unchanged / edited, from the export's own fields.
+
+    Only labels count as changes (spans, categories, roles, relations, document status);
+    the free-text notes field does not.
+    """
+    parent = annotation.get("parent_prediction")
+    if parent is None:
+        return AnnotationOrigin.MANUAL, None
+    prediction = annotation.get("prediction")
+    if not isinstance(prediction, Mapping):
+        prediction = next(
+            (
+                p
+                for p in task.get("predictions", [])
+                if isinstance(p, Mapping) and p.get("id") == parent
+            ),
+            None,
+        )
+    if prediction is None:  # linked draft not in the export: cannot prove it was unchanged
+        return AnnotationOrigin.MODEL_DRAFT_EDITED, None
+    model = prediction.get("model_version")
+    unchanged = _label_items(annotation.get("result", [])) == _label_items(
+        prediction.get("result", [])
+    )
+    origin = (
+        AnnotationOrigin.MODEL_DRAFT_ACCEPTED if unchanged else AnnotationOrigin.MODEL_DRAFT_EDITED
+    )
+    return origin, str(model) if model else None
+
+
+def _label_items(results: Iterable[Mapping[str, Any]]) -> set[Hashable]:
+    items: set[Hashable] = set()
+    for item in results:
+        value = item.get("value", {})
+        if item.get("type") == "relation":
+            items.add(
+                (
+                    "relation",
+                    item.get("from_id"),
+                    item.get("to_id"),
+                    tuple(sorted(item.get("labels", []))),
+                )
+            )
+        elif item.get("from_name") != "notes":
+            items.add(
+                (
+                    item.get("from_name"),
+                    item.get("type"),
+                    item.get("id") if item.get("from_name") != "document_status" else None,
+                    value.get("start"),
+                    value.get("end"),
+                    tuple(sorted(value.get("labels", []))),
+                    tuple(sorted(value.get("choices", []))),
+                )
+            )
+    return items
 
 
 def _read_results(

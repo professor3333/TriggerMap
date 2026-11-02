@@ -5,7 +5,7 @@ import pytest
 from tests.factories import make_doc
 from triggermap.annotate.importer import import_export, render_report, write_records
 from triggermap.annotate.label_studio import build_task, convert_task, utf16_to_codepoint
-from triggermap.schema import Category, DocumentStatus, GroupOperator, Role
+from triggermap.schema import AnnotationOrigin, Category, DocumentStatus, GroupOperator, Role
 
 AID = "GHSA-5h86-8mv2-jq9f"
 SENTENCE = (
@@ -229,3 +229,66 @@ def test_real_label_studio_export_round_trip(aiohttp_advisory: dict[str, Any]) -
     ]
     assert conv.record.notes == "verification note"
     assert conv.lead_time == 123.4
+    assert conv.record.origin == AnnotationOrigin.MANUAL
+
+
+def _notes(text: str) -> dict[str, Any]:
+    return {"from_name": "notes", "to_name": "text", "type": "textarea", "value": {"text": [text]}}
+
+
+def _from_draft(corpus: dict[str, Any], draft: list[Any], final: list[Any]) -> dict[str, Any]:
+    task = task_with(corpus, final)
+    prediction = {"id": 7, "model_version": "draft-v1", "result": draft}
+    task["annotations"][0].update(parent_prediction=7, prediction=prediction, lead_time=None)
+    return task
+
+
+def test_manual_annotation_origin(corpus: dict[str, Any]) -> None:
+    text = build_task(corpus[AID], order=0)["data"]["text"]
+    record = convert_task(task_with(corpus, reference_results(text)), corpus, "p", "A1").record
+    assert record is not None
+    assert (record.origin, record.origin_model) == (AnnotationOrigin.MANUAL, None)
+
+
+def test_unchanged_model_draft_is_recorded_as_accepted(corpus: dict[str, Any]) -> None:
+    """Only labels count: rewriting the notes does not make a draft human-edited."""
+    text = build_task(corpus[AID], order=0)["data"]["text"]
+    draft = [*reference_results(text), _notes("MODEL SUGGESTION")]
+    final = [*reference_results(text), _notes("submitted")]
+    conv = convert_task(_from_draft(corpus, draft, final), corpus, "p", "A1")
+    assert conv.record is not None
+    assert conv.record.origin == AnnotationOrigin.MODEL_DRAFT_ACCEPTED
+    assert conv.record.origin_model == "draft-v1"
+    report = render_report([conv], {AID: {"stratum": "random", "words": 50}}, 1)
+    assert "| model_draft_accepted | 1 |" in report
+    assert "agreement with that model, not accuracy" in report
+    assert "No lead times recorded." in report
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda r: [x for x in r if x.get("value", {}).get("text") != "Symlinks need not exist"],
+        lambda r: [
+            {**x, "value": {**x["value"], "choices": ["UNCERTAIN"]}}
+            if x.get("from_name") == "role" and x["id"] == "r4"
+            else x
+            for x in r
+        ],
+        lambda r: [x for x in r if x.get("type") != "relation"],
+    ],
+    ids=["removed-span", "changed-role", "removed-relation"],
+)
+def test_edited_model_draft_is_recorded_as_edited(corpus: dict[str, Any], change: Any) -> None:
+    text = build_task(corpus[AID], order=0)["data"]["text"]
+    draft = reference_results(text)
+    conv = convert_task(_from_draft(corpus, draft, change(draft)), corpus, "p", "A1")
+    assert conv.origin == AnnotationOrigin.MODEL_DRAFT_EDITED
+
+
+def test_draft_missing_from_export_is_not_called_accepted(corpus: dict[str, Any]) -> None:
+    text = build_task(corpus[AID], order=0)["data"]["text"]
+    task = task_with(corpus, reference_results(text))
+    task["annotations"][0]["parent_prediction"] = 99
+    task["predictions"] = [3]  # Label Studio exports bare ids here
+    assert convert_task(task, corpus, "p", "A1").origin == AnnotationOrigin.MODEL_DRAFT_EDITED

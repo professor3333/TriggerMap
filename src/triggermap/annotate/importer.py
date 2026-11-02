@@ -74,6 +74,22 @@ def render_report(
         )
         lines.append("")
 
+        origins = Counter((r.origin.value if r.origin else "unrecorded") for r in records)
+        models = Counter(r.origin_model for r in records if r.origin_model)
+        lines += ["## Origin (clean records)", "", "| Origin | Count |", "|---|---:|"]
+        lines += [f"| {k} | {v} |" for k, v in sorted(origins.items())]
+        lines.append("")
+        if models:
+            lines += [f"- Draft model `{m}`: {n} records" for m, n in sorted(models.items())]
+            lines.append("")
+        if origins.get("model_draft_accepted"):
+            lines += [
+                "Records with origin `model_draft_accepted` carry a model's labels unchanged. "
+                "Scores against them measure agreement with that model, not accuracy; "
+                "report them separately from `manual` records.",
+                "",
+            ]
+
     lines += _pace(conversions, pilot_items)
 
     problems = [c for c in conversions if c.issues]

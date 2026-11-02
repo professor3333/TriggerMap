@@ -3,6 +3,7 @@
 from triggermap.schema.models import (
     ANNOTATION_SCHEMA_VERSION,
     AdvisoryAnnotation,
+    AnnotationOrigin,
     Category,
     Condition,
     DocumentStatus,
@@ -17,6 +18,7 @@ from triggermap.schema.validate import Issue, validate_annotation
 __all__ = [
     "ANNOTATION_SCHEMA_VERSION",
     "AdvisoryAnnotation",
+    "AnnotationOrigin",
     "Category",
     "Condition",
     "DocumentStatus",

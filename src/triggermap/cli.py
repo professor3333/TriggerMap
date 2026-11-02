@@ -174,6 +174,7 @@ def _evaluate(args: argparse.Namespace) -> int:
     from triggermap.corpus.splits import load_split, select
     from triggermap.eval.report import render
     from triggermap.eval.runner import evaluate, load_gold, load_predictions
+    from triggermap.schema import AnnotationOrigin
 
     gold = load_gold(args.gold)
     pred = load_predictions(args.pred)
@@ -185,6 +186,12 @@ def _evaluate(args: argparse.Namespace) -> int:
     manifest = load_split(args.split_manifest)
     kept = set(select(sorted(gold), manifest, args.split))
     gold = {aid: record for aid, record in gold.items() if aid in kept}
+    if args.gold_origin == "manual":
+        gold = {
+            aid: r
+            for aid, r in gold.items()
+            if getattr(r, "origin", None) == AnnotationOrigin.MANUAL
+        }
     if not gold:
         raise SystemExit(f"no gold documents in the {args.split} split")
     if args.split == "test":
@@ -202,7 +209,8 @@ def _evaluate(args: argparse.Namespace) -> int:
         docs,
         intervals,
         {
-            "Gold": f"`{args.gold}` ({args.split} split of `{args.split_manifest}`)",
+            "Gold": f"`{args.gold}` ({args.split} split of `{args.split_manifest}`; "
+            f"origin: {args.gold_origin}; {len(gold)} documents)",
             "Predictions": f"`{args.pred}` ({', '.join(model_ids) or 'none'})",
             "Bootstrap": f"{args.samples} resamples, {args.clusters} clusters, seed {args.seed}",
         },
@@ -858,6 +866,12 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--split", choices=["dev", "test"], default="dev")
     evaluate.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     evaluate.add_argument("--release-evaluation", metavar="REASON", help="unlock the test split")
+    evaluate.add_argument(
+        "--gold-origin",
+        choices=["all", "manual"],
+        default="all",
+        help="manual: score only gold records labelled by hand (origin=manual)",
+    )
     evaluate.add_argument("--title", default="Evaluation report")
     evaluate.add_argument("--out", type=Path)
     evaluate.set_defaults(handler=_evaluate)
