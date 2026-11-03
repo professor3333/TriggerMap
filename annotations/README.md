@@ -22,6 +22,9 @@ advisory-database commit it was taken from, and the SHA-256 of the annotated tex
 | `pilot/pilot-1.jsonl` | Pilot annotations as first submitted, 100 records. One `AdvisoryAnnotation` per line. |
 | `pilot/pilot-2.jsonl` | Current pilot version: `pilot-1` after 43 model drafts were revised (see below). |
 | `pilot/pilot-*_report.md` | Import reports: label counts, origins, annotation pace. |
+| `batches/batch-NN.json` | Batch samples (IDs, pools, strategy), committed before annotation. |
+| `batches/batch-01.jsonl` | Batch-01 annotations (train pool), 100 records, guidelines v0.2. |
+| `batches/batch-*_report.md` | Batch import reports. |
 
 ## Origin
 
@@ -39,6 +42,11 @@ In `pilot-1`, 22 records are `manual` and 78 are `model_draft_accepted`
 and 26 `model_draft_revised`. Both versions follow guidelines v0.1. Evaluation reports score the two separately: a score against
 an accepted model draft measures agreement with that model, not accuracy. `adjudicated` is
 `false` for every pilot record (there is no second annotator yet).
+
+`batch-01` (train pool, guidelines v0.2) has no `manual` records: 99 are `model_draft_accepted`
+and 1 is `model_draft_revised` (`model-batch-01-guidelines-0.2`), with no annotation time
+recorded. It is training data only. It does not count toward the hand-labelled gold target,
+and a model trained on it learns from the drafting model's labels.
 
 Records follow the schema in `src/triggermap/schema/models.py` and the rules in
 `docs/annotation_guidelines.md`.

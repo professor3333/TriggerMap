@@ -7,7 +7,7 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | Sample | Pool | n | Strategy | Usable for | When to annotate |
 |---|---|---:|---|---|---|
 | `pilot/pilot_manifest.json` | mixed | 100 | 50 natural + 50 enriched | 39 train, 38 dev, 12 test (11 excluded) | done under v0.1 (`pilot-1`, revised as `pilot-2`) |
-| `batches/batch-01.json` | train | 100 | natural | train | after guidelines v0.2 |
+| `batches/batch-01.json` | train | 100 | natural | train | done under v0.2 (`batch-01`; model drafts, no `manual` records) |
 | `batches/batch-02.json` | train | 100 | enriched (cue top quartile, ≤ 800 words) | train | after guidelines v0.2 |
 | `batches/batch-03.json` | dev | 112 | natural, ≤ 3 per leakage group | dev | after guidelines v0.2 |
 | `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
