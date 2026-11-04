@@ -172,10 +172,12 @@ split has not been touched.
 |---|---:|---:|---:|
 | Rules (`rules-2`) | 0.095 [0.000, 0.333] | 0.095 [0.000, 0.333] | 0.750 [0.000, 1.000] |
 | CRF (`crf-pilot-2`, pilot train split) | 0.231 [0.062, 0.417] | 0.231 [0.062, 0.417] | 0.444 [0.000, 0.667] |
+| CRF (`crf-pilot-2-batch-01`, + 100 model-drafted `batch-01` records) | 0.444 [0.133, 0.667] | 0.444 [0.133, 0.667] | 0.300 [0.000, 0.750] |
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
-are in [`reports/pilot/`](reports/pilot/README.md). Release targets, declared before any test
+are in [`reports/pilot/`](reports/pilot/README.md). The paired difference from adding `batch-01` (+0.214 typed F1,
+95% CI [−0.026, +0.457]) is not clear; see [`reports/training-origin/`](reports/training-origin/README.md). Release targets, declared before any test
 result, are in [`docs/targets.md`](docs/targets.md).
 
 ## Quickstart
@@ -213,9 +215,11 @@ uv run triggermap predict --out data/predictions/rules-2.jsonl        # whole co
 **Train and evaluate** (once gold labels exist):
 
 ```bash
-uv run triggermap train --gold annotations/pilot/pilot-1.jsonl --out artifacts/crf-1
+uv run triggermap train --gold annotations/pilot/pilot-1.jsonl --out artifacts/crf-1   # --origin manual: hand-made labels only
 uv run triggermap predict --model crf --model-dir artifacts/crf-1 --out data/predictions/crf-1.jsonl
 uv run triggermap evaluate annotations/pilot/pilot-1.jsonl data/predictions/crf-1.jsonl --out reports/crf-1.md
+uv run triggermap compare annotations/pilot/pilot-2.jsonl reports/pilot/predictions/rules-2.jsonl \
+    reports/pilot/predictions/crf-pilot-2.jsonl --gold-origin manual   # paired bootstrap, B - A
 ```
 
 **Transformers** (once gold labels exist; DistilBERT, DeBERTa-v3-small; GPU recommended, see

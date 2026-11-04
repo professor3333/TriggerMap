@@ -25,7 +25,7 @@ from pydantic import BaseModel, ConfigDict
 from transformers import AutoModel, AutoTokenizer, get_linear_schedule_with_warmup
 
 from triggermap.eval.metrics import collect, summary
-from triggermap.models.crf.model import training_hash
+from triggermap.models.crf.model import training_hash, training_origins
 from triggermap.models.transformer.data import (
     BIO,
     CATEGORIES,
@@ -183,6 +183,7 @@ def train(
         "config": config.model_dump(),
         "training_documents": len(examples),
         "training_hash": training_hash([record for _, record in examples]),
+        "training_origins": training_origins([record for _, record in examples]),
         "split_assignment_sha256": config.split_assignment_sha256,
         "windows": len(windows),
         "unreachable_spans": sum(w.unreachable for w in windows),

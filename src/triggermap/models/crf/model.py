@@ -135,6 +135,12 @@ def training_hash(records: Sequence[AdvisoryAnnotation]) -> str:
     return hashlib.sha256("\n".join(lines).encode()).hexdigest()
 
 
+def training_origins(records: Sequence[AdvisoryAnnotation]) -> dict[str, int]:
+    """How many training records each label origin contributed (``unrecorded`` before 1.1)."""
+    counts = Counter(r.origin.value if r.origin else "unrecorded" for r in records)
+    return dict(sorted(counts.items()))
+
+
 class CrfExtractor:
     def __init__(
         self,
@@ -242,6 +248,7 @@ class CrfExtractor:
             "hyperparameters": {"c1": c1, "c2": c2, "max_iterations": max_iterations, "seed": seed},
             "training_documents": len(records),
             "training_hash": training_hash(records),
+            "training_origins": training_origins(records),
             "stats": dict(stats),
             "label_counts": {
                 "category": dict(Counter(category_y)),

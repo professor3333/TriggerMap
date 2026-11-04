@@ -205,3 +205,45 @@ def test_multiple_gold_files_merge_and_reject_duplicates(scored, tmp_path: Path)
     assert set(load_gold_files([first, second])) == set(gold_docs)
     with pytest.raises(ValueError, match="more than one gold file"):
         load_gold_files([first, first])
+
+
+def test_compare_cli(scored, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    from tests.factories import write_split_manifest
+
+    gold_docs, predictions = scored
+    perfect = {aid: pred(aid, g.conditions, g.groups) for aid, g in gold_docs.items()}
+    gold_path, a_path, b_path = (tmp_path / n for n in ("g.jsonl", "a.jsonl", "b.jsonl"))
+    gold_path.write_text("".join(g.model_dump_json() + "\n" for g in gold_docs.values()))
+    a_path.write_text("".join(p.model_dump_json() + "\n" for p in predictions.values()))
+    b_path.write_text("".join(p.model_dump_json() + "\n" for p in perfect.values()))
+    split = write_split_manifest(tmp_path / "split.json", {GA: "dev", GB: "dev", GC: "test"})
+    monkeypatch.chdir(tmp_path)
+    base = ["compare", str(gold_path), str(a_path), str(b_path), "--split-manifest", str(split)]
+    base += ["--clusters", "document", "--samples", "50", "--out", "c.md"]
+    assert main(base) == 0
+    report = (tmp_path / "c.md").read_text()
+    assert "- Documents: 2" in report
+    assert "| Typed condition micro-F1 (span + category + role) |" in report
+    same = ["compare", str(gold_path), str(a_path), str(a_path), *base[4:]]
+    assert main(same) == 0
+    assert "B clearly" not in (tmp_path / "c.md").read_text()
+    with pytest.raises(SystemExit, match="locked"):
+        main([*base, "--split", "test"])
+    assert not (tmp_path / "docs/test-access-log.md").exists()
+
+
+def test_comparison_verdicts_respect_metric_direction() -> None:
+    from triggermap.eval.bootstrap import Comparison
+    from triggermap.eval.report import render_comparison
+
+    point = {"typed_f1": 0.5, "false_prerequisite_rate": 0.2}
+    rows = {
+        "typed_f1": Comparison(0.2, 0.05, 0.3, 0.01),
+        "false_prerequisite_rate": Comparison(0.1, 0.02, 0.2, 0.99),
+    }
+    report = render_comparison("t", point, point, rows, "a", "b", {}, 3)
+    lines = {line.split(" | ")[0]: line for line in report.splitlines() if line.startswith("|")}
+    assert lines["| Typed condition micro-F1 (span + category + role)"].endswith(
+        "B clearly better |"
+    )
+    assert lines["| False prerequisite rate (lower is better)"].endswith("B clearly worse |")

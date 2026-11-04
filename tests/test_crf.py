@@ -108,3 +108,38 @@ def test_train_and_predict_cli(tmp_path: Path) -> None:
     lines = preds.read_text().splitlines()
     assert len(lines) == 20
     assert all(Extraction.model_validate_json(line).model_id == "crf-1" for line in lines)
+
+
+def test_train_origin_filter_is_recorded(tmp_path: Path) -> None:
+    from tests.factories import write_split_manifest
+    from triggermap.cli import main
+    from triggermap.schema import AnnotationOrigin
+
+    data = make_dataset(20, TRAIN_VOCAB, seed=7, prefix="org")
+    processed = tmp_path / "processed"
+    processed.mkdir()
+    (processed / "advisories.jsonl").write_text(
+        "".join(doc.model_dump_json() + "\n" for doc, _, _ in data)
+    )
+    origins = [AnnotationOrigin.MANUAL] * 12 + [AnnotationOrigin.MODEL_DRAFT_ACCEPTED] * 8
+    gold = tmp_path / "gold.jsonl"
+    gold.write_text(
+        "".join(
+            rec.model_copy(update={"origin": o}).model_dump_json() + "\n"
+            for (_, _, rec), o in zip(data, origins, strict=True)
+        )
+    )
+    split = write_split_manifest(
+        tmp_path / "split.json", {rec.advisory_id: "train" for _, _, rec in data}
+    )
+    common = ["--gold", str(gold), "--split-manifest", str(split), "--processed", str(processed)]
+    meta = {}
+    for name, extra in (("all", []), ("manual", ["--origin", "manual"])):
+        bundle = tmp_path / name
+        assert main(["train", *common, "--out", str(bundle), "--no-pos", *extra]) == 0
+        meta[name] = json.loads((bundle / "metadata.json").read_text())
+    assert meta["all"]["training_origins"] == {"manual": 12, "model_draft_accepted": 8}
+    assert meta["manual"]["training_origins"] == {"manual": 12}
+    assert meta["manual"]["training_documents"] == 12
+    with pytest.raises(SystemExit, match="--origin"):
+        main(["train", *common, "--out", str(tmp_path / "x"), "--origin", "model_draft_edited"])

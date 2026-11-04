@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from triggermap.eval.bootstrap import Interval
+from triggermap.eval.bootstrap import Comparison, Interval
 from triggermap.eval.metrics import DocCounts, micro, precision_coverage
 from triggermap.schema.models import Category, Role
 
@@ -23,6 +23,53 @@ HEADLINE = [
     ("category_acc_on_matched_spans", "Category accuracy on exactly matched spans"),
     ("role_acc_on_matched_spans", "Role accuracy on exactly matched spans"),
 ]
+
+LOWER_IS_BETTER = frozenset({"false_prerequisite_rate", "reversed_meaning_rate"})
+
+
+def render_comparison(
+    title: str,
+    point_a: Mapping[str, float],
+    point_b: Mapping[str, float],
+    comparison: Mapping[str, Comparison],
+    name_a: str,
+    name_b: str,
+    context: Mapping[str, str],
+    documents: int,
+) -> str:
+    """Paired bootstrap differences (B minus A) on the same documents and resamples.
+
+    A clear verdict needs the whole 95% interval on one side of zero (the improving side
+    is below zero for lower-is-better metrics).
+    """
+    lines = [
+        f"# {title}",
+        "",
+        *(f"- {key}: {value}" for key, value in context.items()),
+        f"- Documents: {documents}",
+        "",
+        "Differences are B minus A with 95% paired bootstrap intervals. *Clear* means the whole "
+        "interval lies on one side of zero.",
+        "",
+        f"| Metric | A ({name_a}) | B ({name_b}) | B - A | 95% CI | Verdict |",
+        "|---|---:|---:|---:|:---:|---|",
+    ]
+    for key, label in HEADLINE:
+        if key not in comparison:
+            continue
+        c = comparison[key]
+        above, below = c.low > 0, c.high < 0
+        if key in LOWER_IS_BETTER:
+            above, below = below, above
+        verdict = (
+            "B clearly better" if above else "B clearly worse" if below else "no clear difference"
+        )
+        lines.append(
+            f"| {label} | {point_a[key]:.3f} | {point_b[key]:.3f} | {c.difference:+.3f} "
+            f"| [{c.low:+.3f}, {c.high:+.3f}] | {verdict} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
 
 
 def render(

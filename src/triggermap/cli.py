@@ -5,11 +5,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
 from triggermap import __version__
+from triggermap.schema import AnnotationOrigin
 
 DEFAULT_SNAPSHOT = Path("data/raw/advisory-database")
 DEFAULT_PROCESSED = Path("data/processed")
@@ -203,21 +204,18 @@ def _annotate_gate(args: argparse.Namespace) -> int:
     return 0
 
 
-def _evaluate(args: argparse.Namespace) -> int:
+def _scored_gold(args: argparse.Namespace, model_ids: Sequence[str]) -> dict[str, Any]:
+    """Gold records of the requested split and origin; the test split needs a declared reason."""
     from triggermap.corpus.splits import load_split, select
-    from triggermap.eval.report import render
-    from triggermap.eval.runner import evaluate, load_gold, load_predictions
-    from triggermap.schema import AnnotationOrigin
+    from triggermap.eval.runner import load_gold
 
-    gold = load_gold(args.gold)
-    pred = load_predictions(args.pred)
     if args.split == "test" and not args.release_evaluation:
         raise SystemExit(
             "the test split is locked: pass --release-evaluation '<reason>' for a declared "
             "release evaluation (it is logged in docs/test-access-log.md)"
         )
-    manifest = load_split(args.split_manifest)
-    kept = set(select(sorted(gold), manifest, args.split))
+    gold = load_gold(args.gold)
+    kept = set(select(sorted(gold), load_split(args.split_manifest), args.split))
     gold = {aid: record for aid, record in gold.items() if aid in kept}
     if args.gold_origin == "manual":
         gold = {
@@ -228,38 +226,98 @@ def _evaluate(args: argparse.Namespace) -> int:
     if not gold:
         raise SystemExit(f"no gold documents in the {args.split} split")
     if args.split == "test":
-        _log_test_access(args, sorted({p.model_id for p in pred.values()}))
-    cluster_of = None
-    if args.clusters == "project":
-        from triggermap.corpus.groups import build_groups
-        from triggermap.ingest.build import CORPUS_FILE, load_corpus
+        _log_test_access(args, sorted(model_ids))
+    return gold
 
-        cluster_of = build_groups(load_corpus(args.processed / CORPUS_FILE)).leakage
-    docs, intervals = evaluate(gold, pred, cluster_of, args.samples, args.seed)
+
+def _clusters(args: argparse.Namespace) -> dict[str, str] | None:
+    if args.clusters != "project":
+        return None
+    from triggermap.corpus.groups import build_groups
+    from triggermap.ingest.build import CORPUS_FILE, load_corpus
+
+    return dict(build_groups(load_corpus(args.processed / CORPUS_FILE)).leakage)
+
+
+def _gold_context(args: argparse.Namespace, gold: Mapping[str, Any]) -> str:
+    return (
+        f"`{args.gold}` ({args.split} split of `{args.split_manifest}`; "
+        f"origin: {args.gold_origin}; {len(gold)} documents)"
+    )
+
+
+def _write_report(report: str, out: Path | None) -> None:
+    if out:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(report, encoding="utf-8")
+        print(f"wrote {out}")
+    else:
+        print(report)
+
+
+def _evaluate(args: argparse.Namespace) -> int:
+    from triggermap.eval.report import render
+    from triggermap.eval.runner import evaluate, load_predictions
+
+    pred = load_predictions(args.pred)
     model_ids = sorted({p.model_id for p in pred.values()})
+    gold = _scored_gold(args, model_ids)
+    docs, intervals = evaluate(gold, pred, _clusters(args), args.samples, args.seed)
     report = render(
         args.title,
         docs,
         intervals,
         {
-            "Gold": f"`{args.gold}` ({args.split} split of `{args.split_manifest}`; "
-            f"origin: {args.gold_origin}; {len(gold)} documents)",
+            "Gold": _gold_context(args, gold),
             "Predictions": f"`{args.pred}` ({', '.join(model_ids) or 'none'})",
             "Bootstrap": f"{args.samples} resamples, {args.clusters} clusters, seed {args.seed}",
         },
     )
-    if args.out:
-        args.out.parent.mkdir(parents=True, exist_ok=True)
-        args.out.write_text(report, encoding="utf-8")
-        print(f"wrote {args.out}")
-    else:
-        print(report)
+    _write_report(report, args.out)
+    return 0
+
+
+def _compare(args: argparse.Namespace) -> int:
+    from triggermap.eval.bootstrap import paired_bootstrap
+    from triggermap.eval.metrics import collect, summary
+    from triggermap.eval.report import render_comparison
+    from triggermap.eval.runner import check_alignment, load_predictions
+
+    preds = [load_predictions(args.baseline), load_predictions(args.candidate)]
+    names = [", ".join(sorted({p.model_id for p in pred.values()})) or "none" for pred in preds]
+    gold = _scored_gold(args, sorted({p.model_id for pred in preds for p in pred.values()}))
+    for pred in preds:
+        check_alignment(gold, pred)
+    docs_a, docs_b = (collect(gold, pred) for pred in preds)
+    comparison = paired_bootstrap(docs_a, docs_b, summary, _clusters(args), args.samples, args.seed)
+    report = render_comparison(
+        args.title,
+        summary(docs_a),
+        summary(docs_b),
+        comparison,
+        names[0],
+        names[1],
+        {
+            "Gold": _gold_context(args, gold),
+            "Baseline (A)": f"`{args.baseline}` ({names[0]})",
+            "Candidate (B)": f"`{args.candidate}` ({names[1]})",
+            "Bootstrap": f"{args.samples} paired resamples, {args.clusters} clusters, "
+            f"seed {args.seed}",
+        },
+        len(docs_a),
+    )
+    _write_report(report, args.out)
     return 0
 
 
 def _gold_examples(
-    gold: list[Path], processed: Path, split_manifest: Path, split: str = "train"
+    gold: list[Path],
+    processed: Path,
+    split_manifest: Path,
+    split: str = "train",
+    origins: Sequence[str] | None = None,
 ) -> list[Any]:
+    """Preprocessed (document, record) pairs of one split, optionally of chosen origins only."""
     from triggermap.corpus.splits import load_split, select
     from triggermap.eval.runner import load_gold_files
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
@@ -276,15 +334,17 @@ def _gold_examples(
         if aid not in wanted:
             continue
         assert isinstance(record, AdvisoryAnnotation)
+        if origins and (record.origin.value if record.origin else "unrecorded") not in origins:
+            continue
         doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
         examples.append((doc, record))
     return examples
 
 
 def _train(args: argparse.Namespace) -> int:
-    examples = _gold_examples(args.gold, args.processed, args.split_manifest)
+    examples = _gold_examples(args.gold, args.processed, args.split_manifest, origins=args.origin)
     if not examples:
-        raise SystemExit("no gold documents in the train split")
+        raise SystemExit("no gold documents in the train split (after any --origin filter)")
     if args.model == "transformer":
         import tomllib
 
@@ -338,7 +398,7 @@ def _experiment(args: argparse.Namespace) -> int:
     from triggermap.models.transformer.train import TrainConfig, train
 
     split = load_split(args.split_manifest)
-    examples = _gold_examples(args.gold, args.processed, args.split_manifest)
+    examples = _gold_examples(args.gold, args.processed, args.split_manifest, origins=args.origin)
     dev = _gold_examples(args.gold, args.processed, args.split_manifest, "dev")
     if not examples or not dev:
         raise SystemExit("experiments need gold documents in both the train and dev splits")
@@ -813,7 +873,8 @@ def _log_test_access(args: argparse.Namespace, model_ids: list[str]) -> None:
         TEST_ACCESS_LOG.parent.mkdir(parents=True, exist_ok=True)
         TEST_ACCESS_LOG.write_text(
             "# Test-set access log\n\nEvery evaluation on the locked test split, appended "
-            "automatically by `triggermap evaluate --split test`.\n\n"
+            "automatically by `triggermap evaluate` and `triggermap compare` with "
+            "`--split test`.\n\n"
             "| UTC time | Models | Gold | Reason |\n|---|---|---|---|\n",
             encoding="utf-8",
         )
@@ -821,6 +882,22 @@ def _log_test_access(args: argparse.Namespace, model_ids: list[str]) -> None:
     reason = args.release_evaluation.replace("|", "/")
     with TEST_ACCESS_LOG.open("a", encoding="utf-8") as fh:
         fh.write(f"| {stamp} | {', '.join(model_ids)} | `{args.gold}` | {reason} |\n")
+
+
+def _scoring_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--clusters", choices=["document", "project"], default="project")
+    parser.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    parser.add_argument("--samples", type=int, default=1000)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--split", choices=["dev", "test"], default="dev")
+    parser.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    parser.add_argument("--release-evaluation", metavar="REASON", help="unlock the test split")
+    parser.add_argument(
+        "--gold-origin",
+        choices=["all", "manual"],
+        default="all",
+        help="manual: score only gold records labelled by hand (origin=manual)",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -900,22 +977,21 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate = commands.add_parser("evaluate", help="score predictions against gold")
     evaluate.add_argument("gold", type=Path, help="gold AdvisoryAnnotation JSONL")
     evaluate.add_argument("pred", type=Path, help="predicted Extraction JSONL")
-    evaluate.add_argument("--clusters", choices=["document", "project"], default="project")
-    evaluate.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
-    evaluate.add_argument("--samples", type=int, default=1000)
-    evaluate.add_argument("--seed", type=int, default=0)
-    evaluate.add_argument("--split", choices=["dev", "test"], default="dev")
-    evaluate.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
-    evaluate.add_argument("--release-evaluation", metavar="REASON", help="unlock the test split")
-    evaluate.add_argument(
-        "--gold-origin",
-        choices=["all", "manual"],
-        default="all",
-        help="manual: score only gold records labelled by hand (origin=manual)",
-    )
+    _scoring_arguments(evaluate)
     evaluate.add_argument("--title", default="Evaluation report")
     evaluate.add_argument("--out", type=Path)
     evaluate.set_defaults(handler=_evaluate)
+
+    compare = commands.add_parser(
+        "compare", help="paired bootstrap comparison of two systems on the same gold"
+    )
+    compare.add_argument("gold", type=Path, help="gold AdvisoryAnnotation JSONL")
+    compare.add_argument("baseline", type=Path, help="predictions of system A (baseline)")
+    compare.add_argument("candidate", type=Path, help="predictions of system B (candidate)")
+    _scoring_arguments(compare)
+    compare.add_argument("--title", default="Paired comparison")
+    compare.add_argument("--out", type=Path)
+    compare.set_defaults(handler=_compare)
 
     predict = commands.add_parser("predict", help="run an extraction system over documents")
     predict.add_argument("--model", choices=MODEL_KINDS, default="rules")
@@ -939,6 +1015,12 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--model-id", default="crf-1")
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
     train.add_argument("--seed", type=int, help="overrides the config seed")
+    train.add_argument(
+        "--origin",
+        action="append",
+        choices=[*(o.value for o in AnnotationOrigin), "unrecorded"],
+        help="train only on records of this label origin (repeatable; default: all)",
+    )
     train.set_defaults(handler=_train)
 
     calibrate = commands.add_parser("calibrate", help="fit calibration and review thresholds")
@@ -1088,6 +1170,12 @@ def build_parser() -> argparse.ArgumentParser:
     experiment.add_argument("--report", type=Path)
     experiment.add_argument("--samples", type=int, default=1000)
     experiment.add_argument("--dry-run", action="store_true", help="print the planned runs")
+    experiment.add_argument(
+        "--origin",
+        action="append",
+        choices=[*(o.value for o in AnnotationOrigin), "unrecorded"],
+        help="train only on records of this label origin (repeatable; default: all)",
+    )
     experiment.set_defaults(handler=_experiment)
 
     view = commands.add_parser("view", help="render an evidence-linked review page")
