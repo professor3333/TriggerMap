@@ -13,7 +13,7 @@ from triggermap.schema.models import (
     ReviewAnswer,
     Role,
 )
-from triggermap.schema.validate import Issue, validate_annotation
+from triggermap.schema.validate import Issue, validate_annotation, validate_structure
 
 __all__ = [
     "ANNOTATION_SCHEMA_VERSION",
@@ -29,4 +29,5 @@ __all__ = [
     "ReviewAnswer",
     "Role",
     "validate_annotation",
+    "validate_structure",
 ]

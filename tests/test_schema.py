@@ -12,6 +12,7 @@ from triggermap.schema import (
     GroupOperator,
     Role,
     validate_annotation,
+    validate_structure,
 )
 
 SENTENCE = (
@@ -129,3 +130,20 @@ def test_document_status_must_match_conditions() -> None:
     ]
     assert codes(record(conditions=(), groups=())) == ["status_mismatch"]
     assert codes(record(document_status=DocumentStatus.UNSUPPORTED_STRUCTURE)) == []
+
+
+def test_structure_checks_need_no_text() -> None:
+    assert validate_structure(record()) == []
+    bad = record(
+        conditions=(
+            Condition(id="c1", span=(5, 34), category=Category.USAGE, role=Role.REQUIRED),
+            Condition(id="c1", span=(30, 40), category=Category.USAGE, role=Role.REQUIRED),
+        ),
+        groups=(Group(operator=GroupOperator.ALL, members=("c1", "c9")),),
+    )
+    codes = {issue.code for issue in validate_structure(bad)}
+    assert codes == {"duplicate_condition_id", "span_overlap", "group_unknown_member"}
+    empty = record(document_status=DocumentStatus.NO_EXPLICIT_CONDITION)
+    assert [i.code for i in validate_structure(empty)] == ["status_mismatch"]
+    # The text-based validator reports the same structural issues plus the text checks.
+    assert {i.code for i in validate_annotation(bad, SENTENCE)} >= codes

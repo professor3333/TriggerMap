@@ -279,6 +279,17 @@ these come with document- or project-clustered bootstrap confidence intervals.
 "No explicit conditions found" is never treated as "not affected": TriggerMap supports review,
 it does not decide whether a deployment is vulnerable.
 
+The review policy ([`configs/review_policy.yaml`](configs/review_policy.yaml)) routes the
+following to *Review required*:
+- predictions below a confidence threshold calibrated on dev;
+- every `UNCERTAIN` role, `UNRESOLVED` group and `UNSUPPORTED_STRUCTURE` document;
+- negation, exception and workaround cues.
+
+Conditions a reviewer adds are marked `source: human`. Full metric definitions are in
+[`docs/evaluation.md`](docs/evaluation.md), and the release gates, declared before any test
+result, are in [`docs/targets.md`](docs/targets.md). The current systems and their limits are
+in the [model card](docs/model_card.md).
+
 ## Data splits
 
 Every advisory is assigned to a **train, dev or test pool before scaled annotation**, so
@@ -365,7 +376,8 @@ tests/           unit, property-based, synthetic end-to-end and real-export regr
   [OSV schema](https://ossf.github.io/osv-schema/).
 - **Advisory text and annotations:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
   Annotations are modified material derived from the advisories; attribution and details are in
-  [`annotations/README.md`](annotations/README.md).
+  [`annotations/README.md`](annotations/README.md). Counts, label origins, splits and known
+  biases are in the [dataset card](docs/dataset_card.md).
 - **Code:** [MIT](LICENSE).
 
 ## Acknowledgements

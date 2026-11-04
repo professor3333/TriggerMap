@@ -25,12 +25,28 @@ class Issue:
     ref: str | None = None
 
 
-def validate_conditions(conditions: tuple[Condition, ...], text: str) -> list[Issue]:
-    issues: list[Issue] = []
-    for cid, count in Counter(c.id for c in conditions).items():
-        if count > 1:
-            issues.append(Issue("duplicate_condition_id", f"id used {count} times", cid))
+def _duplicate_ids(conditions: tuple[Condition, ...]) -> list[Issue]:
+    return [
+        Issue("duplicate_condition_id", f"id used {count} times", cid)
+        for cid, count in Counter(c.id for c in conditions).items()
+        if count > 1
+    ]
 
+
+def _overlaps(conditions: tuple[Condition, ...]) -> list[Issue]:
+    # BIO tagging cannot represent overlapping spans, so any overlap is invalid.
+    issues: list[Issue] = []
+    furthest: Condition | None = None
+    for cur in sorted(conditions, key=lambda c: c.span):
+        if furthest is not None and cur.span[0] < furthest.span[1]:
+            issues.append(Issue("span_overlap", f"overlaps {furthest.id} {furthest.span}", cur.id))
+        if furthest is None or cur.span[1] > furthest.span[1]:
+            furthest = cur
+    return issues
+
+
+def validate_conditions(conditions: tuple[Condition, ...], text: str) -> list[Issue]:
+    issues = _duplicate_ids(conditions)
     for cond in conditions:
         start, end = cond.span
         if end > len(text):
@@ -48,14 +64,7 @@ def validate_conditions(conditions: tuple[Condition, ...], text: str) -> list[Is
         if "\n" in surface:
             issues.append(Issue("span_crosses_line", f"span {cond.span} spans lines", cond.id))
 
-    # BIO tagging cannot represent overlapping spans, so any overlap is invalid.
-    furthest: Condition | None = None
-    for cur in sorted(conditions, key=lambda c: c.span):
-        if furthest is not None and cur.span[0] < furthest.span[1]:
-            issues.append(Issue("span_overlap", f"overlaps {furthest.id} {furthest.span}", cur.id))
-        if furthest is None or cur.span[1] > furthest.span[1]:
-            furthest = cur
-    return issues
+    return issues + _overlaps(conditions)
 
 
 def validate_groups(groups: tuple[Group, ...], condition_ids: set[str]) -> list[Issue]:
@@ -90,8 +99,22 @@ def validate_annotation(record: AdvisoryAnnotation | Extraction, text: str) -> l
     An empty list means valid.
     """
     issues = validate_conditions(record.conditions, text)
-    issues += validate_groups(record.groups, {c.id for c in record.conditions})
+    return issues + _record_structure(record)
 
+
+def validate_structure(record: AdvisoryAnnotation | Extraction) -> list[Issue]:
+    """Every check that needs no text: ids, overlaps, groups and document status.
+
+    Used where the canonical text is unavailable (CI has no corpus); importing still runs
+    :func:`validate_annotation` against the text.
+    """
+    return (
+        _duplicate_ids(record.conditions) + _overlaps(record.conditions) + _record_structure(record)
+    )
+
+
+def _record_structure(record: AdvisoryAnnotation | Extraction) -> list[Issue]:
+    issues = validate_groups(record.groups, {c.id for c in record.conditions})
     status = record.document_status
     if status is DocumentStatus.NO_EXPLICIT_CONDITION and (record.conditions or record.groups):
         issues.append(
