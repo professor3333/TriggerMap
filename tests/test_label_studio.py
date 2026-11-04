@@ -201,6 +201,13 @@ def test_import_writes_only_clean_records_and_reports(
     assert "status_mismatch" in report
     assert "Median minutes per document: 5.0" in report
     assert "| REQUIRED | 3 |" in report
+    assert "Label mix against earlier gold" not in report
+    clean = [c.record for c in conversions if c.record is not None and not c.issues]
+    with_reference = render_report(
+        conversions, {AID: {"stratum": "random", "words": 50}}, 1, clean, "1 record"
+    )
+    assert "- Reference: 1 record" in with_reference
+    assert "**shift**" not in with_reference  # identical mix
 
 
 def test_real_label_studio_export_round_trip(aiohttp_advisory: dict[str, Any]) -> None:

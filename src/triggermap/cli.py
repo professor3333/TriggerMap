@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -164,11 +165,38 @@ def _annotate_import(args: argparse.Namespace) -> int:
         load_export(args.export), corpus, args.annotation_version, args.annotator
     )
     written = write_records(conversions, args.out)
+    reference, note = _drift_reference(args, {c.advisory_id for c in conversions})
     report = args.report or args.out.with_name(args.out.stem + "_report.md")
-    report.write_text(render_report(conversions, items, written), encoding="utf-8")
+    report.write_text(render_report(conversions, items, written, reference, note), encoding="utf-8")
     problems = sum(bool(c.issues) for c in conversions)
     print(f"wrote {written} records to {args.out}; {problems} tasks with issues; see {report}")
     return 1 if problems else 0
+
+
+def _drift_reference(args: argparse.Namespace, batch_ids: set[str]) -> tuple[list[Any], str]:
+    """Earlier gold records to compare a batch's label mix with (test split never read)."""
+    if not args.reference:
+        return [], ""
+    from triggermap.corpus.splits import load_split
+    from triggermap.eval.runner import load_gold_files
+    from triggermap.schema import AdvisoryAnnotation
+
+    assignment = load_split(args.split_manifest)["assignment"]
+    records = [
+        r
+        for aid, r in sorted(load_gold_files(args.reference).items())
+        if isinstance(r, AdvisoryAnnotation)
+        and aid not in batch_ids
+        and assignment.get(aid) != "test"
+    ]
+    origins = ", ".join(
+        f"{k} {v}"
+        for k, v in sorted(
+            Counter(r.origin.value if r.origin else "unrecorded" for r in records).items()
+        )
+    )
+    files = ", ".join(f"`{p}`" for p in args.reference)
+    return records, f"{len(records)} records from {files}, test split excluded ({origins})"
 
 
 def _annotate_gate(args: argparse.Namespace) -> int:
@@ -964,6 +992,13 @@ def build_parser() -> argparse.ArgumentParser:
     imp.add_argument("--annotation-version", default="pilot-1")
     imp.add_argument("--out", type=Path, default=Path("annotations/pilot/pilot-1.jsonl"))
     imp.add_argument("--report", type=Path)
+    imp.add_argument(
+        "--reference",
+        type=Path,
+        nargs="+",
+        help="earlier gold JSONL to compare the label mix with (test split excluded)",
+    )
+    imp.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     imp.set_defaults(handler=_annotate_import)
 
     gate_cmd = annotate_cmds.add_parser("gate", help="pilot decision gate: projected support")

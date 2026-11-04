@@ -9,8 +9,10 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from triggermap.annotate.drift import compare_mix, render_drift
 from triggermap.annotate.label_studio import Conversion, convert_task
 from triggermap.ingest.records import AdvisoryDocument
+from triggermap.schema.models import AdvisoryAnnotation
 
 
 def import_export(
@@ -40,7 +42,10 @@ def render_report(
     conversions: Sequence[Conversion],
     pilot_items: Mapping[str, Mapping[str, Any]],
     written: int,
+    reference: Sequence[AdvisoryAnnotation] = (),
+    reference_note: str = "",
 ) -> str:
+    """The import report; with ``reference`` records, also the label-mix drift table."""
     lines = [
         "# Annotation import report",
         "",
@@ -91,6 +96,9 @@ def render_report(
                 "from `manual` records.",
                 "",
             ]
+
+        if reference:
+            lines += render_drift(compare_mix(records, reference), reference_note)
 
     lines += _pace(conversions, pilot_items)
 

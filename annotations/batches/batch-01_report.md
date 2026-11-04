@@ -47,6 +47,26 @@ Conditions per condition-bearing document: 3.0
 
 Records with origin `model_draft_accepted` carry a model's labels unchanged, and `model_draft_revised` records were changed with no annotation time recorded (not evidence of human editing). Scores against either measure agreement with the drafting process, not accuracy; report them separately from `manual` records.
 
+## Label mix against earlier gold
+
+- Reference: 88 records from `annotations/pilot/pilot-2.jsonl`, test split excluded (manual 18, model_draft_accepted 44, model_draft_revised 26)
+- Flagged: |z| ≥ 3 and a share gap of at least 5 points. A flag is a reason to look, not an error. Conditions cluster within documents, so z overstates certainty: treat it as a screen, not a test.
+
+| Group | Label | This batch | Reference | z | Status |
+|---|---|---:|---:|---:|---|
+| Role | REQUIRED | 287 (63.5%) | 341 (91.9%) | -9.5 | **shift** |
+| Role | EXCEPTION | 5 (1.1%) | 15 (4.0%) | -2.7 |  |
+| Role | NOT_REQUIRED | 55 (12.2%) | 11 (3.0%) | +4.8 | **shift** |
+| Role | UNCERTAIN | 105 (23.2%) | 4 (1.1%) | +9.3 | **shift** |
+| Group operator | ALL | 36 (81.8%) | 46 (82.1%) | -0.0 |  |
+| Group operator | ANY | 7 (15.9%) | 6 (10.7%) | +0.8 |  |
+| Group operator | UNRESOLVED | 1 (2.3%) | 4 (7.1%) | -1.1 |  |
+| Document status | HAS_CONDITIONS | 93 (93.0%) | 85 (96.6%) | -1.1 |  |
+| Document status | NO_EXPLICIT_CONDITION | 6 (6.0%) | 3 (3.4%) | +0.8 |  |
+| Document status | UNSUPPORTED_STRUCTURE | 1 (1.0%) | 0 (0.0%) | +0.9 |  |
+
+Shifted: REQUIRED 91.9% → 63.5%, NOT_REQUIRED 3.0% → 12.2%, UNCERTAIN 1.1% → 23.2%. Check a sample of these labels against the guidelines before training on this batch.
+
 ## Pace
 
 No lead times recorded.

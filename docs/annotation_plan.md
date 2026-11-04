@@ -32,7 +32,17 @@ test 12 + 138 = 150.
 ```bash
 uv run triggermap annotate tasks --sample annotations/batches/batch-01.json
 # → data/label_studio/batch-01_tasks.json; import into a Label Studio project, annotate, export JSON
-uv run triggermap annotate import data/label_studio/batch-01_export.json \
+uv run triggermap annotate import data/label_studio/export-batch-01.json \
     --sample annotations/batches/batch-01.json --annotator A1 \
-    --annotation-version batch-01 --out annotations/batches/batch-01.jsonl
+    --annotation-version batch-01 --out annotations/batches/batch-01.jsonl \
+    --reference annotations/pilot/pilot-2.jsonl
 ```
+
+`--reference` adds a *label mix* table to the import report. It compares the batch's role,
+group-operator and document-status shares with earlier gold (test split excluded), and it
+flags large shifts. A flag is a reason to check a sample of the batch against the guidelines
+before training on it. It is not an error: batches are sampled differently, and guideline
+versions differ.
+
+Check the report's **Origin** table on every import. Records drafted by a model are training
+data only. Only `manual` records count toward evaluation (see [`targets.md`](targets.md)).
