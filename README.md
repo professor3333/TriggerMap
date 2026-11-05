@@ -241,14 +241,13 @@ uv run triggermap evaluate annotations/batches/batch-03.jsonl reports/agreement/
     --add-gold annotations/batches/batch-06.jsonl --split dev   # agreement with model drafts, not accuracy
 ```
 
-**Transformers** (once gold labels exist; DistilBERT, DeBERTa-v3-small; GPU recommended, see
+**Transformers** (DistilBERT, DeBERTa-v3-small; needs a CUDA GPU, see
 [`docs/training_on_gpu.md`](docs/training_on_gpu.md)):
 
 ```bash
-uv sync --extra neural
+bash scripts/gpu/run_neural.sh                       # on the GPU machine: both grids, packed results
+bash scripts/gpu/score_neural.sh triggermap-neural-results.tgz   # back here: reports/neural/
 uv run triggermap experiment --config configs/experiments/deberta.toml --dry-run      # planned runs
-uv run triggermap experiment --config configs/experiments/deberta.toml \
-    --gold annotations/pilot/pilot-1.jsonl annotations/batches/batch-0*.jsonl          # lr x seed grid
 uv run triggermap predict --model transformer --model-dir artifacts/experiments/<run> --out preds.jsonl
 ```
 

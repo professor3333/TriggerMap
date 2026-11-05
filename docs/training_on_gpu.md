@@ -1,39 +1,69 @@
 # Training the transformer models on a GPU
 
-Fine-tuning DistilBERT and DeBERTa-v3-small needs a GPU; the local Mac is only for smoke
-tests. These steps use Google Colab (a free T4 GPU, 16 GB, is enough). The same commands
-work on any Linux GPU machine. Training never runs in CI or on the serving host.
+DistilBERT and DeBERTa-v3-small are trained offline on one CUDA GPU, never in CI or on the
+serving host. `scripts/gpu/run_neural.sh` does the whole run in one command, and
+`scripts/gpu/score_neural.sh` scores the packed results on the development machine.
 
-## 1. Runtime
+## What the run does
 
-In Colab: **Runtime → Change runtime type → T4 GPU**. Then, in a cell:
+1. Creates a Python 3.12 environment with CUDA PyTorch (`.venv-gpu`).
+2. Rebuilds the corpus from the pinned snapshot (`1912cbd…`, a sparse clone of about 360 MB) and
+   stops unless `data/processed/advisories.jsonl` has the documented SHA-256.
+3. Runs `configs/experiments/distilbert.toml` and `configs/experiments/deberta.toml`: two
+   learning rates (2e-5, 5e-5) × three seeds each, 12 runs, with up to 6 epochs and early stopping.
+   - **Training:** the train split of `pilot-2`, `batch-01` and `batch-02` (239 documents).
+   - **Early stopping and run selection:** only the model-drafted dev batches `batch-03` and
+     `batch-06` (`--dev-gold`). The 10 hand-labelled dev documents and the test split play no
+     part in selection.
+4. Predicts with every run on the pilot, `batch-03` and `batch-06` documents.
+5. Packs two archives:
+   - `triggermap-neural-results.tgz`: reports, predictions, run metadata and MLflow runs. No
+     weights. This is the one to bring back.
+   - `triggermap-neural-bundles.tgz`: the best bundle of each grid (weights, tokenizer,
+     metadata), for later export and serving.
+
+Runs resume: if the session stops, run the script again and finished runs are reused.
+
+## On Kaggle
+
+1. Create a notebook. Under *Settings*, choose **GPU T4** as the accelerator and turn
+   **Internet** on. (The P100 option is too old for the CUDA 13 PyTorch wheels.)
+2. Run one cell:
+
+   ```bash
+   !git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap && bash scripts/gpu/run_neural.sh
+   ```
+
+3. Download both `.tgz` files from `/kaggle/working` (the *Output* panel).
+
+If the script stops with `torch has no CUDA`, the driver is older than CUDA 13 needs. Re-run
+with the CUDA 12.6 wheels:
 
 ```bash
-!nvidia-smi --query-gpu=name,memory.total --format=csv
+!cd TriggerMap && TORCH_INDEX=https://download.pytorch.org/whl/cu126 bash scripts/gpu/run_neural.sh
 ```
 
-## 2. Code and environment
+On Colab or a rented machine the same commands work (without the leading `!` in a shell). The
+archives are then written to `./gpu-out`.
+
+## Scoring on the development machine
 
 ```bash
-!git clone https://github.com/professor3333/TriggerMap.git
-%cd TriggerMap
-!pip install -q -e ".[neural]"
+bash scripts/gpu/score_neural.sh ~/Downloads/triggermap-neural-results.tgz
 ```
 
-Use plain `pip` here, not `uv sync`. The project's uv configuration pins **CPU** PyTorch on
-Linux (so CI stays small); `pip` ignores that setting and keeps Colab's CUDA build.
+This writes `reports/neural/`:
+- `<run>_dev_agreement.md`: agreement with the 172 model-drafted dev records. This is not
+  accuracy.
+- `<run>_dev_manual.md`: accuracy on the 10 hand-labelled dev documents.
+- `compare_*`: paired comparisons of each grid's best run, chosen by its early-stopping score,
+  against `crf-batches-01-02` on both slices.
 
-## 3. Rebuild the corpus and check it matches
+The test split is not touched.
 
-```bash
-!triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6
-!triggermap ingest build
-!git diff --exit-code data/manifests/snapshot.json && echo "corpus identical to the pinned manifest"
-```
+## Manual steps and notes
 
-If the manifest differs, stop: the gold annotations would not match the text.
-
-## 4. Persist results to Google Drive (survives disconnects)
+### Colab: keep results on Google Drive (survives disconnects)
 
 ```python
 from google.colab import drive
@@ -50,22 +80,22 @@ drive.mount("/content/drive")
 `triggermap experiment` skips any run whose bundle already exists, so after a disconnect
 you can rerun the same command and only unfinished runs train again.
 
-## 5. Run the experiments
+### Running the grids by hand
 
-Gold files are the committed annotation JSONL files: the pilot and every imported batch.
+The script runs these commands. Use them directly for ablations or a single config, with the
+environment the script created (`.venv-gpu`).
 
 ```bash
-!triggermap experiment --config configs/experiments/distilbert.toml --dry-run
-!triggermap experiment --config configs/experiments/distilbert.toml \
-    --gold annotations/pilot/pilot-1.jsonl annotations/batches/batch-0*.jsonl \
+!.venv-gpu/bin/triggermap experiment --config configs/experiments/distilbert.toml --dry-run
+!.venv-gpu/bin/triggermap experiment --config configs/experiments/distilbert.toml \
+    --gold annotations/pilot/pilot-2.jsonl annotations/batches/batch-01.jsonl annotations/batches/batch-02.jsonl \
+    --dev-gold annotations/batches/batch-03.jsonl annotations/batches/batch-06.jsonl \
     --report /content/drive/MyDrive/triggermap/reports/distilbert.md
-!triggermap experiment --config configs/experiments/deberta.toml \
-    --gold annotations/pilot/pilot-1.jsonl annotations/batches/batch-0*.jsonl \
-    --report /content/drive/MyDrive/triggermap/reports/deberta.md
 ```
 
 Each config runs learning rates {2e-5, 5e-5} × seeds {0, 1, 2}. Training uses only the train
-pool, model selection and the report use only the dev pool, and the test pool is never read.
+split, early stopping and the report use only the dev records of `--dev-gold`, and the test
+split is never read.
 After choosing a backbone, set it in `configs/experiments/ablations.toml` and run the
 ablations (no context, no group objective) and learning curves (125 and 250 documents)
 the same way.
@@ -75,16 +105,16 @@ split hash, hyperparameters, seed, per-epoch dev metrics, training time and peak
 memory. When an MLflow experiment is configured (the default), the same values go to
 `mlruns/`.
 
-## 6. Profile before spending
+### Profile before spending
 
 Run one configuration with `--dry-run` first, then a single run, and read `train_seconds`
 and `peak_gpu_memory_mb` from its `metadata.json` before launching a whole grid. Paid GPU
 time is capped at about US$50 for the project. If memory runs out, reduce `batch_size` and
 raise `gradient_accumulation`, keeping their product the same.
 
-## 7. Back on your machine
+### MLflow runs
 
-Copy the reports and the chosen bundle from Drive. Browse runs with:
+The results archive includes `mlruns/`. Browse it with:
 
 ```bash
 uvx --from mlflow==3.17.1 mlflow ui --backend-store-uri ./mlruns

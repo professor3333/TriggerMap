@@ -234,6 +234,12 @@ seed = [0, 1]
     # Resume: a second invocation reuses both finished bundles instead of retraining.
     assert main([*experiment_args, "--samples", "20", *common]) == 0
     assert report.read_text().count("tiny-base-seed") == text.count("tiny-base-seed")
+    # --dev-gold: early stopping and the report use only the given files' dev records.
+    dev_gold = tmp_path / "dev_gold.jsonl"
+    dev_gold.write_text("".join(r.model_dump_json() + "\n" for _, _, r in data[12:14]))
+    dev_args = [*experiment_args[:-1], str(tmp_path / "dev_report.md"), "--dev-gold", str(dev_gold)]
+    assert main([*dev_args, "--samples", "20", *common]) == 0
+    assert ": 2 dev docs" in (tmp_path / "dev_report.md").read_text()
 
 
 @pytest.mark.slow

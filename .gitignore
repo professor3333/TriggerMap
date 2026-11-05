@@ -33,6 +33,8 @@ mlartifacts/
 .env.*
 !.env.example
 .venv/
+.venv-gpu/
+gpu-out/
 venv/
 
 # Python

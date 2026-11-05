@@ -392,7 +392,7 @@ def _train(args: argparse.Namespace) -> int:
         settings["split_assignment_sha256"] = load_split(args.split_manifest)["assignment_sha256"]
         settings.setdefault("model_id", args.model_id)
         settings["seed"] = args.seed if args.seed is not None else settings.get("seed", 0)
-        dev = _gold_examples(args.gold, args.processed, args.split_manifest, "dev")
+        dev = _gold_examples(args.dev_gold or args.gold, args.processed, args.split_manifest, "dev")
         transformer = train(TrainConfig(**settings), examples, dev, args.out)
         best = transformer.metadata["best_dev_typed_f1"]
         print(
@@ -434,7 +434,7 @@ def _experiment(args: argparse.Namespace) -> int:
 
     split = load_split(args.split_manifest)
     examples = _gold_examples(args.gold, args.processed, args.split_manifest, origins=args.origin)
-    dev = _gold_examples(args.gold, args.processed, args.split_manifest, "dev")
+    dev = _gold_examples(args.dev_gold or args.gold, args.processed, args.split_manifest, "dev")
     if not examples or not dev:
         raise SystemExit("experiments need gold documents in both the train and dev splits")
     results = []
@@ -459,7 +459,9 @@ def _experiment(args: argparse.Namespace) -> int:
             results,
             {
                 "Config": f"`{args.config}`",
-                "Gold": f"{len(args.gold)} file(s): {len(examples)} train, {len(dev)} dev docs",
+                "Gold": f"{len(args.gold)} file(s): {len(examples)} train docs",
+                "Dev gold": ", ".join(f"`{p}`" for p in (args.dev_gold or args.gold))
+                + f": {len(dev)} dev docs (early stopping and this table)",
                 "Split": f"`{args.split_manifest}` ({split['assignment_sha256'][:12]})",
             },
         ),
@@ -944,6 +946,16 @@ def _gold_names(args: argparse.Namespace) -> str:
     return ", ".join(f"`{path}`" for path in _gold_paths(args))
 
 
+def _dev_gold_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--dev-gold",
+        type=Path,
+        nargs="+",
+        help="gold file(s) whose dev records drive early stopping (default: --gold); keeps an "
+        "evaluation slice out of model selection",
+    )
+
+
 def _scoring_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--add-gold",
@@ -1089,6 +1101,7 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--model", choices=["crf", "transformer"], default="crf")
     train.add_argument("--config", type=Path, help="TOML experiment config (transformer)")
     train.add_argument("--gold", type=Path, nargs="+", required=True, help="gold JSONL file(s)")
+    _dev_gold_argument(train)
     train.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     train.add_argument("--out", type=Path, required=True, help="bundle directory to write")
     train.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
@@ -1246,6 +1259,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment = commands.add_parser("experiment", help="run a grid of transformer trainings")
     experiment.add_argument("--config", type=Path, required=True)
     experiment.add_argument("--gold", type=Path, nargs="+", help="gold JSONL file(s)")
+    _dev_gold_argument(experiment)
     experiment.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     experiment.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     experiment.add_argument("--out-root", type=Path, default=Path("artifacts/experiments"))
