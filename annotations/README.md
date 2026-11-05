@@ -24,6 +24,7 @@ advisory-database commit it was taken from, and the SHA-256 of the annotated tex
 | `pilot/pilot-*_report.md` | Import reports: label counts, origins, annotation pace. |
 | `batches/batch-NN.json` | Batch samples (IDs, pools, strategy), committed before annotation. |
 | `batches/batch-01.jsonl` | Batch-01 annotations (train pool), 100 records, guidelines v0.2. |
+| `batches/batch-02.jsonl` | Batch-02 annotations (train pool, enriched), 100 records, guidelines v0.2. |
 | `batches/batch-*_report.md` | Batch import reports. |
 
 ## Origin
@@ -47,6 +48,15 @@ an accepted model draft measures agreement with that model, not accuracy. `adjud
 and 1 is `model_draft_revised` (`model-batch-01-guidelines-0.2`), with no annotation time
 recorded. It is training data only. It does not count toward the hand-labelled gold target,
 and a model trained on it learns from the drafting model's labels.
+
+`batch-02` (train pool, enriched sample, guidelines v0.2) has no `manual` records either: 99 are
+`model_draft_accepted` and 1 is `model_draft_revised`, with no annotation time recorded. Orders
+0–49 come from `model-batch-02-guidelines-0.2`, and orders 50–99 from
+`model-batch-02-predraft-guidelines-0.2`. Orders 50–99 were submitted through the Label Studio
+API, so their export entries do not carry the parent prediction inline. For the import, each one
+was filled in from Label Studio's own database by its `parent_prediction` id, and that model
+version string and note prefix were normalised to the `model-…` / `MODEL PRE-ANNOTATION` form.
+No label was changed. Batch-02 is training data only.
 
 Records follow the schema in `src/triggermap/schema/models.py` and the rules in
 `docs/annotation_guidelines.md`.

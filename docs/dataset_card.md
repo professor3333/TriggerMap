@@ -4,8 +4,8 @@ Condition-level annotations of English security advisories for Python (PyPI) pac
 annotation marks the *deployment conditions* that make a vulnerability reachable, as exact
 character spans with a category, a role and optional logical groups.
 
-**Status (2026-11-04): in progress.** 200 advisories are annotated (the 100-document pilot and
-batch-01). Most of these labels were drafted by a model; see [Label origin](#label-origin). The
+**Status (2026-11-05): in progress.** 300 advisories are annotated (the 100-document pilot,
+batch-01 and batch-02). Most of these labels were drafted by a model; see [Label origin](#label-origin). The
 target is about 800 advisories ([`annotation_plan.md`](annotation_plan.md)).
 
 ## Source
@@ -78,6 +78,7 @@ provenance only.
 |---|---:|---:|---:|---:|---|
 | `pilot-2` (supersedes `pilot-1`) | 100 | 22 | 52 | 26 | v0.1 |
 | `batch-01` | 100 | 0 | 99 | 1 | v0.2 |
+| `batch-02` | 100 | 0 | 99 | 1 | v0.2 |
 
 - **`manual`:** labelled by hand in Label Studio, with working time recorded.
 - **`model_draft_accepted`:** a model pre-annotation submitted unchanged.
@@ -113,6 +114,7 @@ Annotated so far, by split:
 |---|---:|---:|---:|---:|
 | `pilot-2` | 39 | 38 | 12 | 11 (enriched, sharing a group with a natural document) |
 | `batch-01` | 100 | 0 | 0 | 0 |
+| `batch-02` | 100 | 0 | 0 | 0 |
 
 Test records are never read for development, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
 
@@ -134,6 +136,8 @@ Test records are never read for development, and no test evaluation has been run
 - **Most current labels come from model drafts.** The label mix also shifts between versions.
   Against `pilot-2`, `batch-01` has many more `UNCERTAIN` roles (23.2% against 1.1%) and
   `NOT_REQUIRED` roles (12.2% against 3.0%); see `annotations/batches/batch-01_report.md`.
+  `batch-02` (enriched) has 23.2% `UNCERTAIN` against 13.2% in `pilot-2` plus `batch-01`
+  (`annotations/batches/batch-02_report.md`).
 - **Rare classes are unsupported.** `EXCEPTION`, `UNCERTAIN` and `UNRESOLVED` are rare, and the
   pilot gate marks `UNCERTAIN` and `UNRESOLVED` unsupported ([`pilot_gate.md`](pilot_gate.md)).
 - **There is a single annotator.** Repeat annotation will be reported as self-consistency,

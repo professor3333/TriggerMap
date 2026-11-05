@@ -310,3 +310,14 @@ def test_draft_missing_from_export_is_not_called_accepted(corpus: dict[str, Any]
     assert convert_task(task, corpus, "p", "A1").origin == AnnotationOrigin.MODEL_DRAFT_EDITED
     task["annotations"][0]["lead_time"] = None
     assert convert_task(task, corpus, "p", "A1").origin == AnnotationOrigin.MODEL_DRAFT_REVISED
+
+
+def test_empty_inline_draft_is_treated_as_missing(corpus: dict[str, Any]) -> None:
+    """API-created annotations export ``"prediction": {}``; an empty result must not pass as
+    an unchanged copy of it."""
+    task = task_with(corpus, [])
+    task["annotations"][0].update(parent_prediction=99, prediction={}, lead_time=None)
+    task["predictions"] = [99]
+    conv = convert_task(task, corpus, "p", "A1")
+    assert conv.origin == AnnotationOrigin.MODEL_DRAFT_REVISED
+    assert conv.record is None or conv.record.origin_model is None

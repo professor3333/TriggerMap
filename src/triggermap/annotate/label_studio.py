@@ -167,7 +167,8 @@ def annotation_origin(
     if parent is None:
         return AnnotationOrigin.MANUAL, None
     prediction = annotation.get("prediction")
-    if not isinstance(prediction, Mapping):
+    # API-created annotations export "prediction": {}; that is a missing draft, not an empty one.
+    if not isinstance(prediction, Mapping) or not prediction:
         prediction = next(
             (
                 p
