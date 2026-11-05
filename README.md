@@ -189,7 +189,8 @@ cannot be judged as declared.
 Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
 typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
 [0.000, 0.640], and the difference from `crf-pilot-2-batch-01` is not clear; see
-[`reports/agreement/`](reports/agreement/README.md).
+[`reports/agreement/`](reports/agreement/README.md). Its disagreements with the drafts, by
+error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),

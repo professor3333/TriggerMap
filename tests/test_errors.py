@@ -165,7 +165,7 @@ def test_errors_uses_only_hand_labelled_gold_by_default(
     out = tmp_path / "errors.md"
     assert main([*_errors_inputs(tmp_path, manual=2), "--out", str(out)]) == 0
     assert "in 2 documents" in capsys.readouterr().out
-    assert "manual" in out.read_text()
+    assert "Gold origin: manual 2\n" in out.read_text()
 
 
 def test_errors_refuses_model_drafts_unless_asked(
@@ -180,6 +180,9 @@ def test_errors_refuses_model_drafts_unless_asked(
     assert not out.exists()
     assert main([*args, "--gold-origin", "all", "--out", str(out)]) == 0
     assert "in 6 documents" in capsys.readouterr().out
+    header = out.read_text()
+    assert "Gold origin: model_draft_accepted 6." in header
+    assert "agreement with the drafting model" in header
 
 
 def test_errors_without_manual_test_gold_logs_no_test_access(

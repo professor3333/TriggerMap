@@ -101,8 +101,11 @@ Metric definitions are in [`evaluation.md`](evaluation.md).
 
 ## Known failure modes
 
-These are expected from the guidelines. They will be measured once a release candidate
-exists, using `triggermap errors`, which writes `docs/error_catalogue.md` from dev:
+These are expected from the guidelines. [`error_catalogue.md`](error_catalogue.md) lists the
+disagreements of `crf-batches-01-02` with the 172 model-drafted dev records (agreement, not
+accuracy): 265 missed conditions, 59 invented prerequisites, 50 boundary errors, 16 group
+errors, 13 category errors, 13 spurious conditions, 9 reversed meanings and 7 role errors. A
+catalogue against hand-labelled gold needs a release candidate and hand-labelled records.
 
 - **Negation scope:** a required absence confused with not required.
 - **Impact read as a prerequisite:** consequences or impact taken as conditions.

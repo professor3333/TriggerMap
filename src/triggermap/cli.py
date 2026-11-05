@@ -7,7 +7,7 @@ import hashlib
 import json
 import os
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -656,7 +656,7 @@ def _errors(args: argparse.Namespace) -> int:
             len(ids),
             {
                 "Split": f"{args.split} of `{args.split_manifest}`",
-                "Gold origin": args.gold_origin,
+                "Gold origin": _origin_note(gold[aid] for aid in ids),
                 "Predictions": f"`{args.pred}`",
             },
         ),
@@ -945,6 +945,20 @@ def _log_test_access(args: argparse.Namespace, model_ids: list[str]) -> None:
     reason = args.release_evaluation.replace("|", "/")
     with TEST_ACCESS_LOG.open("a", encoding="utf-8") as fh:
         fh.write(f"| {stamp} | {', '.join(model_ids)} | {_gold_names(args)} | {reason} |\n")
+
+
+def _origin_note(records: Iterable[Any]) -> str:
+    """Origin counts of scored gold records, with the agreement caveat for model drafts."""
+    counts = Counter(
+        r.origin.value if getattr(r, "origin", None) else "unrecorded" for r in records
+    )
+    text = ", ".join(f"{origin} {n}" for origin, n in sorted(counts.items()))
+    if set(counts) - {AnnotationOrigin.MANUAL.value}:
+        text += (
+            ". Records not labelled by hand measure agreement with the drafting model: "
+            "a disagreement with them is not necessarily an error"
+        )
+    return text
 
 
 def _gold_paths(args: argparse.Namespace) -> list[Path]:
