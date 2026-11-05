@@ -60,3 +60,22 @@ def spans_from_tags(tokens: Sequence[Token], tags: Sequence[str]) -> list[tuple[
     if start is not None:
         ranges.append((start, len(tags)))
     return ranges
+
+
+def split_at_lines(
+    text: str, tokens: Sequence[Token], first: int, stop: int
+) -> list[tuple[int, int]]:
+    """Split a token range wherever a line break falls between two of its tokens.
+
+    Canonical text keeps one line per paragraph, list item, heading or code line, and the
+    validator rejects a condition that crosses one. Tokens never contain whitespace, so each
+    piece starts and ends on a token.
+    """
+    pieces = []
+    begin = first
+    for i in range(first + 1, stop):
+        if "\n" in text[tokens[i - 1].end : tokens[i].start]:
+            pieces.append((begin, i))
+            begin = i
+    pieces.append((begin, stop))
+    return pieces

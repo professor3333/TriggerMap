@@ -6,7 +6,13 @@ import pytest
 from tests.synthetic import TEST_VOCAB, TRAIN_VOCAB, make_dataset
 from triggermap.eval.metrics import collect, summary
 from triggermap.models.crf.model import CrfExtractor
-from triggermap.models.crf.tokens import Token, bio_tags, spans_from_tags, tokenize
+from triggermap.models.crf.tokens import (
+    Token,
+    bio_tags,
+    spans_from_tags,
+    split_at_lines,
+    tokenize,
+)
 from triggermap.schema import validate_annotation
 
 
@@ -143,3 +149,15 @@ def test_train_origin_filter_is_recorded(tmp_path: Path) -> None:
     assert meta["manual"]["training_documents"] == 12
     with pytest.raises(SystemExit, match="--origin"):
         main(["train", *common, "--out", str(tmp_path / "x"), "--origin", "model_draft_edited"])
+
+
+def test_tagged_ranges_are_split_at_line_breaks() -> None:
+    """A tagged run that continues onto the next line becomes one condition per line."""
+    text = "uses the legacy API\nwith debug enabled"
+    tokens = tokenize(text)
+    assert split_at_lines(text, tokens, 0, len(tokens)) == [(0, 4), (4, 7)]
+    assert split_at_lines(text, tokens, 1, 3) == [(1, 3)]
+    pieces = [
+        text[tokens[a].start : tokens[b - 1].end] for a, b in split_at_lines(text, tokens, 0, 7)
+    ]
+    assert pieces == ["uses the legacy API", "with debug enabled"]

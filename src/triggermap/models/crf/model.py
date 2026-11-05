@@ -35,7 +35,13 @@ from triggermap.models.crf.features import (
     span_features,
     token_features,
 )
-from triggermap.models.crf.tokens import Token, bio_tags, spans_from_tags, tokenize
+from triggermap.models.crf.tokens import (
+    Token,
+    bio_tags,
+    spans_from_tags,
+    split_at_lines,
+    tokenize,
+)
 from triggermap.schema.models import (
     AdvisoryAnnotation,
     Category,
@@ -278,7 +284,9 @@ class CrfExtractor:
         found: list[tuple[tuple[int, int], Features, float]] = []
         for unit in _units(doc, self.use_pos):
             tags = self._tagger.tag(unit.features)
-            for first, stop in spans_from_tags(unit.tokens, tags):
+            ranges = spans_from_tags(unit.tokens, tags)
+            pieces = [p for r in ranges for p in split_at_lines(doc.text, unit.tokens, *r)]
+            for first, stop in pieces:
                 marginals = [self._marginal(tags[i], i) for i in range(first, stop)]
                 span = (unit.tokens[first].start, unit.tokens[stop - 1].end)
                 in_code = doc.canonical.in_code(span[0])
