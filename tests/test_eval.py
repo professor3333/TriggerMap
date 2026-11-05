@@ -247,3 +247,25 @@ def test_comparison_verdicts_respect_metric_direction() -> None:
         "B clearly better |"
     )
     assert lines["| False prerequisite rate (lower is better)"].endswith("B clearly worse |")
+
+
+def test_gold_split_across_files(scored, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """--add-gold scores several gold files as one set; a repeated id is refused."""
+    from tests.factories import write_split_manifest
+
+    gold_docs, predictions = scored
+    docs = list(gold_docs.values())
+    first, second, pred_path = (tmp_path / n for n in ("g1.jsonl", "g2.jsonl", "p.jsonl"))
+    first.write_text(docs[0].model_dump_json() + "\n")
+    second.write_text("".join(g.model_dump_json() + "\n" for g in docs[1:]))
+    pred_path.write_text("".join(p.model_dump_json() + "\n" for p in predictions.values()))
+    split = write_split_manifest(tmp_path / "split.json", {GA: "dev", GB: "dev", GC: "dev"})
+    monkeypatch.chdir(tmp_path)
+    base = ["evaluate", str(first), str(pred_path), "--split-manifest", str(split)]
+    base += ["--clusters", "document", "--samples", "20", "--out", "e.md"]
+    assert main([*base, "--add-gold", str(second)]) == 0
+    report = (tmp_path / "e.md").read_text()
+    assert f"- Documents: {len(docs)}" in report
+    assert f"`{first}`, `{second}`" in report
+    with pytest.raises(SystemExit, match="more than one gold file"):
+        main([*base, "--add-gold", str(first)])

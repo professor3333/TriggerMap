@@ -65,7 +65,9 @@ the review-policy version.
 Training uses the train pool of `splits/pool-v1.json` only (see
 [`dataset_card.md`](dataset_card.md)). The models trained so far used `pilot-2` (39 in the
 train split) and `batch-01` (100). Of these 139 records, 7 are `manual`. The other 132 are
-model drafts. `batch-02` (100 more model-drafted train records) is available and not yet used.
+model drafts. `crf-batches-01-02` adds `batch-02` (239 records: 7 `manual`, 232 model drafts).
+Its dev results, as agreement with the model drafts and as accuracy on the 10 hand-labelled
+documents, are in [`reports/agreement/`](../reports/agreement/README.md).
 
 ## Preliminary dev results
 

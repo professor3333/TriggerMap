@@ -244,14 +244,17 @@ def _of_origin(gold: Mapping[str, Any], origin: str) -> dict[str, Any]:
 def _scored_gold(args: argparse.Namespace, model_ids: Sequence[str]) -> dict[str, Any]:
     """Gold records of the requested split and origin; the test split needs a declared reason."""
     from triggermap.corpus.splits import load_split, select
-    from triggermap.eval.runner import load_gold
+    from triggermap.eval.runner import load_gold_files
 
     if args.split == "test" and not args.release_evaluation:
         raise SystemExit(
             "the test split is locked: pass --release-evaluation '<reason>' for a declared "
             "release evaluation (it is logged in docs/test-access-log.md)"
         )
-    gold = load_gold(args.gold)
+    try:
+        gold = load_gold_files(_gold_paths(args))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     kept = set(select(sorted(gold), load_split(args.split_manifest), args.split))
     gold = {aid: record for aid, record in gold.items() if aid in kept}
     gold = _of_origin(gold, args.gold_origin)
@@ -273,7 +276,7 @@ def _clusters(args: argparse.Namespace) -> dict[str, str] | None:
 
 def _gold_context(args: argparse.Namespace, gold: Mapping[str, Any]) -> str:
     return (
-        f"`{args.gold}` ({args.split} split of `{args.split_manifest}`; "
+        f"{_gold_names(args)} ({args.split} split of `{args.split_manifest}`; "
         f"origin: {args.gold_origin}; {len(gold)} documents)"
     )
 
@@ -845,9 +848,15 @@ def _predict(args: argparse.Namespace) -> int:
     from triggermap.text.preprocessing import compose_raw, preprocess
 
     corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
-    if args.sample is not None:
-        items = json.loads(args.sample.read_text(encoding="utf-8"))["items"]
-        ids = [i["advisory_id"] for i in items if args.use in ("all", i["intended_use"])]
+    if args.sample:
+        items = [
+            item
+            for sample in args.sample
+            for item in json.loads(sample.read_text(encoding="utf-8"))["items"]
+        ]
+        ids = list(
+            dict.fromkeys(i["advisory_id"] for i in items if args.use in ("all", i["intended_use"]))
+        )
     else:
         ids = sorted(corpus)
     try:
@@ -924,10 +933,25 @@ def _log_test_access(args: argparse.Namespace, model_ids: list[str]) -> None:
     stamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M")
     reason = args.release_evaluation.replace("|", "/")
     with TEST_ACCESS_LOG.open("a", encoding="utf-8") as fh:
-        fh.write(f"| {stamp} | {', '.join(model_ids)} | `{args.gold}` | {reason} |\n")
+        fh.write(f"| {stamp} | {', '.join(model_ids)} | {_gold_names(args)} | {reason} |\n")
+
+
+def _gold_paths(args: argparse.Namespace) -> list[Path]:
+    return [args.gold, *(getattr(args, "add_gold", None) or [])]
+
+
+def _gold_names(args: argparse.Namespace) -> str:
+    return ", ".join(f"`{path}`" for path in _gold_paths(args))
 
 
 def _scoring_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--add-gold",
+        type=Path,
+        nargs="+",
+        metavar="GOLD",
+        help="further gold JSONL files scored together with GOLD (a repeated id is an error)",
+    )
     parser.add_argument("--clusters", choices=["document", "project"], default="project")
     parser.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     parser.add_argument("--samples", type=int, default=1000)
@@ -1051,7 +1075,9 @@ def build_parser() -> argparse.ArgumentParser:
     predict.add_argument("--model", choices=MODEL_KINDS, default="rules")
     predict.add_argument("--model-dir", type=Path, help="trained bundle (crf, transformer)")
     predict.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
-    predict.add_argument("--sample", type=Path, help="sample manifest; default: whole corpus")
+    predict.add_argument(
+        "--sample", type=Path, nargs="+", help="sample manifest(s); default: whole corpus"
+    )
     predict.add_argument(
         "--use", choices=["all", "training", "evaluation_candidate"], default="all"
     )

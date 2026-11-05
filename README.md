@@ -180,6 +180,17 @@ the 10 hand-labelled dev documents above. Later results are reported as *agreeme
 drafting model*, never as accuracy, and the release gates in [`docs/targets.md`](docs/targets.md)
 cannot be judged as declared.
 
+| Agreement with model drafts (172 dev records, not accuracy) | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
+|---|---:|---:|---:|
+| Rules (`rules-2`) | 0.107 [0.058, 0.154] | 0.142 [0.085, 0.195] | 0.330 [0.165, 0.467] |
+| CRF (`crf-pilot-2-batch-01`) | 0.128 [0.095, 0.168] | 0.174 [0.134, 0.215] | 0.416 [0.294, 0.493] |
+| CRF (`crf-batches-01-02`, + 100 model-drafted `batch-02` records) | 0.145 [0.105, 0.185] | 0.221 [0.171, 0.268] | 0.353 [0.260, 0.416] |
+
+Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
+typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
+[0.000, 0.640], and the difference from `crf-pilot-2-batch-01` is not clear; see
+[`reports/agreement/`](reports/agreement/README.md).
+
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
 are in [`reports/pilot/`](reports/pilot/README.md). The paired difference from adding `batch-01` (+0.214 typed F1,
@@ -226,6 +237,8 @@ uv run triggermap predict --model crf --model-dir artifacts/crf-1 --out data/pre
 uv run triggermap evaluate annotations/pilot/pilot-1.jsonl data/predictions/crf-1.jsonl --out reports/crf-1.md
 uv run triggermap compare annotations/pilot/pilot-2.jsonl reports/pilot/predictions/rules-2.jsonl \
     reports/pilot/predictions/crf-pilot-2.jsonl --gold-origin manual   # paired bootstrap, B - A
+uv run triggermap evaluate annotations/batches/batch-03.jsonl reports/agreement/predictions/crf-batches-01-02.jsonl \
+    --add-gold annotations/batches/batch-06.jsonl --split dev   # agreement with model drafts, not accuracy
 ```
 
 **Transformers** (once gold labels exist; DistilBERT, DeBERTa-v3-small; GPU recommended, see

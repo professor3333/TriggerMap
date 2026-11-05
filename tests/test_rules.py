@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 import pytest
@@ -159,6 +160,27 @@ def test_predict_cli_writes_valid_jsonl(tmp_path: Any, monkeypatch: pytest.Monke
     assert lines[0].conditions and not lines[1].conditions
     assert lines[0].content_hash == docs[0].content_hash
     assert compose_raw(docs[0].summary, docs[0].details)  # same composition as ingestion
+
+
+def test_predict_cli_reads_several_samples(tmp_path: Any) -> None:
+    from tests.factories import make_doc
+
+    processed = tmp_path / "processed"
+    processed.mkdir()
+    ids = ["GHSA-2222-2222-2222", "GHSA-3333-3333-3333", "GHSA-4444-4444-4444"]
+    docs = [make_doc(aid, "Only affects deployments using the legacy API.") for aid in ids]
+    (processed / "advisories.jsonl").write_text("".join(d.model_dump_json() + "\n" for d in docs))
+    samples = []
+    for name, chosen in (("a", ids[:2]), ("b", ids[1:])):
+        path = tmp_path / f"{name}.json"
+        items = [{"advisory_id": aid, "intended_use": "evaluation_candidate"} for aid in chosen]
+        path.write_text(json.dumps({"items": items}))
+        samples.append(str(path))
+    out = tmp_path / "preds.jsonl"
+    args = ["predict", "--processed", str(processed), "--sample", *samples, "--out", str(out)]
+    assert main(args) == 0
+    lines = [Extraction.model_validate_json(line) for line in out.read_text().splitlines()]
+    assert [e.advisory_id for e in lines] == ids  # union, each document once
 
 
 @pytest.mark.parametrize(
