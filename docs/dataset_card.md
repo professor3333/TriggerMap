@@ -4,8 +4,8 @@ Condition-level annotations of English security advisories for Python (PyPI) pac
 annotation marks the *deployment conditions* that make a vulnerability reachable, as exact
 character spans with a category, a role and optional logical groups.
 
-**Status (2026-11-05): in progress.** 300 advisories are annotated (the 100-document pilot,
-batch-01 and batch-02). Most of these labels were drafted by a model; see [Label origin](#label-origin). The
+**Status (2026-11-05): in progress.** 412 advisories are annotated (the 100-document pilot and
+batches 01–03). Most of these labels were drafted by a model; see [Label origin](#label-origin). The
 target is about 800 advisories ([`annotation_plan.md`](annotation_plan.md)).
 
 ## Source
@@ -79,13 +79,15 @@ provenance only.
 | `pilot-2` (supersedes `pilot-1`) | 100 | 22 | 52 | 26 | v0.1 |
 | `batch-01` | 100 | 0 | 99 | 1 | v0.2 |
 | `batch-02` | 100 | 0 | 99 | 1 | v0.2 |
+| `batch-03` | 112 | 0 | 112 | 0 | v0.2 |
 
 - **`manual`:** labelled by hand in Label Studio, with working time recorded.
 - **`model_draft_accepted`:** a model pre-annotation submitted unchanged.
 - **`model_draft_revised`:** a pre-annotation changed with no working time recorded, so this is
   not evidence of human editing.
 
-Only `manual` records measure accuracy. Model-drafted records are used for training, and scores
+Only `manual` records measure accuracy. All 22 `manual` records are in `pilot-2` (10 of them in
+dev), so every batch so far is model-drafted. Model-drafted records are used for training, and scores
 against them measure agreement with the drafting model. No record has been adjudicated by a
 second annotator.
 
@@ -115,6 +117,7 @@ Annotated so far, by split:
 | `pilot-2` | 39 | 38 | 12 | 11 (enriched, sharing a group with a natural document) |
 | `batch-01` | 100 | 0 | 0 | 0 |
 | `batch-02` | 100 | 0 | 0 | 0 |
+| `batch-03` | 0 | 112 | 0 | 0 |
 
 Test records are never read for development, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
 

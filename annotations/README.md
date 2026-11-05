@@ -25,6 +25,7 @@ advisory-database commit it was taken from, and the SHA-256 of the annotated tex
 | `batches/batch-NN.json` | Batch samples (IDs, pools, strategy), committed before annotation. |
 | `batches/batch-01.jsonl` | Batch-01 annotations (train pool), 100 records, guidelines v0.2. |
 | `batches/batch-02.jsonl` | Batch-02 annotations (train pool, enriched), 100 records, guidelines v0.2. |
+| `batches/batch-03.jsonl` | Batch-03 annotations (dev pool, natural), 112 records, guidelines v0.2. |
 | `batches/batch-*_report.md` | Batch import reports. |
 
 ## Origin
@@ -57,6 +58,12 @@ API, so their export entries do not carry the parent prediction inline. For the 
 was filled in from Label Studio's own database by its `parent_prediction` id, and that model
 version string and note prefix were normalised to the `model-…` / `MODEL PRE-ANNOTATION` form.
 No label was changed. Batch-02 is training data only.
+
+`batch-03` (dev pool, natural sample, guidelines v0.2) has no `manual` records: all 112 are
+`model_draft_accepted` (`model-batch-03-guidelines-0.2`), with no annotation time recorded.
+Scores against it measure agreement with the drafting model, not accuracy, so it does not add
+hand-labelled dev documents. `evaluate --gold-origin manual` excludes it, and `calibrate` and
+`errors` exclude it by default.
 
 Records follow the schema in `src/triggermap/schema/models.py` and the rules in
 `docs/annotation_guidelines.md`.
