@@ -173,7 +173,21 @@ def test_committed_experiment_configs_are_valid() -> None:
             TrainConfig(**run.settings)  # extra="forbid": typos fail here
         assert len({r.name for r in runs}) == len(runs)
         counts[path.stem] = len(runs)
-    assert counts == {"ablations": 15, "deberta": 6, "distilbert": 6}
+    assert counts == {"ablations": 15, "deberta": 12, "distilbert": 12}
+
+
+def test_bio_weighting_modes() -> None:
+    """Balanced weights make B ~65x as costly as O here; sqrt softens that, none removes it."""
+    from triggermap.models.transformer.train import bio_weights
+
+    counts = [9500, 150, 350]  # O, B, I
+    inverse, soft, flat = (bio_weights(counts, m) for m in ("inverse", "sqrt", "none"))
+    for weights in (inverse, soft, flat):
+        assert float(weights.mean()) == pytest.approx(1.0)
+    assert float(inverse[1] / inverse[0]) == pytest.approx(9501 / 151, rel=1e-4)
+    assert float(soft[1] / soft[0]) == pytest.approx((9501 / 151) ** 0.5, rel=1e-4)
+    assert flat.tolist() == [1.0, 1.0, 1.0]
+    assert TrainConfig(model_id="m", base_model="b").bio_weighting == "sqrt"
 
 
 def test_cli_train_predict_and_experiment(

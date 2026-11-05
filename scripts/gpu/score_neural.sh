@@ -15,6 +15,7 @@ archive=${1:?usage: score_neural.sh RESULTS.tgz}
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 tar -xzf "$archive" -C "$tmp" reports/neural
+rm -rf reports/neural/predictions  # results of the archive being scored, nothing older
 mkdir -p reports/neural/predictions
 cp "$tmp"/reports/neural/experiment_*.md reports/neural/ 2>/dev/null || true
 cp "$tmp"/reports/neural/predictions/*.jsonl "$tmp"/reports/neural/predictions/*.metadata.json \
@@ -40,7 +41,7 @@ from pathlib import Path
 best = {}
 for meta in Path("reports/neural/predictions").glob("*.metadata.json"):
     data = json.loads(meta.read_text())
-    family = data["model_id"].split("-")[0]
+    family = "-".join(data["model_id"].split("-")[:2])  # grid, e.g. deberta-2
     score = data.get("best_dev_typed_f1") or 0.0
     if family not in best or score > best[family][0]:
         best[family] = (score, meta.name.removesuffix(".metadata.json"))

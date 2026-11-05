@@ -3,7 +3,7 @@
 # rented box), then pack the results for scoring on the development machine.
 #
 #   git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap
-#   bash scripts/gpu/run_neural.sh                 # both grids (12 runs)
+#   bash scripts/gpu/run_neural.sh                 # both grids (24 runs)
 #   CONFIGS="distilbert" bash scripts/gpu/run_neural.sh
 #   TORCH_INDEX=https://download.pytorch.org/whl/cu126 bash scripts/gpu/run_neural.sh
 #
@@ -58,25 +58,37 @@ for config in $CONFIGS; do
     --gold "${TRAIN_GOLD[@]}" --dev-gold "${DEV_GOLD[@]}" \
     --out-root artifacts/experiments --report "reports/neural/experiment_$config.md"
 done
-for bundle in artifacts/experiments/*/; do
-  run=$(basename "$bundle")
-  out="reports/neural/predictions/$run.jsonl"
-  [ -s "$out" ] || "${TM[@]}" predict --model transformer --model-dir "$bundle" \
-    --sample "${SAMPLES[@]}" --out "$out"
-  cp "$bundle/metadata.json" "reports/neural/predictions/$run.metadata.json"
+# Only the runs of the current configs (their model_id prefixes); older grids are left out.
+# shellcheck disable=SC2086  # one argument per config / prefix
+prefixes=$(.venv-gpu/bin/python - $CONFIGS <<'EOF'
+import sys, tomllib
+for config in sys.argv[1:]:
+    with open(f"configs/experiments/{config}.toml", "rb") as fh:
+        print(tomllib.load(fh)["train"]["model_id"])
+EOF
+)
+find reports/neural/predictions -type f -delete  # stale files from an older grid
+for prefix in $prefixes; do
+  for bundle in artifacts/experiments/"$prefix"-*/; do
+    [ -f "$bundle/metadata.json" ] || continue
+    run=$(basename "$bundle")
+    "${TM[@]}" predict --model transformer --model-dir "$bundle" \
+      --sample "${SAMPLES[@]}" --out "reports/neural/predictions/$run.jsonl"
+    cp "$bundle/metadata.json" "reports/neural/predictions/$run.metadata.json"
+  done
 done
 
 # 4. Pack. Results carry no weights; bundles hold the best run of each grid.
 pack=(reports/neural)
 [ -d mlruns ] && pack+=(mlruns)
 tar czf "$OUT_DIR/triggermap-neural-results.tgz" "${pack[@]}"
-best=$(.venv-gpu/bin/python - "$CONFIGS" <<'EOF'
+# shellcheck disable=SC2086  # one argument per config / prefix
+best=$(.venv-gpu/bin/python - $prefixes <<'EOF'
 import json, sys
 from pathlib import Path
-for config in sys.argv[1].split():
-    prefix = {"distilbert": "distilbert-1", "deberta": "deberta-1"}.get(config, config)
+for prefix in sys.argv[1:]:
     runs = [
-        (json.loads((p / "metadata.json").read_text()).get("best_dev_typed_f1") or 0.0, p)
+        (json.loads((p / "metadata.json").read_text()).get("best_dev_typed_f1") or 0.0, str(p))
         for p in Path("artifacts/experiments").glob(f"{prefix}-*") if (p / "metadata.json").exists()
     ]
     if runs:

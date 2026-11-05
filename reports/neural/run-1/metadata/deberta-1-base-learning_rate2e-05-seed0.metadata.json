@@ -1,0 +1,218 @@
+{
+  "base_model": "microsoft/deberta-v3-small",
+  "base_revision": "a36c739020e01763fe789b4b85e2df55d6180012",
+  "best_dev_typed_f1": 0.006428867689755288,
+  "best_epoch": 6,
+  "config": {
+    "attribute_loss_weight": 1.0,
+    "base_model": "microsoft/deberta-v3-small",
+    "batch_size": 8,
+    "context_tokens": 48,
+    "device": "auto",
+    "epochs": 6,
+    "gradient_accumulation": 2,
+    "group_loss_weight": 1.0,
+    "learning_rate": 2e-05,
+    "max_grad_norm": 1.0,
+    "max_length": 512,
+    "max_train_documents": null,
+    "mlflow_experiment": "triggermap",
+    "model_id": "deberta-1-base-learning_rate2e-05-seed0",
+    "patience": 2,
+    "revision": "a36c739020e01763fe789b4b85e2df55d6180012",
+    "seed": 0,
+    "split_assignment_sha256": "41d7354e1a13378667dc5cda74e3ed932f770af94cbde6e12460863981290067",
+    "stride": 64,
+    "use_context": true,
+    "warmup_ratio": 0.1,
+    "weight_decay": 0.01
+  },
+  "device": "cuda",
+  "epochs": [
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.63636,
+        "category_macro_f1": 0.0015,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.90547,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.13288,
+        "role_acc_on_matched_spans": 0.63636,
+        "role_macro_f1": 0.00052,
+        "span_f1": 0.00134,
+        "span_precision": 0.00068,
+        "span_recall": 0.0285,
+        "typed_f1": 0.00049
+      },
+      "epoch": 1,
+      "train_loss": {
+        "bio": 1.08287,
+        "category": 1.4739,
+        "group": 1.24494,
+        "role": 1.49567
+      }
+    },
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.76923,
+        "category_macro_f1": 0.0033,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.8876,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.08368,
+        "role_acc_on_matched_spans": 0.73077,
+        "role_macro_f1": 0.00138,
+        "span_f1": 0.00359,
+        "span_precision": 0.00185,
+        "span_recall": 0.06736,
+        "typed_f1": 0.00221
+      },
+      "epoch": 2,
+      "train_loss": {
+        "bio": 0.94992,
+        "category": 1.17456,
+        "group": 0.92894,
+        "role": 1.14675
+      }
+    },
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.76923,
+        "category_macro_f1": 0.00387,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.88373,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.06992,
+        "role_acc_on_matched_spans": 0.87179,
+        "role_macro_f1": 0.00256,
+        "span_f1": 0.00654,
+        "span_precision": 0.00338,
+        "span_recall": 0.10104,
+        "typed_f1": 0.00486
+      },
+      "epoch": 3,
+      "train_loss": {
+        "bio": 0.85528,
+        "category": 0.98207,
+        "group": 0.75489,
+        "role": 0.91204
+      }
+    },
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.75,
+        "category_macro_f1": 0.00679,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.86173,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.06415,
+        "role_acc_on_matched_spans": 0.75,
+        "role_macro_f1": 0.00386,
+        "span_f1": 0.00936,
+        "span_precision": 0.00487,
+        "span_recall": 0.12435,
+        "typed_f1": 0.00546
+      },
+      "epoch": 4,
+      "train_loss": {
+        "bio": 0.79073,
+        "category": 0.83087,
+        "group": 0.57758,
+        "role": 0.77107
+      }
+    },
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.82222,
+        "category_macro_f1": 0.00701,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.85662,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.06353,
+        "role_acc_on_matched_spans": 0.8,
+        "role_macro_f1": 0.00465,
+        "span_f1": 0.00908,
+        "span_precision": 0.00472,
+        "span_recall": 0.11658,
+        "typed_f1": 0.00605
+      },
+      "epoch": 5,
+      "train_loss": {
+        "bio": 0.74836,
+        "category": 0.71199,
+        "group": 0.47297,
+        "role": 0.69699
+      }
+    },
+    {
+      "dev": {
+        "category_acc_on_matched_spans": 0.82979,
+        "category_macro_f1": 0.00778,
+        "doc_exact_with_conditions": 0.0,
+        "doc_exact_without_conditions": 0.0,
+        "false_prerequisite_rate": 0.85397,
+        "group_f1": 0.0,
+        "reversed_meaning_rate": 0.064,
+        "role_acc_on_matched_spans": 0.78723,
+        "role_macro_f1": 0.00525,
+        "span_f1": 0.00975,
+        "span_precision": 0.00508,
+        "span_recall": 0.12176,
+        "typed_f1": 0.00643
+      },
+      "epoch": 6,
+      "train_loss": {
+        "bio": 0.71679,
+        "category": 0.67585,
+        "group": 0.41084,
+        "role": 0.63512
+      }
+    }
+  ],
+  "family": "transformer",
+  "label_counts": {
+    "category": {
+      "ACCESS": 359,
+      "CONFIGURATION": 228,
+      "PLATFORM": 125,
+      "USAGE": 542
+    },
+    "group_pairs": {
+      "ALL": 138,
+      "ANY": 26,
+      "NONE": 192,
+      "UNRESOLVED": 9
+    },
+    "role": {
+      "EXCEPTION": 48,
+      "NOT_REQUIRED": 97,
+      "REQUIRED": 865,
+      "UNCERTAIN": 244
+    }
+  },
+  "model_id": "deberta-1-base-learning_rate2e-05-seed0",
+  "peak_gpu_memory_mb": 4787,
+  "preprocessing_version": "1",
+  "split_assignment_sha256": "41d7354e1a13378667dc5cda74e3ed932f770af94cbde6e12460863981290067",
+  "train_seconds": 114.9,
+  "training_documents": 239,
+  "training_hash": "f314153dd248519397e7726525fbd72c533c57e1e241b6474028ce4457741a3a",
+  "training_origins": {
+    "manual": 7,
+    "model_draft_accepted": 219,
+    "model_draft_revised": 13
+  },
+  "unreachable_spans": 2,
+  "window": {
+    "context_tokens": 48,
+    "max_length": 512,
+    "stride": 64,
+    "use_context": true
+  },
+  "windows": 493
+}

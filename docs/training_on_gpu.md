@@ -10,7 +10,10 @@ serving host. `scripts/gpu/run_neural.sh` does the whole run in one command, and
 2. Rebuilds the corpus from the pinned snapshot (`1912cbd…`, a sparse clone of about 360 MB) and
    stops unless `data/processed/advisories.jsonl` has the documented SHA-256.
 3. Runs `configs/experiments/distilbert.toml` and `configs/experiments/deberta.toml`: two
-   learning rates (2e-5, 5e-5) × three seeds each, 12 runs, with up to 6 epochs and early stopping.
+   span-tag weightings (`sqrt`, `none`) × two learning rates (2e-5, 5e-5) × three seeds each,
+   24 runs, with up to 15 epochs and early stopping (patience 3). On a T4 a run takes about
+   1–5 minutes. Run 1 used balanced weights and 6 epochs and over-predicted spans; see
+   [`reports/neural/run-1/`](../reports/neural/run-1/README.md).
    - **Training:** the train split of `pilot-2`, `batch-01` and `batch-02` (239 documents).
    - **Early stopping and run selection:** only the model-drafted dev batches `batch-03` and
      `batch-06` (`--dev-gold`). The 10 hand-labelled dev documents and the test split play no
@@ -93,7 +96,7 @@ environment the script created (`.venv-gpu`).
     --report /content/drive/MyDrive/triggermap/reports/distilbert.md
 ```
 
-Each config runs learning rates {2e-5, 5e-5} × seeds {0, 1, 2}. Training uses only the train
+Each config runs span-tag weightings {sqrt, none} × learning rates {2e-5, 5e-5} × seeds {0, 1, 2}. Training uses only the train
 split, early stopping and the report use only the dev records of `--dev-gold`, and the test
 split is never read.
 After choosing a backbone, set it in `configs/experiments/ablations.toml` and run the

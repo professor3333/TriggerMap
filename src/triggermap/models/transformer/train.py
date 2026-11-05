@@ -18,7 +18,7 @@ import time
 from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 import torch
@@ -61,6 +61,9 @@ class TrainConfig(BaseModel):
     use_context: bool = True  # ablation: heading/list context
     group_loss_weight: float = 1.0  # ablation: 0 removes the group objective
     attribute_loss_weight: float = 1.0
+    # Span-tag (O/B/I) class weights. "inverse" (balanced) over-weights the rare B and I tags
+    # so strongly (~65x for B) that the tagger marks almost everything; "sqrt" softens it.
+    bio_weighting: Literal["inverse", "sqrt", "none"] = "sqrt"
     learning_rate: float = 5e-5
     epochs: int = 4
     batch_size: int = 8
@@ -87,13 +90,24 @@ def set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
-def class_weights(windows: Sequence[Window]) -> LossWeights:
+def bio_weights(counts: Sequence[int], mode: str) -> torch.Tensor:
+    """Span-tag class weights (mean 1): balanced, its square root, or uniform."""
+    if mode == "none":
+        return torch.ones(len(counts))
+    weights = inverse_frequency(counts)
+    if mode == "sqrt":
+        weights = weights.sqrt()
+        weights = weights / weights.mean()
+    return weights
+
+
+def class_weights(windows: Sequence[Window], bio_weighting: str = "inverse") -> LossWeights:
     bio = Counter(t for w in windows for t in w.bio if t >= 0)
     category = Counter(s.category for w in windows for s in w.spans)
     role = Counter(s.role for w in windows for s in w.spans)
     group = Counter(p.label for w in windows for p in w.pairs)
     return LossWeights(
-        inverse_frequency([bio[i] for i in range(len(BIO))]),
+        bio_weights([bio[i] for i in range(len(BIO))], bio_weighting),
         inverse_frequency([category[i] for i in range(len(CATEGORIES))]),
         inverse_frequency([role[i] for i in range(len(ROLES))]),
         inverse_frequency([group[i] for i in range(len(GROUP_LABELS))]),
@@ -142,7 +156,7 @@ def train(
     windows = [w for doc, record in examples for w in make_windows(doc, tokenizer, params, record)]
     if not windows:
         raise ValueError("no training windows")
-    weights = class_weights(windows)
+    weights = class_weights(windows, config.bio_weighting)
     weights.attribute_weight = config.attribute_loss_weight
     weights.group_weight = config.group_loss_weight
     weights = weights.to(device)
@@ -187,6 +201,7 @@ def train(
         "training_origins": training_origins([record for _, record in examples]),
         "split_assignment_sha256": config.split_assignment_sha256,
         "windows": len(windows),
+        "bio_weights": [round(float(x), 4) for x in weights.bio.cpu()],
         "unreachable_spans": sum(w.unreachable for w in windows),
         "label_counts": {
             "category": dict(Counter(CATEGORIES[s.category] for w in windows for s in w.spans)),
