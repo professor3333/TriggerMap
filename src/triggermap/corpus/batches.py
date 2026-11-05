@@ -157,9 +157,13 @@ def sample_batch(
 
 
 def batch_manifest(
-    items: Sequence[BatchItem], params: BatchParams, split_manifest: Mapping[str, Any]
+    items: Sequence[BatchItem],
+    params: BatchParams,
+    split_manifest: Mapping[str, Any],
+    predictions: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return {
+    """The committed sample manifest; ``predictions`` records what chose an uncertainty batch."""
+    manifest: dict[str, Any] = {
         "sample_version": params.name,
         "split_version": split_manifest["params"]["version"],
         "split_assignment_sha256": split_manifest["assignment_sha256"],
@@ -168,3 +172,6 @@ def batch_manifest(
         "counts": dict(Counter(item.stratum for item in items)),
         "items": [item.model_dump() for item in items],
     }
+    if predictions is not None:
+        manifest["predictions"] = dict(predictions)
+    return manifest

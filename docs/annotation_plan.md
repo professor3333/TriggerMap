@@ -11,10 +11,10 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | `batches/batch-02.json` | train | 100 | enriched (cue top quartile, ≤ 800 words) | train | done under v0.2 (`batch-02`; model drafts, no `manual` records) |
 | `batches/batch-03.json` | dev | 112 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-03`; model drafts, no `manual` records) |
 | `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
-| `batches/batch-05…` | train | ≈ 261 | uncertainty from the first CRF + 30% natural | train | after batches 01–03 |
+| `batches/batch-05.json` | train | 261 | 183 uncertainty from `crf-batches-01-02` + 78 natural, ≤ 3 per leakage group | train | next (drawn 2026-11-05) |
 | `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-06`; model drafts, no `manual` records) |
 
-Totals when complete: train 39 + 100 + 100 + ≈ 261 ≈ 500; dev 38 + 112 + 60 = 210;
+Totals when complete: train 39 + 100 + 100 + 261 = 500; dev 38 + 112 + 60 = 210;
 test 12 + 138 = 150. Batch-06 was added to give dev hand-labelled documents, but it was
 also submitted from model drafts; only 10 dev documents are `manual`.
 
@@ -74,3 +74,19 @@ from model drafts. Batch-06 is 60 natural dev documents for hand labelling. Its 
 
 Smaller sittings are fine: a partial export can be imported, and each later import replaces
 the earlier file.
+
+## Batch-05 (uncertainty sample)
+
+`batch-05` draws 261 unsampled train-pool documents: 183 where `crf-batches-01-02` is least
+certain (confidences closest to 0.5) and a 78-document natural slice. The predictions that
+chose them are committed at `reports/sampling/crf-batches-01-02_train_pool.jsonl`, and their
+SHA-256 and model id are recorded in the manifest (`predictions`). Tasks:
+`data/label_studio/batch-05_tasks.json` (no predictions).
+
+The predictions cover the 2,211 train-pool documents that were in no earlier sample (no dev
+or test text was predicted). The draw itself is deterministic:
+
+```bash
+uv run triggermap corpus sample-batch --name batch-05 --pool train --n 261 --strategy uncertainty \
+    --predictions reports/sampling/crf-batches-01-02_train_pool.jsonl
+```

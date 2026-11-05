@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from collections import Counter
@@ -130,7 +131,15 @@ def _corpus_sample_batch(args: argparse.Namespace) -> int:
     predictions = load_predictions(args.predictions) if args.predictions else None
     docs = load_corpus(args.processed / CORPUS_FILE)
     items = sample_batch(docs, split, params, exclude, predictions)
-    write_manifest(batch_manifest(items, params, split), out)
+    source = None
+    if args.predictions and predictions is not None:
+        source = {
+            "file": args.predictions.name,
+            "sha256": hashlib.sha256(args.predictions.read_bytes()).hexdigest(),
+            "models": sorted({p.model_id for p in predictions.values()}),
+            "documents": len(predictions),
+        }
+    write_manifest(batch_manifest(items, params, split, source), out)
     print(f"wrote {len(items)} {params.strategy} items from the {params.pool} pool to {out}")
     return 0
 

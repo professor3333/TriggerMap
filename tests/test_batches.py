@@ -124,6 +124,9 @@ def test_manifest_and_already_sampled(setup, tmp_path: Path) -> None:  # type: i
     path.write_text(json.dumps(data))
     assert already_sampled([path]) == {i.advisory_id for i in items}
     assert data["split_version"] == "t" and data["counts"] == {"natural": 3}
+    assert "predictions" not in data
+    source = {"file": "p.jsonl", "sha256": "0" * 64, "models": ["crf-x"], "documents": 3}
+    assert batch_manifest(items, params, manifest, source)["predictions"] == source
 
 
 def test_committed_samples_never_overlap_and_respect_pools() -> None:
