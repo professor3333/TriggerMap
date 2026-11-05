@@ -70,7 +70,10 @@ gated.
 [`annotations/README.md`](../annotations/README.md)). Only `manual` records measure accuracy;
 scores against model-drafted records (`model_draft_accepted`, `model_draft_revised`) measure
 agreement with the drafting model. Reports state the slice in their header, and
-`--gold-origin manual` selects hand-made records only. Training data can be restricted the
+`--gold-origin manual` selects hand-made records only. `calibrate` and `errors` use `manual` by
+default, so review thresholds and the error catalogue are never built from model drafts by
+accident. `--gold-origin all` includes them, and the output records the slice either way.
+Training data can be restricted the
 same way (`train --origin manual`), and each model bundle records the origins it was trained
 on (`training_origins` in `metadata.json`).
 
@@ -97,8 +100,8 @@ the predictions shown **without** a flag.
 ```bash
 uv run triggermap evaluate GOLD.jsonl PRED.jsonl --split dev --gold-origin manual --out report.md
 uv run triggermap compare GOLD.jsonl A.jsonl B.jsonl --split dev --gold-origin manual --out compare.md
-uv run triggermap calibrate --gold GOLD.jsonl --pred PRED.jsonl     # dev halves → review policy
-uv run triggermap errors --gold GOLD.jsonl --pred PRED.jsonl        # error catalogue, dev only
+uv run triggermap calibrate --gold GOLD.jsonl --pred PRED.jsonl     # dev halves → review policy (manual gold)
+uv run triggermap errors --gold GOLD.jsonl --pred PRED.jsonl        # error catalogue, dev only (manual gold)
 ```
 
 Current measured results are in [`reports/pilot/`](../reports/pilot/README.md) and

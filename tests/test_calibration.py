@@ -149,8 +149,65 @@ def test_calibrate_cli(tmp_path: Path) -> None:
     )
     out = tmp_path / "policy.yaml"
     args = ["calibrate", "--gold", str(gold), "--pred", str(pred), "--split-manifest", str(split)]
+    args += ["--gold-origin", "all"]
     assert main([*args, "--target-precision", "0.5", "--out", str(out)]) == 0
     policy = load_policy(out)
     assert policy.calibration["method"] == "platt"
     assert policy.measured["calibration_documents"] + policy.measured["held_out_documents"] == 40
     assert "ece_calibrated_held_out" in policy.measured
+    assert policy.measured["gold_origin"] == "all"
+
+
+def _calibrate_inputs(tmp_path: Path, manual: int) -> list[str]:
+    """Calibrate arguments over 40 dev records, the first `manual` of them hand-labelled."""
+    from tests.factories import write_split_manifest
+    from tests.synthetic import TRAIN_VOCAB, make_dataset
+    from triggermap.schema import AnnotationOrigin
+
+    data = make_dataset(40, TRAIN_VOCAB, seed=3, prefix="train")
+    records = [
+        r.model_copy(
+            update={
+                "origin": (
+                    AnnotationOrigin.MANUAL if i < manual else AnnotationOrigin.MODEL_DRAFT_ACCEPTED
+                )
+            }
+        )
+        for i, (_, _, r) in enumerate(data)
+    ]
+    gold = tmp_path / "gold.jsonl"
+    gold.write_text("".join(r.model_dump_json() + "\n" for r in records))
+    pred = tmp_path / "pred.jsonl"
+    extractor = RuleExtractor()
+    pred.write_text(
+        "".join(extractor.extract(p, r.advisory_id).model_dump_json() + "\n" for _, p, r in data)
+    )
+    split = write_split_manifest(
+        tmp_path / "split.json", {r.advisory_id: "dev" for _, _, r in data}
+    )
+    return ["calibrate", "--gold", str(gold), "--pred", str(pred), "--split-manifest", str(split)]
+
+
+def test_calibrate_uses_only_hand_labelled_gold_by_default(tmp_path: Path) -> None:
+    from triggermap.cli import main
+
+    out = tmp_path / "policy.yaml"
+    args = _calibrate_inputs(tmp_path, manual=20)
+    assert main([*args, "--target-precision", "0.5", "--out", str(out)]) == 0
+    measured = load_policy(out).measured
+    assert measured["gold_origin"] == "manual"
+    assert measured["calibration_documents"] + measured["held_out_documents"] == 20
+
+
+def test_calibrate_refuses_model_drafts_unless_asked(tmp_path: Path) -> None:
+    from triggermap.cli import main
+
+    out = tmp_path / "policy.yaml"
+    args = _calibrate_inputs(tmp_path, manual=0)
+    with pytest.raises(SystemExit, match="origin 'manual'"):
+        main([*args, "--out", str(out)])
+    assert not out.exists()
+    assert (
+        main([*args, "--gold-origin", "all", "--target-precision", "0.5", "--out", str(out)]) == 0
+    )
+    assert load_policy(out).measured["gold_origin"] == "all"

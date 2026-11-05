@@ -232,6 +232,15 @@ def _annotate_gate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _of_origin(gold: Mapping[str, Any], origin: str) -> dict[str, Any]:
+    """Gold records of one origin slice. Only hand-labelled records measure accuracy."""
+    if origin == "all":
+        return dict(gold)
+    return {
+        aid: r for aid, r in gold.items() if getattr(r, "origin", None) == AnnotationOrigin.MANUAL
+    }
+
+
 def _scored_gold(args: argparse.Namespace, model_ids: Sequence[str]) -> dict[str, Any]:
     """Gold records of the requested split and origin; the test split needs a declared reason."""
     from triggermap.corpus.splits import load_split, select
@@ -245,12 +254,7 @@ def _scored_gold(args: argparse.Namespace, model_ids: Sequence[str]) -> dict[str
     gold = load_gold(args.gold)
     kept = set(select(sorted(gold), load_split(args.split_manifest), args.split))
     gold = {aid: record for aid, record in gold.items() if aid in kept}
-    if args.gold_origin == "manual":
-        gold = {
-            aid: r
-            for aid, r in gold.items()
-            if getattr(r, "origin", None) == AnnotationOrigin.MANUAL
-        }
+    gold = _of_origin(gold, args.gold_origin)
     if not gold:
         raise SystemExit(f"no gold documents in the {args.split} split")
     if args.split == "test":
@@ -475,14 +479,16 @@ def _calibrate(args: argparse.Namespace) -> int:
     from triggermap.eval.runner import check_alignment, load_gold_files, load_predictions
     from triggermap.serve.policy import ReviewPolicy, save_policy
 
-    gold = load_gold_files(args.gold)
+    gold = _of_origin(load_gold_files(args.gold), args.gold_origin)
     pred = load_predictions(args.pred)
     check_alignment(gold, pred)
     split = load_split(args.split_manifest)
     dev = select(sorted(gold), split, "dev")
     calib_ids, held_ids = calibration_split(dev, split["group_of"], seed=args.seed)
     if not calib_ids or not held_ids:
-        raise SystemExit("need gold dev documents in both calibration halves")
+        raise SystemExit(
+            f"need gold dev documents of origin '{args.gold_origin}' in both calibration halves"
+        )
     per_doc = {d.advisory_id: d.scored for d in collect({a: gold[a] for a in dev}, pred)}
     gold_total = {a: len(gold[a].conditions) for a in dev}
     calib = [s for a in calib_ids for s in per_doc[a]]
@@ -499,6 +505,7 @@ def _calibrate(args: argparse.Namespace) -> int:
     )
     held_scored = [s for v in held_cal.values() for s in v]
     measured: dict[str, Any] = {
+        "gold_origin": args.gold_origin,
         "calibration_documents": len(calib_ids),
         "held_out_documents": len(held_ids),
         "ece_raw_held_out": round(
@@ -611,10 +618,14 @@ def _errors(args: argparse.Namespace) -> int:
 
     if args.split == "test" and not args.release_evaluation:
         raise SystemExit("the test split is locked: pass --release-evaluation '<reason>'")
-    gold = load_gold_files(args.gold)
+    gold = _of_origin(load_gold_files(args.gold), args.gold_origin)
     pred = load_predictions(args.pred)
     check_alignment(gold, pred)
     ids = select(sorted(gold), load_split(args.split_manifest), args.split)
+    if not ids:
+        raise SystemExit(
+            f"no gold documents of origin '{args.gold_origin}' in the {args.split} split"
+        )
     if args.split == "test":
         _log_test_access(args, sorted({p.model_id for p in pred.values()}))
     corpus = {d.advisory_id: d for d in load_corpus(args.processed / CORPUS_FILE)}
@@ -629,7 +640,11 @@ def _errors(args: argparse.Namespace) -> int:
             f"Error catalogue: {models}",
             entries,
             len(ids),
-            {"Split": f"{args.split} of `{args.split_manifest}`", "Predictions": f"`{args.pred}`"},
+            {
+                "Split": f"{args.split} of `{args.split_manifest}`",
+                "Gold origin": args.gold_origin,
+                "Predictions": f"`{args.pred}`",
+            },
         ),
         encoding="utf-8",
     )
@@ -920,11 +935,15 @@ def _scoring_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--split", choices=["dev", "test"], default="dev")
     parser.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     parser.add_argument("--release-evaluation", metavar="REASON", help="unlock the test split")
+    _gold_origin_argument(parser, default="all")
+
+
+def _gold_origin_argument(parser: argparse.ArgumentParser, default: str) -> None:
     parser.add_argument(
         "--gold-origin",
         choices=["all", "manual"],
-        default="all",
-        help="manual: score only gold records labelled by hand (origin=manual)",
+        default=default,
+        help=f"manual: only gold records labelled by hand (origin=manual); default: {default}",
     )
 
 
@@ -1062,6 +1081,7 @@ def build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("--gold", type=Path, nargs="+", required=True)
     calibrate.add_argument("--pred", type=Path, required=True, help="predictions covering dev")
     calibrate.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    _gold_origin_argument(calibrate, default="manual")
     calibrate.add_argument("--method", choices=["platt", "isotonic", "identity"], default="platt")
     calibrate.add_argument("--target-precision", type=float, default=0.95)
     calibrate.add_argument("--min-coverage", type=float, default=0.5)
@@ -1174,6 +1194,7 @@ def build_parser() -> argparse.ArgumentParser:
     errors.add_argument("--split", choices=["dev", "test"], default="dev")
     errors.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     errors.add_argument("--release-evaluation", metavar="REASON")
+    _gold_origin_argument(errors, default="manual")
     errors.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
     errors.add_argument("--out", type=Path, default=Path("docs/error_catalogue.md"))
     errors.set_defaults(handler=_errors)
