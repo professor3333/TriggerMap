@@ -12,9 +12,11 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | `batches/batch-03.json` | dev | 112 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-03`; model drafts, no `manual` records) |
 | `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
 | `batches/batch-05…` | train | ≈ 261 | uncertainty from the first CRF + 30% natural | train | after batches 01–03 |
+| `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev (hand-labelled) | **now**, by hand, no predictions (see below) |
 
-Totals when complete: train 39 + 100 + 100 + ≈ 261 ≈ 500; dev 38 + 112 = 150;
-test 12 + 138 = 150.
+Totals when complete: train 39 + 100 + 100 + ≈ 261 ≈ 500; dev 38 + 112 + 60 = 210;
+test 12 + 138 = 150. Batch-03 is model-drafted, so batch-06 was added to give dev
+hand-labelled documents; only 10 dev documents are `manual` so far.
 
 ## Rules
 
@@ -46,3 +48,22 @@ versions differ.
 
 Check the report's **Origin** table on every import. Records drafted by a model are training
 data only. Only `manual` records count toward evaluation (see [`targets.md`](targets.md)).
+
+## Hand-labelled dev batch (batch-06)
+
+Accuracy can only be measured against `manual` records, and every batch so far was submitted
+from model drafts. Batch-06 is 60 natural dev documents for hand labelling. Its task file,
+`data/label_studio/batch-06_tasks.json`, holds advisory text only, with no predictions.
+
+1. In Label Studio, create a **new** project (for example "TriggerMap batch-06 (v0.2, manual)").
+   Paste `configs/label_studio/condition_annotation.xml` as the labelling interface and import
+   `data/label_studio/batch-06_tasks.json`.
+2. Do not connect a model backend, and do not import or create predictions for this project.
+3. Label each task in the interface and submit it there, so that Label Studio records working
+   time. Use the frozen v0.2 guidelines and the notes field for doubts.
+4. Export and import as usual, with `--annotation-version batch-06`. The Origin table must show
+   `manual` for every record. Anything else means the batch does not add hand-labelled dev
+   documents.
+
+Smaller sittings are fine: a partial export can be imported, and each later import replaces
+the earlier file.
