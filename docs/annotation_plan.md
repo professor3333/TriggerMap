@@ -12,11 +12,11 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | `batches/batch-03.json` | dev | 112 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-03`; model drafts, no `manual` records) |
 | `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
 | `batches/batch-05…` | train | ≈ 261 | uncertainty from the first CRF + 30% natural | train | after batches 01–03 |
-| `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev (hand-labelled) | **now**, by hand, no predictions (see below) |
+| `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-06`; model drafts, no `manual` records) |
 
 Totals when complete: train 39 + 100 + 100 + ≈ 261 ≈ 500; dev 38 + 112 + 60 = 210;
-test 12 + 138 = 150. Batch-03 is model-drafted, so batch-06 was added to give dev
-hand-labelled documents; only 10 dev documents are `manual` so far.
+test 12 + 138 = 150. Batch-06 was added to give dev hand-labelled documents, but it was
+also submitted from model drafts; only 10 dev documents are `manual`.
 
 ## Rules
 
@@ -48,6 +48,13 @@ versions differ.
 
 Check the report's **Origin** table on every import. Records drafted by a model are training
 data only. Only `manual` records count toward evaluation (see [`targets.md`](targets.md)).
+
+## Label source decision (2026-11-05)
+
+Batches 01, 02, 03 and 06 were all submitted from model drafts. The owner decided to continue
+with model-drafted labels instead of hand labelling. Results against them are reported as
+agreement with the drafting model, and the release gates in [`targets.md`](targets.md) cannot
+be judged as declared. If hand labelling resumes, the procedure below still applies.
 
 ## Hand-labelled dev batch (batch-06)
 

@@ -4,8 +4,9 @@ Condition-level annotations of English security advisories for Python (PyPI) pac
 annotation marks the *deployment conditions* that make a vulnerability reachable, as exact
 character spans with a category, a role and optional logical groups.
 
-**Status (2026-11-05): in progress.** 412 advisories are annotated (the 100-document pilot and
-batches 01–03). Most of these labels were drafted by a model; see [Label origin](#label-origin). The
+**Status (2026-11-05): in progress.** 472 advisories are annotated (the 100-document pilot and
+batches 01, 02, 03 and 06). Only 22 are hand-labelled: from batch-01 on, every batch was
+submitted from model drafts, and the owner decided on 2026-11-05 to continue that way. Most of these labels were drafted by a model; see [Label origin](#label-origin). The
 target is about 800 advisories ([`annotation_plan.md`](annotation_plan.md)).
 
 ## Source
@@ -80,6 +81,7 @@ provenance only.
 | `batch-01` | 100 | 0 | 99 | 1 | v0.2 |
 | `batch-02` | 100 | 0 | 99 | 1 | v0.2 |
 | `batch-03` | 112 | 0 | 112 | 0 | v0.2 |
+| `batch-06` | 60 | 0 | 60 | 0 | v0.2 |
 
 - **`manual`:** labelled by hand in Label Studio, with working time recorded.
 - **`model_draft_accepted`:** a model pre-annotation submitted unchanged.
@@ -118,6 +120,7 @@ Annotated so far, by split:
 | `batch-01` | 100 | 0 | 0 | 0 |
 | `batch-02` | 100 | 0 | 0 | 0 |
 | `batch-03` | 0 | 112 | 0 | 0 |
+| `batch-06` | 0 | 60 | 0 | 0 |
 
 Test records are never read for development, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
 

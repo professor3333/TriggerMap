@@ -156,7 +156,7 @@ item can be highlighted in the original advisory.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches, DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · training awaits labels |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 code ready · not yet trained |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
@@ -173,6 +173,12 @@ split has not been touched.
 | Rules (`rules-2`) | 0.095 [0.000, 0.333] | 0.095 [0.000, 0.333] | 0.750 [0.000, 1.000] |
 | CRF (`crf-pilot-2`, pilot train split) | 0.231 [0.062, 0.417] | 0.231 [0.062, 0.417] | 0.444 [0.000, 0.667] |
 | CRF (`crf-pilot-2-batch-01`, + 100 model-drafted `batch-01` records) | 0.444 [0.133, 0.667] | 0.444 [0.133, 0.667] | 0.300 [0.000, 0.750] |
+
+**Label source.** Every annotation batch after the pilot (472 advisories annotated, 22 by hand)
+was submitted from model drafts, by the owner's decision. Accuracy is therefore measured only on
+the 10 hand-labelled dev documents above. Later results are reported as *agreement with the
+drafting model*, never as accuracy, and the release gates in [`docs/targets.md`](docs/targets.md)
+cannot be judged as declared.
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),

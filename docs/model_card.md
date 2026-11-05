@@ -1,7 +1,9 @@
 # Model card: TriggerMap condition extractors
 
 **Status (2026-11-04): no release model yet.** The systems below exist and run from scripts,
-but none has been through a release evaluation. Every number on this page is a preliminary
+but none has been through a release evaluation. Labels after the pilot are model drafts
+(owner's decision, 2026-11-05), and the release gates need hand-labelled test records, so the
+gates cannot currently be judged as declared. Every number on this page is a preliminary
 dev-split measurement, not a release result. Release gates are in [`targets.md`](targets.md).
 
 ## Intended use
@@ -61,9 +63,9 @@ the review-policy version.
 ## Training data
 
 Training uses the train pool of `splits/pool-v1.json` only (see
-[`dataset_card.md`](dataset_card.md)). The current training records are `pilot-2` (39 in the
+[`dataset_card.md`](dataset_card.md)). The models trained so far used `pilot-2` (39 in the
 train split) and `batch-01` (100). Of these 139 records, 7 are `manual`. The other 132 are
-model drafts.
+model drafts. `batch-02` (100 more model-drafted train records) is available and not yet used.
 
 ## Preliminary dev results
 

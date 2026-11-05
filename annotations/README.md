@@ -26,6 +26,7 @@ advisory-database commit it was taken from, and the SHA-256 of the annotated tex
 | `batches/batch-01.jsonl` | Batch-01 annotations (train pool), 100 records, guidelines v0.2. |
 | `batches/batch-02.jsonl` | Batch-02 annotations (train pool, enriched), 100 records, guidelines v0.2. |
 | `batches/batch-03.jsonl` | Batch-03 annotations (dev pool, natural), 112 records, guidelines v0.2. |
+| `batches/batch-06.jsonl` | Batch-06 annotations (dev pool, natural), 60 records, guidelines v0.2. |
 | `batches/batch-*_report.md` | Batch import reports. |
 
 ## Origin
@@ -64,6 +65,11 @@ No label was changed. Batch-02 is training data only.
 Scores against it measure agreement with the drafting model, not accuracy, so it does not add
 hand-labelled dev documents. `evaluate --gold-origin manual` excludes it, and `calibrate` and
 `errors` exclude it by default.
+
+`batch-06` (dev pool, natural sample, guidelines v0.2) was drawn for hand labelling, but all
+60 records are `model_draft_accepted` (`model-batch-06-guidelines-0.2`), with no annotation time
+recorded. On 2026-11-05 the owner decided to continue with model-drafted labels, so results
+against these batches are reported as agreement with the drafting model, not accuracy.
 
 Records follow the schema in `src/triggermap/schema/models.py` and the rules in
 `docs/annotation_guidelines.md`.

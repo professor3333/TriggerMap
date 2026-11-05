@@ -8,6 +8,18 @@ counts and confidence intervals.
 Changing a target after this date requires a changelog entry with its reason, and is not
 allowed once a release evaluation on the test split has been run for the release concerned.
 
+## Status (2026-11-05): gates cannot be judged as declared
+
+Every annotation batch after the pilot (batches 01, 02, 03 and 06) was submitted from model
+drafts, and the owner decided on 2026-11-05 to continue with model-drafted labels rather than
+hand labelling. The gates below are judged on hand-labelled (`origin: manual`) test records,
+and only 4 test records are hand-labelled, so **no release can be shown to meet them**. The
+targets themselves are unchanged.
+
+Until hand-labelled records exist, results are reported as **agreement with the drafting
+model** (scored with `--gold-origin all` against model-drafted records). Agreement is never
+presented as accuracy, and it is never used to claim that a gate is met.
+
 ## What the targets are judged on
 
 - **Split.** The locked test split (`splits/pool-v1.json`), in a declared release evaluation
@@ -85,3 +97,4 @@ about 512 tokens, ≤ 8 s at about 2,000 tokens, peak memory ≤ 3 GB, throughpu
 | Date | Change |
 |---|---|
 | 2026-11-02 | First declaration, after the pilot and before any test results. |
+| 2026-11-05 | Status note added: labels after the pilot are model drafts, so the gates cannot be judged as declared. No target changed; the test-access log still has no entries. |
