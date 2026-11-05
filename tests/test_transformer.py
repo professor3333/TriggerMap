@@ -176,7 +176,9 @@ def test_committed_experiment_configs_are_valid() -> None:
     assert counts == {"ablations": 15, "deberta": 6, "distilbert": 6}
 
 
-def test_cli_train_predict_and_experiment(base: Path, tmp_path: Path) -> None:
+def test_cli_train_predict_and_experiment(
+    base: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     import json
 
     from tests.factories import write_split_manifest
@@ -209,11 +211,14 @@ epochs = 2
 batch_size = 8
 gradient_accumulation = 1
 device = "cpu"
+mlflow_experiment = "tiny"
 
 [grid]
 seed = [0, 1]
 """
     )
+    monkeypatch.chdir(tmp_path)  # MLflow writes ./mlruns
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
     common = ["--processed", str(processed), "--split-manifest", str(split)]
     bundle = tmp_path / "bundle"
     train_args = ["train", "--model", "transformer", "--config", str(config), "--gold", str(gold)]
@@ -231,6 +236,7 @@ seed = [0, 1]
     text = report.read_text()
     assert "tiny-base-seed0" in text and "tiny-base-seed1" in text
     assert "## Across seeds (typed F1)" in text
+    assert (tmp_path / "mlruns").is_dir()
     # Resume: a second invocation reuses both finished bundles instead of retraining.
     assert main([*experiment_args, "--samples", "20", *common]) == 0
     assert report.read_text().count("tiny-base-seed") == text.count("tiny-base-seed")
@@ -370,3 +376,31 @@ def test_neural_path_needs_only_the_neural_extra() -> None:
     )
     result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
     assert result.returncode == 0, result.stderr[-2000:]
+
+
+def test_mlflow_tracking_writes_a_local_file_store(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """MLflow 3 defaults to a SQLite store that mlflow-skinny cannot open; runs go to ./mlruns."""
+    import json
+
+    from triggermap.models.transformer.train import TrainConfig, _Tracker
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
+    config = TrainConfig(model_id="tracked", base_model="b", mlflow_experiment="triggermap-test")
+    meta = {
+        "base_revision": None,
+        "training_hash": "0" * 64,
+        "training_documents": 1,
+        "preprocessing_version": "1",
+    }
+    tracker = _Tracker(config, meta)
+    tracker.epoch(1, {"train_loss": {"bio": 0.5}, "dev": {"typed_f1": 0.1}})
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    (bundle / "metadata.json").write_text(json.dumps({}))
+    done = {"best_epoch": 1, "train_seconds": 1.0, "best_dev_typed_f1": 0.1}
+    tracker.finish({**done, "peak_gpu_memory_mb": None}, bundle)
+    assert (tmp_path / "mlruns").is_dir()
+    assert not (tmp_path / "mlflow.db").exists()

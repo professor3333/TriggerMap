@@ -117,7 +117,7 @@ raise `gradient_accumulation`, keeping their product the same.
 The results archive includes `mlruns/`. Browse it with:
 
 ```bash
-uvx --from mlflow==3.17.1 mlflow ui --backend-store-uri ./mlruns
+MLFLOW_ALLOW_FILE_STORE=true uvx --from mlflow==3.17.1 mlflow ui --backend-store-uri ./mlruns
 ```
 
 Model bundles are not committed (`artifacts/` is gitignored); release bundles are published

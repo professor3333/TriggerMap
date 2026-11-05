@@ -12,6 +12,7 @@ when an experiment name is given, in MLflow.
 from __future__ import annotations
 
 import copy
+import os
 import random
 import time
 from collections import Counter
@@ -260,6 +261,13 @@ class _Tracker:
         import mlflow
 
         self.mlflow = mlflow
+        # MLflow 3 defaults to a SQLite store, which mlflow-skinny cannot open, and refuses the
+        # file store unless asked. Unless a tracking server is configured, runs go to the local
+        # file store ./mlruns (kept by MLflow in maintenance mode, which is enough for offline
+        # runs packed into the results archive).
+        if not os.environ.get("MLFLOW_TRACKING_URI"):
+            os.environ.setdefault("MLFLOW_ALLOW_FILE_STORE", "true")
+            mlflow.set_tracking_uri(Path("mlruns").resolve().as_uri())
         mlflow.set_experiment(config.mlflow_experiment)
         mlflow.start_run(run_name=config.model_id)
         mlflow.log_params(
