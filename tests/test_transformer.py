@@ -340,3 +340,33 @@ def test_scope_index_matches_linear_scope_of() -> None:
     for start in range(len(doc.text)):
         span = (start, min(start + 3, len(doc.text)))
         assert index.scope(span) == scope_of(doc, span)
+
+
+def test_neural_path_needs_only_the_neural_extra() -> None:
+    """The GPU runbook installs only `.[neural]`: training and prediction must not import
+    baseline (CRF, spaCy, scikit-learn) or serving packages."""
+    import subprocess
+    import sys
+
+    blocked = ["joblib", "sklearn", "pycrfsuite", "spacy", "fastapi", "uvicorn", "onnxruntime"]
+    modules = [
+        "triggermap.cli",
+        "triggermap.models.transformer.train",
+        "triggermap.models.transformer.extractor",
+        "triggermap.models.experiment",
+        "triggermap.models.registry",
+        "triggermap.corpus.splits",
+        "triggermap.eval.runner",
+        "triggermap.eval.report",
+        "triggermap.serve.policy",
+        "triggermap.schema.validate",
+        "triggermap.ingest.build",
+        "triggermap.text.preprocessing",
+    ]
+    code = (
+        "import importlib, sys\n"
+        f"for name in {blocked!r}: sys.modules[name] = None\n"
+        f"for name in {modules!r}: importlib.import_module(name)\n"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr[-2000:]

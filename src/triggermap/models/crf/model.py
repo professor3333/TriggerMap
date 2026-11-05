@@ -12,7 +12,6 @@ Bundles are produced by this project; never load one from an untrusted source.
 
 from __future__ import annotations
 
-import hashlib
 import json
 from collections import Counter
 from collections.abc import Sequence
@@ -42,6 +41,7 @@ from triggermap.models.crf.tokens import (
     split_at_lines,
     tokenize,
 )
+from triggermap.models.provenance import training_hash, training_origins
 from triggermap.schema.models import (
     AdvisoryAnnotation,
     Category,
@@ -134,17 +134,6 @@ def _pairs(
             feats = pair_features(doc.text, spans[i], spans[i + 1], a[0] == "list", a[2])
             out.append((i, i + 1, feats))
     return out
-
-
-def training_hash(records: Sequence[AdvisoryAnnotation]) -> str:
-    lines = sorted(r.model_dump_json() for r in records)
-    return hashlib.sha256("\n".join(lines).encode()).hexdigest()
-
-
-def training_origins(records: Sequence[AdvisoryAnnotation]) -> dict[str, int]:
-    """How many training records each label origin contributed (``unrecorded`` before 1.1)."""
-    counts = Counter(r.origin.value if r.origin else "unrecorded" for r in records)
-    return dict(sorted(counts.items()))
 
 
 class CrfExtractor:

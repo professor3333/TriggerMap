@@ -35,7 +35,7 @@ mkdir -p "$OUT_DIR"
 # 1. Environment: Python 3.12 with CUDA PyTorch from PyPI. --no-sources skips the CPU-only torch
 #    index that pyproject.toml pins for Linux development machines.
 command -v uv >/dev/null || python3 -m pip install --quiet "uv==$UV_VERSION"
-uv venv --quiet --python 3.12 .venv-gpu
+uv venv --quiet --allow-existing --python 3.12 .venv-gpu
 uv pip install --quiet --python .venv-gpu --no-sources -e ".[neural]"
 if [ -n "${TORCH_INDEX:-}" ]; then
   uv pip install --quiet --python .venv-gpu --reinstall-package torch \

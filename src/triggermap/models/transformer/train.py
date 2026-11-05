@@ -25,7 +25,7 @@ from pydantic import BaseModel, ConfigDict
 from transformers import AutoModel, AutoTokenizer, get_linear_schedule_with_warmup
 
 from triggermap.eval.metrics import collect, summary
-from triggermap.models.crf.model import training_hash, training_origins
+from triggermap.models.provenance import training_hash, training_origins
 from triggermap.models.transformer.data import (
     BIO,
     CATEGORIES,
