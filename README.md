@@ -362,6 +362,11 @@ against its release manifest end to end. Rollback is exercised by
 [`deploy/rollback_drill.sh`](deploy/rollback_drill.sh); the runbook is in
 [`docs/deployment.md`](docs/deployment.md).
 
+**v0.1.0 (preview)** serves `crf-batches-01-02` with every prediction flagged for review. No
+acceptance gate has been evaluated, because labels after the pilot are model drafts; see the
+[release notes](docs/release_notes/v0.1.0.md). Its rollback drill (rules `r1` → CRF `v0.1.0`
+→ `r1`) passed on local Docker.
+
 ## Serving cost (local proxy)
 
 Measured on an 8 GB Apple M1 with inference limited to 2 threads. This is **not the target

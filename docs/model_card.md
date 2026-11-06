@@ -1,7 +1,8 @@
 # Model card: TriggerMap condition extractors
 
-**Status (2026-11-04): no release model yet.** The systems below exist and run from scripts,
-but none has been through a release evaluation. Labels after the pilot are model drafts
+**Status (2026-11-06): v0.1.0 is a preview release** of `crf-batches-01-02` with the uncalibrated
+review policy ([release notes](release_notes/v0.1.0.md)). No system has been through a release
+evaluation. Labels after the pilot are model drafts
 (owner's decision, 2026-11-05), and the release gates need hand-labelled test records, so the
 gates cannot currently be judged as declared. Every number on this page is a preliminary
 dev-split measurement, not a release result. Release gates are in [`targets.md`](targets.md).
@@ -142,3 +143,6 @@ model drafts measure agreement, not accuracy.
   Its release manifest records the gates, the reason and the release it replaces.
 - **Rollback.** Rollback restores the complete previous bundle and image
   ([`deployment.md`](deployment.md)). The rollback drill is tested.
+- **Preview releases.** While the gates cannot be judged, a release is marked *preview*. Its
+  notes state that no gate was evaluated, and every prediction is flagged for review. v0.1.0
+  is the first ([release notes](release_notes/v0.1.0.md)).

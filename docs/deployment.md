@@ -120,8 +120,12 @@ each step, including that reviews saved along the way survive:
 TRIGGERMAP_HOST_PORT=8000 deploy/rollback_drill.sh <release-a> <release-b>
 ```
 
-Last run (2026-10-20, local Docker): rules release `r1`, then CRF release `r2` (different
-image, bundle and policy), then rollback to `r1`. Every step verified, in 20 seconds total.
+Last run (2026-11-06, local Docker): rules release `r1`, then the v0.1.0 CRF release
+(`crf-batches-01-02`, a different image, bundle and policy), then rollback to `r1`. Every
+step verified, in 15 seconds total. The previous run was on 2026-10-20 (`r1` → `r2` → `r1`).
+
+The release image (`release.yml`) is built with `EXTRAS="serve baselines"`, so it serves both
+rules and CRF releases.
 
 ## Backups
 

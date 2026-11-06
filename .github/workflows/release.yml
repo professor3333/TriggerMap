@@ -31,7 +31,8 @@ jobs:
         run: |
           OWNER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
           echo "IMAGE=ghcr.io/${OWNER}/triggermap:${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
-          docker build -t "ghcr.io/${OWNER}/triggermap:${GITHUB_REF_NAME}" .
+          # rules and CRF releases; transformer releases need EXTRAS="serve neural"
+          docker build --build-arg EXTRAS="serve baselines" -t "ghcr.io/${OWNER}/triggermap:${GITHUB_REF_NAME}" .
       - name: Container smoke test
         run: deploy/smoke.sh "$IMAGE"
       - name: Push image

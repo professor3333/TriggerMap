@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.7
-# TriggerMap review application. EXTRAS="serve" (rules/CRF-free) or "serve neural" for
-# transformer releases; uv resolves CPU-only PyTorch on Linux from the lockfile.
+# TriggerMap review application. EXTRAS="serve" (rules only), "serve baselines" (rules and
+# CRF; what release.yml builds) or "serve neural" for transformer releases; uv resolves
+# CPU-only PyTorch on Linux from the lockfile.
 
 FROM ghcr.io/astral-sh/uv:0.12.22 AS uv
 
