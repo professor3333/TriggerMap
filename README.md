@@ -209,6 +209,14 @@ hand-labelled documents no difference is clear. See [`reports/neural/run-3/`](re
 earlier runs are in [`run-2/`](reports/neural/run-2/README.md) and the failed first
 configuration in [`run-1/`](reports/neural/run-1/README.md).
 
+**Calibration and review thresholds.** Platt scaling fitted on the selection half cuts the
+held-out calibration error from 0.305 to 0.101 (CRF) and from 0.548 to 0.059 (DeBERTa). With
+review thresholds chosen on the selection half for the same target precision, DeBERTa keeps two
+to three times as many agreeing conditions. Its held-out typed F1 is clearly higher at targets
+0.30 and 0.35 (+0.100 [+0.034, +0.172] and +0.100 [+0.024, +0.171]), but its precision is not
+clearly different, and its false-prerequisite rate is higher at every target (not clearly).
+The CRF therefore stays the default model; see [`reports/calibration/`](reports/calibration/README.md).
+
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
 are in [`reports/pilot/`](reports/pilot/README.md). The paired difference from adding `batch-01` (+0.214 typed F1,

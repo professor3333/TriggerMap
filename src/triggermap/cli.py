@@ -183,6 +183,27 @@ def _corpus_split_dev(args: argparse.Namespace) -> int:
     return 0
 
 
+def _threshold(args: argparse.Namespace) -> int:
+    """What a reviewer sees unflagged: predictions at or above ``--min-confidence``."""
+    from triggermap.eval.calibration import keep_confident
+    from triggermap.eval.runner import load_predictions
+    from triggermap.schema.validate import validate_structure
+
+    pred = load_predictions(args.pred)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    before = after = 0
+    with args.out.open("w", encoding="utf-8") as fh:
+        for aid in sorted(pred):
+            kept = keep_confident(pred[aid], args.min_confidence)
+            if issues := validate_structure(kept):
+                raise SystemExit(f"{aid}: invalid after thresholding: {issues}")
+            before += len(pred[aid].conditions)
+            after += len(kept.conditions)
+            fh.write(kept.model_dump_json() + "\n")
+    print(f"kept {after} of {before} conditions at confidence >= {args.min_confidence}")
+    return 0
+
+
 def _annotate_tasks(args: argparse.Namespace) -> int:
     from triggermap.annotate.label_studio import build_task
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
@@ -1385,6 +1406,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="train only on records of this label origin (repeatable; default: all)",
     )
     experiment.set_defaults(handler=_experiment)
+
+    threshold = commands.add_parser(
+        "threshold", help="keep only predictions at or above a confidence threshold"
+    )
+    threshold.add_argument("pred", type=Path, help="predicted Extraction JSONL")
+    threshold.add_argument("--min-confidence", type=float, required=True)
+    threshold.add_argument("--out", type=Path, required=True)
+    threshold.set_defaults(handler=_threshold)
 
     view = commands.add_parser("view", help="render an evidence-linked review page")
     source = view.add_mutually_exclusive_group(required=True)

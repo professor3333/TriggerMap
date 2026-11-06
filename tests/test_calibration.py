@@ -211,3 +211,59 @@ def test_calibrate_refuses_model_drafts_unless_asked(tmp_path: Path) -> None:
         main([*args, "--gold-origin", "all", "--target-precision", "0.5", "--out", str(out)]) == 0
     )
     assert load_policy(out).measured["gold_origin"] == "all"
+
+
+def test_platt_fit_does_not_diverge_on_skewed_confidences() -> None:
+    """Undamped Newton steps diverged here (a ~ 1e5, b ~ -2e11), as on DeBERTa confidences."""
+    import math
+    import random
+
+    from triggermap.eval.calibration import Calibrator, fit_platt
+
+    rng = random.Random(0)
+    scored = []
+    for _ in range(500):
+        c = rng.uniform(0.27, 0.999)
+        scored.append((c, rng.random() < c**3 * 0.35))
+    fitted = fit_platt(scored)
+    assert 0 < fitted.params["a"] < 20 and abs(fitted.params["b"]) < 20
+    probs = [fitted(c) for c, _ in scored]
+    assert all(0 < q < 1 for q in probs)
+    observed = sum(ok for _, ok in scored) / len(scored)
+    assert abs(sum(probs) / len(probs) - observed) < 1e-3  # intercept matches the base rate
+    extreme = Calibrator("platt", {"a": 1e5, "b": -1e11})
+    assert extreme(0.5) == 0.0 and math.isfinite(extreme(0.99))
+
+
+def test_keep_confident_drops_low_predictions_and_repairs_groups() -> None:
+    from triggermap.eval.calibration import keep_confident
+    from triggermap.schema import Category, Condition, DocumentStatus, Extraction, Group, Role
+    from triggermap.schema.models import GroupOperator
+    from triggermap.schema.validate import validate_structure
+
+    def cond(cid: str, start: int, conf: float | None) -> Condition:
+        return Condition(
+            id=cid,
+            span=(start, start + 3),
+            category=Category.USAGE,
+            role=Role.REQUIRED,
+            source="model",
+            confidence=conf,
+        )
+
+    ext = Extraction(
+        advisory_id="GHSA-xxxx-xxxx-xxxx",
+        content_hash="0" * 64,
+        preprocessing_version="1",
+        model_id="m",
+        document_status=DocumentStatus.HAS_CONDITIONS,
+        conditions=(cond("c1", 0, 0.9), cond("c2", 10, 0.2), cond("c3", 20, None)),
+        groups=(Group(operator=GroupOperator.ALL, members=("c1", "c2")),),
+    )
+    kept = keep_confident(ext, 0.5)
+    assert [c.id for c in kept.conditions] == ["c1", "c3"]  # no confidence: kept
+    assert kept.groups == ()  # one member left
+    assert validate_structure(kept) == []
+    empty = keep_confident(ext.model_copy(update={"conditions": ext.conditions[:2]}), 0.95)
+    assert empty.conditions == () and empty.document_status is DocumentStatus.NO_EXPLICIT_CONDITION
+    assert validate_structure(empty) == []

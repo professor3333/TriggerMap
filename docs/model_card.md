@@ -119,6 +119,20 @@ catalogue against hand-labelled gold needs a release candidate and hand-labelled
 - **Window boundaries:** structure that crosses a window boundary.
 - **Span boundaries:** boundary errors on modifiers and multiword feature names.
 
+## Calibration and default model
+
+Confidence calibration (Platt scaling) and review thresholds were fitted on the selection half
+of the model-drafted dev records and measured on the held-out half
+([`reports/calibration/`](../reports/calibration/README.md)):
+- **Calibration error (ECE):** falls from 0.305 to 0.101 for the CRF and from 0.548 to 0.059
+  for DeBERTa.
+- **At matched review thresholds:** DeBERTa keeps two to three times as many agreeing
+  conditions, but it is not clearly more precise and does not invent fewer prerequisites.
+
+The default model is therefore still the CRF. The live review policy stays
+`review-policy-0` (uncalibrated: every prediction is flagged), because thresholds fitted on
+model drafts measure agreement, not accuracy.
+
 ## Release process
 
 - **Thresholds.** Review thresholds and confidence cut-offs are chosen on the dev calibration

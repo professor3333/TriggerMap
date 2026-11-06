@@ -107,6 +107,7 @@ uv run triggermap evaluate GOLD.jsonl PRED.jsonl --split dev --gold-origin manua
 uv run triggermap compare GOLD.jsonl A.jsonl B.jsonl --split dev --gold-origin manual --out compare.md
 uv run triggermap calibrate --gold GOLD.jsonl --pred PRED.jsonl     # dev halves → review policy (manual gold)
 uv run triggermap errors --gold GOLD.jsonl --pred PRED.jsonl        # error catalogue, dev only (manual gold)
+uv run triggermap threshold PRED.jsonl --min-confidence T --out KEPT.jsonl   # what a reviewer sees unflagged
 ```
 
 Current measured results are in [`reports/pilot/`](../reports/pilot/README.md) and

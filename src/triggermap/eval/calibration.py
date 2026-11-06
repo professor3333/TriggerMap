@@ -16,6 +16,8 @@ from typing import Any, Literal
 
 import numpy as np
 
+from triggermap.schema.models import DocumentStatus, Extraction
+
 Method = Literal["identity", "platt", "isotonic"]
 Scored = tuple[float, bool]  # (confidence, typed-correct)
 
@@ -30,7 +32,7 @@ class Calibrator:
             return confidence
         if self.method == "platt":
             z = self.params["a"] * _logit(confidence) + self.params["b"]
-            return 1 / (1 + math.exp(-z))
+            return 0.5 * (1 + math.tanh(z / 2))  # sigmoid without overflow
         xs, ys = self.params["x"], self.params["y"]
         return float(np.interp(confidence, xs, ys))
 
@@ -49,22 +51,36 @@ def _logit(p: float, eps: float = 1e-4) -> float:
 
 
 def fit_platt(scored: Sequence[Scored], l2: float = 1e-3, iterations: int = 100) -> Calibrator:
-    """Logistic regression on logit(confidence), fitted with Newton's method."""
+    """Logistic regression on logit(confidence), fitted with damped Newton steps.
+
+    Full Newton steps can overshoot from the starting point and diverge (seen on transformer
+    confidences), so each step is halved until the penalised log-loss decreases.
+    """
     if not scored:
         return Calibrator("identity", {})
     x = np.array([_logit(p) for p, _ in scored])
     y = np.array([1.0 if ok else 0.0 for _, ok in scored])
+
+    def loss(a: float, b: float) -> float:
+        z = a * x + b
+        return float(np.sum(np.logaddexp(0.0, z) - y * z) + 0.5 * l2 * a * a)
+
     a, b = 1.0, 0.0
+    current = loss(a, b)
     for _ in range(iterations):
-        p = 1 / (1 + np.exp(-(a * x + b)))
+        p = 0.5 * (1 + np.tanh((a * x + b) / 2))
         w = p * (1 - p)
         grad = np.array([np.sum((p - y) * x) + l2 * a, np.sum(p - y)])
         hess = np.array(
             [[np.sum(w * x * x) + l2, np.sum(w * x)], [np.sum(w * x), np.sum(w) + 1e-9]]
         )
         step = np.linalg.solve(hess, grad)
-        a, b = a - step[0], b - step[1]
-        if np.max(np.abs(step)) < 1e-8:
+        t = 1.0
+        while t > 1e-10 and loss(a - t * step[0], b - t * step[1]) > current:
+            t /= 2
+        a, b = a - t * step[0], b - t * step[1]
+        current = loss(a, b)
+        if np.max(np.abs(t * step)) < 1e-8:
             break
     return Calibrator("platt", {"a": round(float(a), 6), "b": round(float(b), 6)})
 
@@ -202,3 +218,27 @@ def calibration_split(
     calibration = [aid for aid in doc_ids if group_of.get(aid, aid) in chosen]
     held_out = [aid for aid in doc_ids if group_of.get(aid, aid) not in chosen]
     return calibration, held_out
+
+
+def keep_confident(extraction: Extraction, threshold: float) -> Extraction:
+    """The predictions a reviewer sees without a low-confidence flag at ``threshold``.
+
+    Conditions below the threshold are dropped (a condition without a confidence is kept);
+    groups keep their remaining members and disappear below two. A document left with no
+    condition becomes ``NO_EXPLICIT_CONDITION``: the model found none above the threshold.
+    """
+    kept = tuple(
+        c for c in extraction.conditions if c.confidence is None or c.confidence >= threshold
+    )
+    ids = {c.id for c in kept}
+    groups = []
+    for group in extraction.groups:
+        members = tuple(m for m in group.members if m in ids)
+        if len(members) >= 2:
+            groups.append(group.model_copy(update={"members": members}))
+    status = extraction.document_status
+    if status is DocumentStatus.HAS_CONDITIONS and not kept:
+        status = DocumentStatus.NO_EXPLICIT_CONDITION
+    return extraction.model_copy(
+        update={"conditions": kept, "groups": tuple(groups), "document_status": status}
+    )
