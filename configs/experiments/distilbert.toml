@@ -1,9 +1,9 @@
 # DistilBERT (cased, Apache-2.0) with span, attribute and group heads.
 # Single run:  uv run triggermap train --model transformer --config configs/experiments/distilbert.toml \
-#                --gold <gold.jsonl> --out artifacts/distilbert-2
+#                --gold <gold.jsonl> --out artifacts/distilbert-3
 
 [train]
-model_id = "distilbert-2"
+model_id = "distilbert-3"
 base_model = "distilbert/distilbert-base-cased"
 revision = "6ea81172465e8b0ad3fddeed32b986cdcdcffcf0"
 max_length = 512
@@ -12,12 +12,13 @@ context_tokens = 48
 use_context = true
 group_loss_weight = 1.0
 learning_rate = 5e-5
-epochs = 15
+epochs = 20
 batch_size = 8
 gradient_accumulation = 2
 warmup_ratio = 0.1
 weight_decay = 0.01
 patience = 3
+min_epochs = 6
 seed = 0
 device = "auto"
 mlflow_experiment = "triggermap"

@@ -269,3 +269,34 @@ def test_gold_split_across_files(scored, tmp_path: Path, monkeypatch) -> None:  
     assert f"`{first}`, `{second}`" in report
     with pytest.raises(SystemExit, match="more than one gold file"):
         main([*base, "--add-gold", str(first)])
+
+
+def test_subset_and_split_dev(scored, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """split-dev halves dev gold by leakage group; --subset scores one half only."""
+    import json
+
+    from tests.factories import write_split_manifest
+
+    gold_docs, predictions = scored
+    gold_path, pred_path = tmp_path / "g.jsonl", tmp_path / "p.jsonl"
+    gold_path.write_text("".join(g.model_dump_json() + "\n" for g in gold_docs.values()))
+    pred_path.write_text("".join(p.model_dump_json() + "\n" for p in predictions.values()))
+    split = write_split_manifest(tmp_path / "split.json", {GA: "dev", GB: "dev", GC: "dev"})
+    out = tmp_path / "sel"
+    args = ["corpus", "split-dev", "--gold", str(gold_path), "--out-dir", str(out)]
+    assert main([*args, "--split-manifest", str(split)]) == 0
+    selection = json.loads((out / "selection.json").read_text())
+    holdout = json.loads((out / "holdout.json").read_text())
+    assert sorted(selection + holdout) == sorted(gold_docs) and not set(selection) & set(holdout)
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["documents"] == {"selection": len(selection), "holdout": len(holdout)}
+    with pytest.raises(SystemExit, match="immutable"):
+        main([*args, "--split-manifest", str(split)])
+    monkeypatch.chdir(tmp_path)
+    half = out / ("holdout.json" if holdout else "selection.json")
+    base = ["evaluate", str(gold_path), str(pred_path), "--split-manifest", str(split)]
+    base += ["--clusters", "document", "--samples", "20", "--out", "e.md", "--subset", str(half)]
+    assert main(base) == 0
+    report = (tmp_path / "e.md").read_text()
+    assert f"- Documents: {len(json.loads(half.read_text()))}" in report
+    assert "subset" in report

@@ -144,6 +144,45 @@ def _corpus_sample_batch(args: argparse.Namespace) -> int:
     return 0
 
 
+def _corpus_split_dev(args: argparse.Namespace) -> int:
+    """Selection / held-out halves of dev gold, grouped like the splits, committed once."""
+    from triggermap.corpus.splits import load_split, select
+    from triggermap.eval.calibration import calibration_split
+    from triggermap.eval.runner import load_gold_files
+
+    if args.out_dir.exists():
+        raise SystemExit(f"{args.out_dir} exists; selection splits are immutable once drawn")
+    split = load_split(args.split_manifest)
+    gold = load_gold_files(args.gold)
+    dev = select(sorted(gold), split, "dev")
+    if not dev:
+        raise SystemExit("no gold documents in the dev split")
+    selection, held_out = calibration_split(dev, split["group_of"], args.fraction, args.seed)
+    args.out_dir.mkdir(parents=True)
+    halves = {"selection": sorted(selection), "holdout": sorted(held_out)}
+    for name, ids in halves.items():
+        (args.out_dir / f"{name}.json").write_text(json.dumps(ids, indent=0) + "\n")
+    groups = {n: len({split["group_of"].get(a, a) for a in ids}) for n, ids in halves.items()}
+    manifest = {
+        "gold": {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in args.gold},
+        "split_assignment_sha256": split["assignment_sha256"],
+        "fraction": args.fraction,
+        "seed": args.seed,
+        "documents": {n: len(ids) for n, ids in halves.items()},
+        "leakage_groups": groups,
+        "files": {
+            f"{n}.json": hashlib.sha256((args.out_dir / f"{n}.json").read_bytes()).hexdigest()
+            for n in halves
+        },
+    }
+    (args.out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    print(
+        f"wrote {args.out_dir}: selection {len(selection)} docs ({groups['selection']} groups), "
+        f"held-out {len(held_out)} docs ({groups['holdout']} groups)"
+    )
+    return 0
+
+
 def _annotate_tasks(args: argparse.Namespace) -> int:
     from triggermap.annotate.label_studio import build_task
     from triggermap.ingest.build import CORPUS_FILE, load_corpus
@@ -267,11 +306,24 @@ def _scored_gold(args: argparse.Namespace, model_ids: Sequence[str]) -> dict[str
     kept = set(select(sorted(gold), load_split(args.split_manifest), args.split))
     gold = {aid: record for aid, record in gold.items() if aid in kept}
     gold = _of_origin(gold, args.gold_origin)
+    only = _subset(args.subset)
+    if only is not None:
+        gold = {aid: record for aid, record in gold.items() if aid in only}
     if not gold:
         raise SystemExit(f"no gold documents in the {args.split} split")
     if args.split == "test":
         _log_test_access(args, sorted(model_ids))
     return gold
+
+
+def _subset(path: Path | None) -> set[str] | None:
+    """Advisory ids from a JSON list file (a committed selection or held-out subset)."""
+    if path is None:
+        return None
+    ids = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids):
+        raise SystemExit(f"{path}: expected a JSON list of advisory ids")
+    return set(ids)
 
 
 def _clusters(args: argparse.Namespace) -> dict[str, str] | None:
@@ -286,7 +338,9 @@ def _clusters(args: argparse.Namespace) -> dict[str, str] | None:
 def _gold_context(args: argparse.Namespace, gold: Mapping[str, Any]) -> str:
     return (
         f"{_gold_names(args)} ({args.split} split of `{args.split_manifest}`; "
-        f"origin: {args.gold_origin}; {len(gold)} documents)"
+        f"origin: {args.gold_origin}; "
+        + (f"subset `{args.subset}`; " if args.subset else "")
+        + f"{len(gold)} documents)"
     )
 
 
@@ -360,6 +414,7 @@ def _gold_examples(
     split_manifest: Path,
     split: str = "train",
     origins: Sequence[str] | None = None,
+    only: set[str] | None = None,
 ) -> list[Any]:
     """Preprocessed (document, record) pairs of one split, optionally of chosen origins only."""
     from triggermap.corpus.splits import load_split, select
@@ -378,6 +433,8 @@ def _gold_examples(
         if aid not in wanted:
             continue
         assert isinstance(record, AdvisoryAnnotation)
+        if only is not None and aid not in only:
+            continue
         if origins and (record.origin.value if record.origin else "unrecorded") not in origins:
             continue
         doc = preprocess(compose_raw(corpus[aid].summary, corpus[aid].details))
@@ -401,7 +458,13 @@ def _train(args: argparse.Namespace) -> int:
         settings["split_assignment_sha256"] = load_split(args.split_manifest)["assignment_sha256"]
         settings.setdefault("model_id", args.model_id)
         settings["seed"] = args.seed if args.seed is not None else settings.get("seed", 0)
-        dev = _gold_examples(args.dev_gold or args.gold, args.processed, args.split_manifest, "dev")
+        dev = _gold_examples(
+            args.dev_gold or args.gold,
+            args.processed,
+            args.split_manifest,
+            "dev",
+            only=_subset(args.dev_subset),
+        )
         transformer = train(TrainConfig(**settings), examples, dev, args.out)
         best = transformer.metadata["best_dev_typed_f1"]
         print(
@@ -443,7 +506,13 @@ def _experiment(args: argparse.Namespace) -> int:
 
     split = load_split(args.split_manifest)
     examples = _gold_examples(args.gold, args.processed, args.split_manifest, origins=args.origin)
-    dev = _gold_examples(args.dev_gold or args.gold, args.processed, args.split_manifest, "dev")
+    dev = _gold_examples(
+        args.dev_gold or args.gold,
+        args.processed,
+        args.split_manifest,
+        "dev",
+        only=_subset(args.dev_subset),
+    )
     if not examples or not dev:
         raise SystemExit("experiments need gold documents in both the train and dev splits")
     results = []
@@ -470,6 +539,7 @@ def _experiment(args: argparse.Namespace) -> int:
                 "Config": f"`{args.config}`",
                 "Gold": f"{len(args.gold)} file(s): {len(examples)} train docs",
                 "Dev gold": ", ".join(f"`{p}`" for p in (args.dev_gold or args.gold))
+                + (f", subset `{args.dev_subset}`" if args.dev_subset else "")
                 + f": {len(dev)} dev docs (early stopping and this table)",
                 "Split": f"`{args.split_manifest}` ({split['assignment_sha256'][:12]})",
             },
@@ -971,6 +1041,11 @@ def _gold_names(args: argparse.Namespace) -> str:
 
 def _dev_gold_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
+        "--dev-subset",
+        type=Path,
+        help="JSON list of advisory ids: early stopping uses only these dev documents",
+    )
+    parser.add_argument(
         "--dev-gold",
         type=Path,
         nargs="+",
@@ -980,6 +1055,11 @@ def _dev_gold_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def _scoring_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--subset",
+        type=Path,
+        help="JSON list of advisory ids: score only these documents (e.g. a held-out half)",
+    )
     parser.add_argument(
         "--add-gold",
         type=Path,
@@ -1054,6 +1134,15 @@ def build_parser() -> argparse.ArgumentParser:
     split.add_argument("--pilot", type=Path, default=DEFAULT_PILOT)
     split.add_argument("--out", type=Path)
     split.set_defaults(handler=_corpus_split)
+    dev_split = corpus_cmds.add_parser(
+        "split-dev", help="split dev gold by leakage group into selection and held-out halves"
+    )
+    dev_split.add_argument("--gold", type=Path, nargs="+", required=True)
+    dev_split.add_argument("--out-dir", type=Path, required=True)
+    dev_split.add_argument("--fraction", type=float, default=0.5, help="share for selection")
+    dev_split.add_argument("--seed", type=int, default=0)
+    dev_split.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    dev_split.set_defaults(handler=_corpus_split_dev)
 
     annotate = commands.add_parser("annotate", help="Label Studio tasks and imports")
     annotate_cmds = annotate.add_subparsers(dest="subcommand", required=True)

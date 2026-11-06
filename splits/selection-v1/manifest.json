@@ -1,0 +1,21 @@
+{
+  "gold": {
+    "annotations/batches/batch-03.jsonl": "062c49a56707b9702e0b2f6d0e49edd061910869ad1fcd20b0360d0f656e554c",
+    "annotations/batches/batch-06.jsonl": "3f88679d4a817ec4349b07854668683a2dd9e03a18b444adde893679aaaaa7f4"
+  },
+  "split_assignment_sha256": "41d7354e1a13378667dc5cda74e3ed932f770af94cbde6e12460863981290067",
+  "fraction": 0.5,
+  "seed": 0,
+  "documents": {
+    "selection": 111,
+    "holdout": 61
+  },
+  "leakage_groups": {
+    "selection": 46,
+    "holdout": 46
+  },
+  "files": {
+    "selection.json": "f11f265e9aa1e794c4c7cdbb4840a2fd4fa104e9355455be434385ca11241dbf",
+    "holdout.json": "8ac8407b7774a33d28855bd46afa26e32f72df4b977868771184d05f109fd9eb"
+  }
+}

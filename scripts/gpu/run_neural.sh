@@ -14,9 +14,10 @@
 # no weights) and $OUT_DIR/triggermap-neural-bundles.tgz (the best bundle of each grid, by dev
 # typed F1). OUT_DIR defaults to /kaggle/working on Kaggle, otherwise ./gpu-out.
 #
-# Selection never sees the test split or the hand-labelled dev documents: training uses the
-# train split of the pilot and batches 01-02, and early stopping uses only the model-drafted
-# dev batches 03 and 06 (--dev-gold). Re-running resumes: finished runs are not retrained.
+# Selection never sees the test split, the hand-labelled dev documents or the held-out half:
+# training uses the train split of the pilot and batches 01-02, and early stopping uses only
+# the selection half of the model-drafted dev batches 03 and 06 (splits/selection-v1).
+# Re-running resumes: finished runs are not retrained.
 set -euo pipefail
 
 CONFIGS=${CONFIGS:-"distilbert deberta"}
@@ -26,6 +27,7 @@ CORPUS_SHA256=734043ff982a337f6cc593745160e997f20ee62609183ff857edce3d47d2b655
 UV_VERSION=0.12.5
 TRAIN_GOLD=(annotations/pilot/pilot-2.jsonl annotations/batches/batch-01.jsonl annotations/batches/batch-02.jsonl)
 DEV_GOLD=(annotations/batches/batch-03.jsonl annotations/batches/batch-06.jsonl)
+DEV_SUBSET=splits/selection-v1/selection.json  # early stopping; holdout.json is for comparisons
 SAMPLES=(annotations/pilot/pilot_manifest.json annotations/batches/batch-03.json annotations/batches/batch-06.json)
 
 [ -f pyproject.toml ] && [ -d annotations ] || { echo "run from the repository root" >&2; exit 1; }
@@ -55,7 +57,7 @@ echo "$CORPUS_SHA256  data/processed/advisories.jsonl" | sha256sum -c -
 mkdir -p reports/neural/predictions
 for config in $CONFIGS; do
   "${TM[@]}" experiment --config "configs/experiments/$config.toml" \
-    --gold "${TRAIN_GOLD[@]}" --dev-gold "${DEV_GOLD[@]}" \
+    --gold "${TRAIN_GOLD[@]}" --dev-gold "${DEV_GOLD[@]}" --dev-subset "$DEV_SUBSET" \
     --out-root artifacts/experiments --report "reports/neural/experiment_$config.md"
 done
 # Only the runs of the current configs (their model_id prefixes); older grids are left out.

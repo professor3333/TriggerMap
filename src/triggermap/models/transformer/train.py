@@ -72,6 +72,7 @@ class TrainConfig(BaseModel):
     weight_decay: float = 0.01
     max_grad_norm: float = 1.0
     patience: int = 2
+    min_epochs: int = 0  # early stopping may end training only after this many epochs
     seed: int = 0
     device: str = "auto"
     max_train_documents: int | None = None  # learning curves
@@ -248,7 +249,7 @@ def train(
             best_state = copy.deepcopy({k: v.detach().cpu() for k, v in model.state_dict().items()})
         else:
             stale += 1
-            if stale >= config.patience:
+            if stale >= config.patience and epoch >= config.min_epochs:
                 break
 
     if best_state is not None:

@@ -150,6 +150,21 @@ def test_bundle_round_trip(trained: TransformerExtractor) -> None:
         assert reloaded.extract(pre, rec.advisory_id) == trained.extract(pre, rec.advisory_id)
 
 
+@pytest.mark.parametrize(("min_epochs", "expected"), [(0, 2), (5, 5)])
+def test_early_stopping_waits_for_min_epochs(
+    base: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, min_epochs: int, expected: int
+) -> None:
+    """A model that scores 0 at first is not stopped before min_epochs (run 2's `none` runs)."""
+    import triggermap.models.transformer.train as train_module
+
+    monkeypatch.setattr(train_module, "_dev_scores", lambda extractor, dev: {"typed_f1": 0.0})
+    examples = [(pre, rec) for _, pre, rec in DATA[:4]]
+    settings = config(base, epochs=10, patience=1, min_epochs=min_epochs)
+    model = train(settings, examples, examples, tmp_path)
+    assert len(model.metadata["epochs"]) == expected
+    assert model.metadata["best_epoch"] == 1
+
+
 def test_ablations_train(base: Path, tmp_path: Path) -> None:
     examples = [(pre, rec) for _, pre, rec in DATA[:8]]
     ablated = config(base, epochs=1, use_context=False, group_loss_weight=0.0)
@@ -260,6 +275,13 @@ seed = [0, 1]
     dev_args = [*experiment_args[:-1], str(tmp_path / "dev_report.md"), "--dev-gold", str(dev_gold)]
     assert main([*dev_args, "--samples", "20", *common]) == 0
     assert ": 2 dev docs" in (tmp_path / "dev_report.md").read_text()
+    # --dev-subset: early stopping only on the listed dev documents.
+    subset = tmp_path / "subset.json"
+    subset.write_text(json.dumps([data[12][2].advisory_id]))
+    sub_args = [*experiment_args[:-1], str(tmp_path / "sub_report.md"), "--dev-subset", str(subset)]
+    assert main([*sub_args, "--samples", "20", *common]) == 0
+    sub_text = (tmp_path / "sub_report.md").read_text()
+    assert ": 1 dev docs" in sub_text and "subset.json" in sub_text
 
 
 @pytest.mark.slow

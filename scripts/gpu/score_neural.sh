@@ -3,9 +3,11 @@
 #
 #   bash scripts/gpu/score_neural.sh ~/Downloads/triggermap-neural-results.tgz
 #
-# Writes reports/neural/<run>_dev_agreement.md (agreement with the model-drafted dev batches 03
-# and 06, not accuracy), <run>_dev_manual.md (the 10 hand-labelled dev documents) and paired
-# comparisons of each grid's best run against crf-batches-01-02. The test split is not touched.
+# Writes reports/neural/<run>_dev_holdout.md (agreement with the held-out half of the
+# model-drafted dev batches 03 and 06, splits/selection-v1/holdout.json, never used for early
+# stopping or run selection; agreement, not accuracy), <run>_dev_manual.md (the 10
+# hand-labelled dev documents) and paired comparisons of each grid's best run against
+# crf-batches-01-02 on both. The test split is not touched.
 set -euo pipefail
 
 archive=${1:?usage: score_neural.sh RESULTS.tgz}
@@ -23,18 +25,19 @@ cp "$tmp"/reports/neural/predictions/*.jsonl "$tmp"/reports/neural/predictions/*
 
 TM=(uv run --no-sync triggermap)
 AGREE=(annotations/batches/batch-03.jsonl)
-AGREE_ADD=(--add-gold annotations/batches/batch-06.jsonl)
+AGREE_ADD=(--add-gold annotations/batches/batch-06.jsonl --subset splits/selection-v1/holdout.json)
 CRF=reports/agreement/predictions/crf-batches-01-02.jsonl
 
 for pred in reports/neural/predictions/*.jsonl; do
   run=$(basename "$pred" .jsonl)
   "${TM[@]}" evaluate "${AGREE[@]}" "$pred" "${AGREE_ADD[@]}" --split dev \
-    --title "Agreement with model drafts: $run" --out "reports/neural/${run}_dev_agreement.md" >/dev/null
+    --title "Agreement with model drafts (held-out half): $run" \
+    --out "reports/neural/${run}_dev_holdout.md" >/dev/null
   "${TM[@]}" evaluate annotations/pilot/pilot-2.jsonl "$pred" --split dev --gold-origin manual \
     --title "Hand-labelled dev: $run" --out "reports/neural/${run}_dev_manual.md" >/dev/null
 done
 
-# Best run per grid by early-stopping score (model-drafted dev), never by the manual slice.
+# Best run per grid by early-stopping score (selection half), never by held-out or manual.
 best=$(python3 -I - <<'EOF'
 import json
 from pathlib import Path
@@ -51,7 +54,8 @@ EOF
 for run in $best; do
   pred=reports/neural/predictions/$run.jsonl
   "${TM[@]}" compare "${AGREE[@]}" "$CRF" "$pred" "${AGREE_ADD[@]}" --split dev \
-    --title "Agreement: crf-batches-01-02 -> $run" --out "reports/neural/compare_agreement_$run.md" >/dev/null
+    --title "Agreement (held-out half): crf-batches-01-02 -> $run" \
+    --out "reports/neural/compare_holdout_$run.md" >/dev/null
   "${TM[@]}" compare annotations/pilot/pilot-2.jsonl "$CRF" "$pred" --split dev --gold-origin manual \
     --title "Hand-labelled dev: crf-batches-01-02 -> $run" --out "reports/neural/compare_manual_$run.md" >/dev/null
 done

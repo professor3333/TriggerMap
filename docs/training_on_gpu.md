@@ -11,13 +11,17 @@ serving host. `scripts/gpu/run_neural.sh` does the whole run in one command, and
    stops unless `data/processed/advisories.jsonl` has the documented SHA-256.
 3. Runs `configs/experiments/distilbert.toml` and `configs/experiments/deberta.toml`: two
    span-tag weightings (`sqrt`, `none`) × two learning rates (2e-5, 5e-5) × three seeds each,
-   24 runs, with up to 15 epochs and early stopping (patience 3). On a T4 a run takes about
-   1–5 minutes. Run 1 used balanced weights and 6 epochs and over-predicted spans; see
-   [`reports/neural/run-1/`](../reports/neural/run-1/README.md).
+   24 runs. Each trains for up to 20 epochs. Early stopping uses patience 3 and cannot end a
+   run before epoch 6 (`min_epochs`), so a model that predicts nothing at first is not cut off.
+   On a T4 a run takes about 1–6 minutes. Earlier runs are recorded in
+   [`reports/neural/`](../reports/neural/run-2/README.md).
    - **Training:** the train split of `pilot-2`, `batch-01` and `batch-02` (239 documents).
-   - **Early stopping and run selection:** only the model-drafted dev batches `batch-03` and
-     `batch-06` (`--dev-gold`). The 10 hand-labelled dev documents and the test split play no
-     part in selection.
+   - **Early stopping and run selection:** only the **selection half** of the model-drafted
+     dev batches `batch-03` and `batch-06` (`--dev-gold … --dev-subset
+     splits/selection-v1/selection.json`; 111 documents in 46 project groups).
+   - **Not used for selection:** the held-out half (61 documents in 46 other groups), the 10
+     hand-labelled dev documents and the test split. The held-out half and the hand-labelled
+     documents are used only for the comparisons below.
 4. Predicts with every run on the pilot, `batch-03` and `batch-06` documents.
 5. Packs two archives:
    - `triggermap-neural-results.tgz`: reports, predictions, run metadata and MLflow runs. No
@@ -56,8 +60,8 @@ bash scripts/gpu/score_neural.sh ~/Downloads/triggermap-neural-results.tgz
 ```
 
 This writes `reports/neural/`:
-- `<run>_dev_agreement.md`: agreement with the 172 model-drafted dev records. This is not
-  accuracy.
+- `<run>_dev_holdout.md`: agreement with the held-out half of the model-drafted dev records
+  (`splits/selection-v1/holdout.json`). This is not accuracy.
 - `<run>_dev_manual.md`: accuracy on the 10 hand-labelled dev documents.
 - `compare_*`: paired comparisons of each grid's best run, chosen by its early-stopping score,
   against `crf-batches-01-02` on both slices.
@@ -93,12 +97,14 @@ environment the script created (`.venv-gpu`).
 !.venv-gpu/bin/triggermap experiment --config configs/experiments/distilbert.toml \
     --gold annotations/pilot/pilot-2.jsonl annotations/batches/batch-01.jsonl annotations/batches/batch-02.jsonl \
     --dev-gold annotations/batches/batch-03.jsonl annotations/batches/batch-06.jsonl \
+    --dev-subset splits/selection-v1/selection.json \
     --report /content/drive/MyDrive/triggermap/reports/distilbert.md
 ```
 
 Each config runs span-tag weightings {sqrt, none} × learning rates {2e-5, 5e-5} × seeds {0, 1, 2}. Training uses only the train
-split, early stopping and the report use only the dev records of `--dev-gold`, and the test
-split is never read.
+split, early stopping and the report use only the dev records of `--dev-gold` that are listed
+in `--dev-subset`, and the test split is never read. `splits/selection-v1/` was drawn once with
+`triggermap corpus split-dev` (by leakage group, seed 0) and is immutable.
 After choosing a backbone, set it in `configs/experiments/ablations.toml` and run the
 ablations (no context, no group objective) and learning curves (125 and 250 documents)
 the same way.
