@@ -156,7 +156,7 @@ item can be highlighted in the original advisory.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 trained on model drafts (run 2) · CRF still stronger on invented prerequisites |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
@@ -185,8 +185,6 @@ cannot be judged as declared.
 | Rules (`rules-2`) | 0.107 [0.058, 0.154] | 0.142 [0.085, 0.195] | 0.330 [0.165, 0.467] |
 | CRF (`crf-pilot-2-batch-01`) | 0.128 [0.095, 0.168] | 0.174 [0.134, 0.215] | 0.416 [0.294, 0.493] |
 | CRF (`crf-batches-01-02`, + 100 model-drafted `batch-02` records) | 0.145 [0.105, 0.185] | 0.221 [0.171, 0.268] | 0.353 [0.260, 0.416] |
-| DistilBERT (`distilbert-2`, best of 12 runs, same training data) | 0.075 [0.051, 0.105] | 0.101 [0.077, 0.131] | 0.541 [0.478, 0.601] |
-| DeBERTa-v3-small (`deberta-2`, best of 12 runs, same training data) | 0.133 [0.108, 0.164] | 0.165 [0.142, 0.194] | 0.607 [0.565, 0.640] |
 
 Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
 typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
@@ -194,13 +192,22 @@ typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0
 [`reports/agreement/`](reports/agreement/README.md). Its disagreements with the drafts, by
 error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
 
-The transformers were fine-tuned on one T4 GPU, with runs chosen on these model-drafted dev
-records only. DeBERTa is not clearly different from the CRF on typed agreement (−0.013, 95% CI
-[−0.063, +0.043]). It is clearly worse on the false-prerequisite rate (+0.254 [+0.188, +0.343])
-because it predicts about 8 conditions per document against 1.8. DistilBERT is clearly worse
-on typed agreement (−0.070 [−0.113, −0.020]). The transformer rows are optimistic: their
-epochs and runs were selected on these same records, and the CRF's were not. See [`reports/neural/run-2/`](reports/neural/run-2/README.md);
-the first run's failed configuration is recorded in [`reports/neural/run-1/`](reports/neural/run-1/README.md).
+**Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same
+training data. Early stopping and the choice of each grid's best run (of 12) used only a
+selection half of these model-drafted dev records. The comparison below is on the other,
+held-out half (61 documents in 46 project groups, `splits/selection-v1/`):
+
+| Agreement, held-out half (61 dev records, not accuracy) | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
+|---|---:|---:|---:|
+| CRF (`crf-batches-01-02`) | 0.127 [0.054, 0.201] | 0.176 [0.100, 0.261] | 0.412 [0.288, 0.538] |
+| DistilBERT (`distilbert-3`) | 0.099 [0.064, 0.142] | 0.118 [0.074, 0.177] | 0.463 [0.375, 0.545] |
+| DeBERTa-v3-small (`deberta-3`) | 0.185 [0.145, 0.235] | 0.221 [0.174, 0.277] | 0.483 [0.418, 0.544] |
+
+DeBERTa leads the CRF on typed agreement, but not clearly (+0.058, 95% CI [−0.008, +0.134]).
+Its false-prerequisite rate is not clearly different (+0.072 [−0.070, +0.196]). On the 10
+hand-labelled documents no difference is clear. See [`reports/neural/run-3/`](reports/neural/run-3/README.md);
+earlier runs are in [`run-2/`](reports/neural/run-2/README.md) and the failed first
+configuration in [`run-1/`](reports/neural/run-1/README.md).
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),

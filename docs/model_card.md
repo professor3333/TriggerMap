@@ -28,8 +28,8 @@ reviewer confirms or corrects every item before export.
 |---|---|---|
 | `rules-2` | Deterministic cue rules over the shared preprocessing (no learning) | Runs; 100% formatting-consistent on 300 documents |
 | CRF | `python-crfsuite` BIO span tagger with logistic-regression category, role and group classifiers. Features `crf-features-1`, optional spaCy part-of-speech tags | Trained on pilot data only |
-| DistilBERT | `distilbert/distilbert-base-cased` (Apache-2.0), revision `6ea81172465e8b0ad3fddeed32b986cdcdcffcf0` | Run 2: best agreement typed F1 0.075 (CRF 0.145), [`reports/neural/run-2/`](../reports/neural/run-2/README.md) |
-| DeBERTa-v3-small | `microsoft/deberta-v3-small` (MIT), revision `a36c739020e01763fe789b4b85e2df55d6180012` | Run 2: best agreement typed F1 0.133, false-prerequisite rate 0.607 (CRF 0.353), [`reports/neural/run-2/`](../reports/neural/run-2/README.md) |
+| DistilBERT | `distilbert/distilbert-base-cased` (Apache-2.0), revision `6ea81172465e8b0ad3fddeed32b986cdcdcffcf0` | Run 3: held-out agreement typed F1 0.099 (CRF 0.127), [`reports/neural/run-3/`](../reports/neural/run-3/README.md) |
+| DeBERTa-v3-small | `microsoft/deberta-v3-small` (MIT), revision `a36c739020e01763fe789b4b85e2df55d6180012` | Run 3: held-out agreement typed F1 0.185, false-prerequisite rate 0.483 (CRF 0.127 / 0.412; differences not clear), [`reports/neural/run-3/`](../reports/neural/run-3/README.md) |
 
 The transformer models share one design:
 - the encoder is fine-tuned, never pretrained;
