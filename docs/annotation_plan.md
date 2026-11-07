@@ -13,8 +13,9 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
 | `batches/batch-05.json` | train | 261 | 183 uncertainty from `crf-batches-01-02` + 78 natural, ≤ 3 per leakage group | train | next (drawn 2026-11-05) |
 | `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-06`; model drafts, no `manual` records) |
+| `batches/batch-07.json` | dev | 100 | natural, ≤ 3 per leakage group | dev (calibration, thresholds, regression checks) | by hand, before batch-04 (drawn 2026-11-07) |
 
-Totals when complete: train 39 + 100 + 100 + 261 = 500; dev 38 + 112 + 60 = 210;
+Totals when complete: train 39 + 100 + 100 + 261 = 500; dev 38 + 112 + 60 + 100 = 310;
 test 12 + 138 = 150. Batch-06 was added to give dev hand-labelled documents, but it was
 also submitted from model drafts; only 10 dev documents are `manual`.
 
@@ -74,6 +75,24 @@ from model drafts. Batch-06 is 60 natural dev documents for hand labelling. Its 
 
 Smaller sittings are fine: a partial export can be imported, and each later import replaces
 the earlier file.
+
+## Hand-labelled dev and test batches (batch-07, batch-04)
+
+The release gates in [`targets.md`](targets.md) are judged on `manual` records only. Two batches
+make them judgeable, labelled by hand with the procedure above:
+
+1. **`batch-07` (100 dev documents) first.** Calibration, review thresholds and
+   release-to-release regression checks are fitted and measured on hand-labelled dev records.
+   There are only 10 so far.
+2. **`batch-04` (138 test documents) last.** With the 4 hand-labelled pilot test records, this
+   gives 142 test documents. Nobody tunes anything on them. They are scored once, in a declared
+   release evaluation that is logged in [`test-access-log.md`](test-access-log.md).
+
+Each batch gets its own new Label Studio project, created with no predictions and no model
+backend. Task files: `data/label_studio/batch-07_tasks.json` and
+`data/label_studio/batch-04_tasks.json` (`annotate tasks --sample …`, advisory text only).
+Import with `--annotation-version batch-07` or `batch-04`. Every record must come out
+`manual`.
 
 ## Batch-05 (uncertainty sample)
 

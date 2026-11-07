@@ -1,16 +1,27 @@
-# Ablations and learning curves on the chosen backbone, one factor at a time, three seeds
-# each. Set base_model/revision to the winner of the DistilBERT vs DeBERTa comparison.
-#   uv run triggermap experiment --config configs/experiments/ablations.toml --gold <gold.jsonl>
+# Ablations and learning curve for DeBERTa-v3-small, one factor at a time, three seeds each.
+# The recipe is the best grid cell of neural run 3 (sqrt span-tag weights, 5e-5, up to 20
+# epochs, no early stop before epoch 6). Run it on a GPU:
+#   CONFIGS="ablations" bash scripts/gpu/run_neural.sh
 
 [train]
-model_id = "ablation"
+model_id = "ablation-1"
 base_model = "microsoft/deberta-v3-small"
 revision = "a36c739020e01763fe789b4b85e2df55d6180012"
+max_length = 512
+stride = 64
+context_tokens = 48
+use_context = true
+group_loss_weight = 1.0
+bio_weighting = "sqrt"
 learning_rate = 5e-5
-epochs = 6
+epochs = 20
 batch_size = 8
 gradient_accumulation = 2
-patience = 2
+warmup_ratio = 0.1
+weight_decay = 0.01
+patience = 3
+min_epochs = 6
+device = "auto"
 mlflow_experiment = "triggermap-ablations"
 
 [grid]
@@ -28,9 +39,9 @@ name = "no-group"         # group objective removed
 group_loss_weight = 0.0
 
 [[runs]]
-name = "docs-125"         # learning curve
-max_train_documents = 125
+name = "docs-60"          # learning curve (the train split has 239 documents)
+max_train_documents = 60
 
 [[runs]]
-name = "docs-250"
-max_train_documents = 250
+name = "docs-120"
+max_train_documents = 120

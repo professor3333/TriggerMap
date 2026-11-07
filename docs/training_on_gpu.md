@@ -53,6 +53,24 @@ with the CUDA 12.6 wheels:
 On Colab or a rented machine the same commands work (without the leading `!` in a shell). The
 archives are then written to `./gpu-out`.
 
+## Ablations and learning curve
+
+`configs/experiments/ablations.toml` runs the best recipe from run 3 (DeBERTa, `sqrt`, 5e-5)
+with one factor changed at a time, three seeds each, 15 runs:
+- `no-context`: no heading or list context;
+- `no-group`: no group objective;
+- `docs-60` and `docs-120`: learning-curve budgets.
+
+On a T4 it takes about 1–1.5 hours:
+
+```bash
+!git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap && CONFIGS="ablations" bash scripts/gpu/run_neural.sh
+```
+
+Only `triggermap-neural-results.tgz` is needed back. `score_neural.sh` picks one best run per
+grid, which suits model comparisons but not ablations, so these results are scored per variant
+instead.
+
 ## Scoring on the development machine
 
 ```bash
