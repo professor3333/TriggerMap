@@ -134,6 +134,17 @@ The default model is therefore still the CRF. The live review policy stays
 `review-policy-0` (uncalibrated: every prediction is flagged), because thresholds fitted on
 model drafts measure agreement, not accuracy.
 
+## Ablations and learning curve
+
+Measured on the CRF, as agreement with the 172 model-drafted dev records
+([`reports/crf-ablations/`](../reports/crf-ablations/README.md)):
+- **Context and part-of-speech features:** removing either makes no clear difference (typed F1
+  −0.006 [−0.027, +0.020] and +0.002 [−0.025, +0.032]).
+- **Learning curve:** typed agreement rises from 0.054 with 30 training documents to 0.143 with
+  120, then stays flat at about 0.14. Span agreement keeps rising slowly.
+
+The group-objective ablation and transformer learning curves need a GPU and have not been run.
+
 ## Release process
 
 - **Thresholds.** Review thresholds and confidence cut-offs are chosen on the dev calibration

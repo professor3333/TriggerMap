@@ -161,3 +161,90 @@ def test_tagged_ranges_are_split_at_line_breaks() -> None:
         text[tokens[a].start : tokens[b - 1].end] for a, b in split_at_lines(text, tokens, 0, 7)
     ]
     assert pieces == ["uses the legacy API", "with debug enabled"]
+
+
+def test_context_ablation_drops_context_features(tmp_path: Path) -> None:
+    from triggermap.models.crf.features import sentence_context, token_features
+
+    data = make_dataset(12, TRAIN_VOCAB, seed=7, prefix="ctx")
+    _, pre, rec = data[0]
+    sentence = pre.sentences[0]
+    tokens = tokenize(pre.text, sentence.start, sentence.end)
+    ctx = sentence_context(pre, sentence)
+    assert "block" in token_features(pre, tokens, ctx, None)[0]
+    assert "block" not in token_features(pre, tokens, ctx, None, use_context=False)[0]
+
+    model = CrfExtractor.train(
+        [(p, r) for _, p, r in data], tmp_path / "b", use_pos=False, use_context=False
+    )
+    assert model.metadata["use_context"] is False
+    reloaded = CrfExtractor.load(model.directory)
+    assert reloaded.use_context is False
+    assert reloaded.extract(pre, rec.advisory_id) == model.extract(pre, rec.advisory_id)
+
+    # Bundles written before the ablation existed have no use_context key: context was on.
+    meta = json.loads((model.directory / "metadata.json").read_text())
+    del meta["use_context"]
+    (model.directory / "metadata.json").write_text(json.dumps(meta))
+    assert CrfExtractor.load(model.directory).use_context is True
+
+
+def test_training_budget_is_a_seeded_subset(tmp_path: Path) -> None:
+    examples = [(p, r) for _, p, r in make_dataset(20, TRAIN_VOCAB, seed=8, prefix="lc")]
+
+    def hash_of(seed: int, name: str) -> str:
+        model = CrfExtractor.train(
+            examples, tmp_path / name, use_pos=False, max_train_documents=8, seed=seed
+        )
+        assert model.metadata["training_documents"] == 8
+        assert model.metadata["hyperparameters"]["max_train_documents"] == 8
+        return str(model.metadata["training_hash"])
+
+    assert hash_of(0, "a") == hash_of(0, "b")
+    assert hash_of(0, "a") != hash_of(1, "c")
+
+
+def test_crf_settings_reject_unknown_keys() -> None:
+    from triggermap.models.experiment import crf_settings
+
+    settings = {"family": "crf", "model_id": "m", "use_context": False}
+    assert crf_settings(settings) == {"model_id": "m", "use_context": False}
+    with pytest.raises(ValueError, match="use_contxt"):
+        crf_settings({"model_id": "m", "use_contxt": False})
+
+
+def test_crf_experiment_cli(tmp_path: Path) -> None:
+    from tests.factories import write_split_manifest
+    from triggermap.cli import main
+
+    data = make_dataset(24, TRAIN_VOCAB, seed=9, prefix="exp")
+    processed = tmp_path / "processed"
+    processed.mkdir()
+    (processed / "advisories.jsonl").write_text(
+        "".join(doc.model_dump_json() + "\n" for doc, _, _ in data)
+    )
+    gold = tmp_path / "gold.jsonl"
+    gold.write_text("".join(rec.model_dump_json() + "\n" for _, _, rec in data))
+    split = write_split_manifest(
+        tmp_path / "split.json",
+        {rec.advisory_id: ("train" if i < 16 else "dev") for i, (_, _, rec) in enumerate(data)},
+    )
+    config = tmp_path / "crf.toml"
+    config.write_text(
+        '[train]\nfamily = "crf"\nmodel_id = "c"\nuse_pos = false\n\n'
+        '[[runs]]\nname = "full"\n\n[[runs]]\nname = "no-context"\nuse_context = false\n\n'
+        '[[runs]]\nname = "docs8-seed0"\nmax_train_documents = 8\n'
+    )
+    report = tmp_path / "report.md"
+    args = ["experiment", "--config", str(config), "--gold", str(gold), "--samples", "20"]
+    args += ["--out-root", str(tmp_path / "runs"), "--report", str(report)]
+    args += ["--processed", str(processed), "--split-manifest", str(split)]
+    assert main(args) == 0
+    text = report.read_text()
+    assert "| c-full | 16 |" in text and "| c-docs8-seed0 | 8 |" in text
+    assert (
+        json.loads((tmp_path / "runs/c-no-context/metadata.json").read_text())["use_context"]
+        is False
+    )
+    assert "train_seconds" not in (tmp_path / "runs/c-full/metadata.json").read_text()
+    assert main(args) == 0  # resume reuses the bundles

@@ -13,6 +13,7 @@ Bundles are produced by this project; never load one from an untrusted source.
 from __future__ import annotations
 
 import json
+import random
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -92,7 +93,7 @@ class _Unit:
     features: list[Features]
 
 
-def _units(doc: PreprocessedDocument, use_pos: bool) -> list[_Unit]:
+def _units(doc: PreprocessedDocument, use_pos: bool, use_context: bool) -> list[_Unit]:
     units = []
     for index, sentence in enumerate(doc.sentences):
         tokens = tokenize(doc.text, sentence.start, sentence.end)
@@ -100,7 +101,8 @@ def _units(doc: PreprocessedDocument, use_pos: bool) -> list[_Unit]:
             continue
         ctx = sentence_context(doc, sentence)
         pos = pos_tags(doc.text, tokens, sentence.start) if use_pos else None
-        units.append(_Unit(index, tokens, ctx, token_features(doc, tokens, ctx, pos)))
+        feats = token_features(doc, tokens, ctx, pos, use_context)
+        units.append(_Unit(index, tokens, ctx, feats))
     return units
 
 
@@ -123,7 +125,7 @@ def _scope(doc: PreprocessedDocument, span: tuple[int, int]) -> tuple[str, int, 
 
 
 def _pairs(
-    doc: PreprocessedDocument, spans: Sequence[tuple[int, int]]
+    doc: PreprocessedDocument, spans: Sequence[tuple[int, int]], use_context: bool
 ) -> list[tuple[int, int, Features]]:
     """Consecutive condition pairs that share a sentence or list, with their features."""
     out: list[tuple[int, int, Features]] = []
@@ -131,7 +133,8 @@ def _pairs(
     for i in range(len(spans) - 1):
         a, b = scopes[i], scopes[i + 1]
         if a[0] != "none" and a[:2] == b[:2]:
-            feats = pair_features(doc.text, spans[i], spans[i + 1], a[0] == "list", a[2])
+            same_list = a[0] == "list"
+            feats = pair_features(doc.text, spans[i], spans[i + 1], same_list, a[2], use_context)
             out.append((i, i + 1, feats))
     return out
 
@@ -149,6 +152,8 @@ class CrfExtractor:
         self.metadata = metadata
         self.model_id = str(metadata["model_id"])
         self.use_pos = bool(metadata["use_pos"])
+        # Bundles from before the context ablation always used context features.
+        self.use_context = bool(metadata.get("use_context", True))
         self.category = category
         self.role = role
         self.group = group
@@ -165,12 +170,23 @@ class CrfExtractor:
         *,
         model_id: str = "crf-1",
         use_pos: bool = True,
+        use_context: bool = True,
+        max_train_documents: int | None = None,
         c1: float = 0.1,
         c2: float = 0.1,
         max_iterations: int = 200,
         seed: int = 0,
     ) -> CrfExtractor:
+        """Train a bundle into ``out_dir``.
+
+        ``use_context=False`` (ablation) drops heading/list context features;
+        ``max_train_documents`` (learning curves) trains on a seeded random subset.
+        """
         out_dir.mkdir(parents=True, exist_ok=True)
+        if max_train_documents is not None:
+            examples = random.Random(seed).sample(
+                list(examples), min(max_train_documents, len(examples))
+            )
         trainer = pycrfsuite.Trainer(verbose=False)
         span_x: list[Features] = []
         category_y: list[str] = []
@@ -184,7 +200,7 @@ class CrfExtractor:
                 raise ValueError(f"{record.advisory_id}: annotation is for different text")
             conditions = sorted(record.conditions, key=lambda c: c.span)
             placed: set[str] = set()
-            for unit in _units(doc, use_pos):
+            for unit in _units(doc, use_pos, use_context):
                 sentence = doc.sentences[unit.sentence_index]
                 inside = [
                     c
@@ -203,7 +219,9 @@ class CrfExtractor:
                     if cond.span[0] in starts and cond.span[1] in ends:
                         first, last = starts[cond.span[0]], ends[cond.span[1]]
                         in_code = doc.canonical.in_code(cond.span[0])
-                        span_x.append(span_features(unit.tokens, first, last, unit.ctx, in_code))
+                        span_x.append(
+                            span_features(unit.tokens, first, last, unit.ctx, in_code, use_context)
+                        )
                         category_y.append(cond.category.value)
                         role_y.append(cond.role.value)
             stats["gold_spans"] += len(conditions)
@@ -211,7 +229,7 @@ class CrfExtractor:
 
             group_of = {m: g.operator.value for g in record.groups for m in g.members}
             group_index = {m: i for i, g in enumerate(record.groups) for m in g.members}
-            for i, j, feats in _pairs(doc, [c.span for c in conditions]):
+            for i, j, feats in _pairs(doc, [c.span for c in conditions], use_context):
                 a, b = conditions[i].id, conditions[j].id
                 same = a in group_index and group_index.get(a) == group_index.get(b)
                 pair_x.append(feats)
@@ -240,7 +258,14 @@ class CrfExtractor:
             "feature_version": FEATURE_VERSION,
             "preprocessing_version": PREPROCESSING_VERSION,
             "use_pos": use_pos,
-            "hyperparameters": {"c1": c1, "c2": c2, "max_iterations": max_iterations, "seed": seed},
+            "use_context": use_context,
+            "hyperparameters": {
+                "c1": c1,
+                "c2": c2,
+                "max_iterations": max_iterations,
+                "seed": seed,
+                "max_train_documents": max_train_documents,
+            },
             "training_documents": len(records),
             "training_hash": training_hash(records),
             "training_origins": training_origins(records),
@@ -271,7 +296,7 @@ class CrfExtractor:
 
     def extract(self, doc: PreprocessedDocument, advisory_id: str | None = None) -> Extraction:
         found: list[tuple[tuple[int, int], Features, float]] = []
-        for unit in _units(doc, self.use_pos):
+        for unit in _units(doc, self.use_pos, self.use_context):
             tags = self._tagger.tag(unit.features)
             ranges = spans_from_tags(unit.tokens, tags)
             pieces = [p for r in ranges for p in split_at_lines(doc.text, unit.tokens, *r)]
@@ -279,7 +304,9 @@ class CrfExtractor:
                 marginals = [self._marginal(tags[i], i) for i in range(first, stop)]
                 span = (unit.tokens[first].start, unit.tokens[stop - 1].end)
                 in_code = doc.canonical.in_code(span[0])
-                feats = span_features(unit.tokens, first, stop - 1, unit.ctx, in_code)
+                feats = span_features(
+                    unit.tokens, first, stop - 1, unit.ctx, in_code, self.use_context
+                )
                 found.append((span, feats, min(marginals)))
 
         categories = self.category.predict([f for _, f, _ in found])
@@ -322,7 +349,7 @@ class CrfExtractor:
             return 0.0
 
     def _groups(self, doc: PreprocessedDocument, conditions: Sequence[Condition]) -> list[Group]:
-        pairs = _pairs(doc, [c.span for c in conditions])
+        pairs = _pairs(doc, [c.span for c in conditions], self.use_context)
         labels = self.group.predict([feats for _, _, feats in pairs])
         chains: list[tuple[list[int], set[str]]] = []
         for (i, j, _), (label, _) in zip(pairs, labels, strict=True):

@@ -106,9 +106,11 @@ def token_features(
     tokens: Sequence[Token],
     ctx: SentenceContext,
     pos: Sequence[str] | None,
+    use_context: bool = True,
 ) -> list[Features]:
+    """Per-token features; ``use_context=False`` drops heading/list context (an ablation)."""
     lowered = [t.text.lower() for t in tokens]
-    context = _context_features(ctx)
+    context = _context_features(ctx) if use_context else {}
     last_cue: tuple[int, str] | None = None
     out: list[Features] = []
     for i, tok in enumerate(tokens):
@@ -160,7 +162,12 @@ def token_features(
 
 
 def span_features(
-    tokens: Sequence[Token], first: int, last: int, ctx: SentenceContext, in_code: bool
+    tokens: Sequence[Token],
+    first: int,
+    last: int,
+    ctx: SentenceContext,
+    in_code: bool,
+    use_context: bool = True,
 ) -> Features:
     """Features for the attribute classifiers; ``first``..``last`` inclusive token indices."""
     lowered = [t.text.lower() for t in tokens]
@@ -182,17 +189,28 @@ def span_features(
         feats["neg_before"] = 1.0
     if in_code:
         feats["in_code"] = 1.0
-    feats.update(_context_features(ctx))
+    if use_context:
+        feats.update(_context_features(ctx))
     return feats
 
 
 def pair_features(
-    text: str, a: tuple[int, int], b: tuple[int, int], same_list: bool, lead: str
+    text: str,
+    a: tuple[int, int],
+    b: tuple[int, int],
+    same_list: bool,
+    lead: str,
+    use_context: bool = True,
 ) -> Features:
-    """Features for whether two conditions (character spans, a before b) share a group."""
+    """Features for whether two conditions (character spans, a before b) share a group.
+
+    ``use_context=False`` drops the list and lead-in features (the context ablation).
+    """
     between = text[a[1] : b[0]].lower()
     words = re.findall(r"[a-z/]+", between)
-    feats: Features = {"gap": _bucket(len(words)), "same_list": float(same_list)}
+    feats: Features = {"gap": _bucket(len(words))}
+    if use_context:
+        feats["same_list"] = float(same_list)
     for word in words[:6]:
         feats[f"between={word}"] = 1.0
     for marker in ("and", "or", "and/or", "either", "both", "but", "while", "also"):
@@ -200,7 +218,7 @@ def pair_features(
             feats[f"has={marker}"] = 1.0
     if ";" in between:
         feats["semicolon"] = 1.0
-    lead_low = lead.lower()
+    lead_low = lead.lower() if use_context else ""
     for marker in ("all of", "any of", "one of", "either", "following", "both", "combine"):
         if marker in lead_low:
             feats[f"lead={marker}"] = 1.0

@@ -43,7 +43,10 @@ TEST_VOCAB = {
 Spec = tuple[str, Category, Role]
 
 _GHSA_ALPHABET = "23456789cfghjmpqrvwx"
-_STREAMS = {"train": 0, "test": 1, "x": 2, "t": 3, "pos": 4, "cli": 5, "org": 6}
+_STREAMS = {
+    "train": 0, "test": 1, "x": 2, "t": 3, "pos": 4, "cli": 5, "org": 6,
+    "ctx": 7, "lc": 8, "exp": 9,
+}  # fmt: skip
 
 
 def synthetic_id(prefix: str, index: int) -> str:

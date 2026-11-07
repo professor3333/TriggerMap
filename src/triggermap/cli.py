@@ -501,6 +501,8 @@ def _train(args: argparse.Namespace) -> int:
         args.out,
         model_id=args.model_id,
         use_pos=not args.no_pos,
+        use_context=not args.no_context,
+        max_train_documents=args.max_train_documents,
         seed=args.seed or 0,
     )
     print(json.dumps(model.metadata["stats"], indent=2))
@@ -523,8 +525,8 @@ def _experiment(args: argparse.Namespace) -> int:
         return 0
 
     from triggermap.corpus.splits import load_split
-    from triggermap.models.transformer.train import TrainConfig, train
 
+    family = config["train"].get("family", "transformer")
     split = load_split(args.split_manifest)
     examples = _gold_examples(args.gold, args.processed, args.split_manifest, origins=args.origin)
     dev = _gold_examples(
@@ -537,16 +539,12 @@ def _experiment(args: argparse.Namespace) -> int:
     if not examples or not dev:
         raise SystemExit("experiments need gold documents in both the train and dev splits")
     results = []
-    from triggermap.models.transformer.extractor import TransformerExtractor
-
     for run in runs:
         bundle = args.out_root / run.name
-        if (bundle / "metadata.json").exists():  # resume: finished runs are not retrained
-            extractor = TransformerExtractor.load(bundle)
-            print(f"{run.name}: reusing existing bundle")
+        if family == "crf":
+            extractor: Any = _experiment_crf(run.settings, examples, bundle)
         else:
-            settings = {**run.settings, "split_assignment_sha256": split["assignment_sha256"]}
-            extractor = train(TrainConfig(**settings), examples, dev, bundle)
+            extractor = _experiment_transformer(run.settings, examples, dev, bundle, split)
         intervals = evaluate_run(extractor, dev, split["group_of"], args.samples)
         results.append(RunResult(run, intervals, extractor.metadata))
         print(f"{run.name}: dev typed F1 {intervals['typed_f1'].estimate:.3f}")
@@ -561,7 +559,9 @@ def _experiment(args: argparse.Namespace) -> int:
                 "Gold": f"{len(args.gold)} file(s): {len(examples)} train docs",
                 "Dev gold": ", ".join(f"`{p}`" for p in (args.dev_gold or args.gold))
                 + (f", subset `{args.dev_subset}`" if args.dev_subset else "")
-                + f": {len(dev)} dev docs (early stopping and this table)",
+                + f": {len(dev)} dev docs ("
+                + ("this table" if family == "crf" else "early stopping and this table")
+                + ")",
                 "Split": f"`{args.split_manifest}` ({split['assignment_sha256'][:12]})",
             },
         ),
@@ -569,6 +569,39 @@ def _experiment(args: argparse.Namespace) -> int:
     )
     print(f"wrote {report}")
     return 0
+
+
+def _experiment_transformer(
+    settings: dict[str, Any],
+    examples: Sequence[Any],
+    dev: Sequence[Any],
+    bundle: Path,
+    split: dict[str, Any],
+) -> Any:
+    from triggermap.models.transformer.extractor import TransformerExtractor
+    from triggermap.models.transformer.train import TrainConfig, train
+
+    if (bundle / "metadata.json").exists():  # resume: finished runs are not retrained
+        print(f"{bundle.name}: reusing existing bundle")
+        return TransformerExtractor.load(bundle)
+    settings = {**settings, "split_assignment_sha256": split["assignment_sha256"]}
+    return train(TrainConfig(**settings), examples, dev, bundle)
+
+
+def _experiment_crf(settings: dict[str, Any], examples: Sequence[Any], bundle: Path) -> Any:
+    import time
+
+    from triggermap.models.crf.model import CrfExtractor
+    from triggermap.models.experiment import crf_settings
+
+    if (bundle / "metadata.json").exists():  # resume: finished runs are not retrained
+        print(f"{bundle.name}: reusing existing bundle")
+        return CrfExtractor.load(bundle)
+    started = time.monotonic()
+    model = CrfExtractor.train(examples, bundle, **crf_settings(settings))
+    # Recorded for the report only; the bundle's own metadata stays deterministic.
+    model.metadata = {**model.metadata, "train_seconds": round(time.monotonic() - started)}
+    return model
 
 
 def _calibrate(args: argparse.Namespace) -> int:
@@ -1240,6 +1273,14 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
     train.add_argument("--model-id", default="crf-1")
     train.add_argument("--no-pos", action="store_true", help="skip spaCy part-of-speech features")
+    train.add_argument(
+        "--no-context", action="store_true", help="CRF ablation: no heading/list context features"
+    )
+    train.add_argument(
+        "--max-train-documents",
+        type=int,
+        help="CRF learning curve: train on a random subset of this size (seeded by --seed)",
+    )
     train.add_argument("--seed", type=int, help="overrides the config seed")
     train.add_argument(
         "--origin",
@@ -1389,7 +1430,9 @@ def build_parser() -> argparse.ArgumentParser:
     challenge.add_argument("--out", type=Path)
     challenge.set_defaults(handler=_challenge)
 
-    experiment = commands.add_parser("experiment", help="run a grid of transformer trainings")
+    experiment = commands.add_parser(
+        "experiment", help="run a grid of trainings (transformer or CRF)"
+    )
     experiment.add_argument("--config", type=Path, required=True)
     experiment.add_argument("--gold", type=Path, nargs="+", help="gold JSONL file(s)")
     _dev_gold_argument(experiment)

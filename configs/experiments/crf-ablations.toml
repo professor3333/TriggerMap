@@ -1,0 +1,82 @@
+# CRF ablations and learning curve, one factor at a time. The CRF is deterministic for a
+# fixed training set, so the full-data variants run once; each budget below the full train
+# split draws three seeded random subsets.
+#   bash scripts/experiments/crf_ablations.sh
+# Dev records only measure; nothing here is fitted or selected on them.
+
+[train]
+family = "crf"
+model_id = "crf-abl"
+use_pos = true
+use_context = true
+
+[[runs]]
+name = "full"
+
+[[runs]]
+name = "no-context"       # heading, list and lead-in features removed
+use_context = false
+
+[[runs]]
+name = "no-pos"           # spaCy part-of-speech features removed
+use_pos = false
+
+[[runs]]
+name = "docs30-seed0"
+max_train_documents = 30
+seed = 0
+
+[[runs]]
+name = "docs30-seed1"
+max_train_documents = 30
+seed = 1
+
+[[runs]]
+name = "docs30-seed2"
+max_train_documents = 30
+seed = 2
+
+[[runs]]
+name = "docs60-seed0"
+max_train_documents = 60
+seed = 0
+
+[[runs]]
+name = "docs60-seed1"
+max_train_documents = 60
+seed = 1
+
+[[runs]]
+name = "docs60-seed2"
+max_train_documents = 60
+seed = 2
+
+[[runs]]
+name = "docs120-seed0"
+max_train_documents = 120
+seed = 0
+
+[[runs]]
+name = "docs120-seed1"
+max_train_documents = 120
+seed = 1
+
+[[runs]]
+name = "docs120-seed2"
+max_train_documents = 120
+seed = 2
+
+[[runs]]
+name = "docs180-seed0"
+max_train_documents = 180
+seed = 0
+
+[[runs]]
+name = "docs180-seed1"
+max_train_documents = 180
+seed = 1
+
+[[runs]]
+name = "docs180-seed2"
+max_train_documents = 180
+seed = 2

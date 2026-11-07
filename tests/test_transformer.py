@@ -178,17 +178,21 @@ def test_ablations_train(base: Path, tmp_path: Path) -> None:
 def test_committed_experiment_configs_are_valid() -> None:
     import tomllib
 
-    from triggermap.models.experiment import plan
+    from triggermap.models.experiment import crf_settings, plan
 
     root = Path(__file__).resolve().parents[1] / "configs/experiments"
     counts = {}
     for path in sorted(root.glob("*.toml")):
-        runs = plan(tomllib.loads(path.read_text()))
+        config = tomllib.loads(path.read_text())
+        runs = plan(config)
         for run in runs:
-            TrainConfig(**run.settings)  # extra="forbid": typos fail here
+            if config["train"].get("family") == "crf":
+                crf_settings(run.settings)  # unknown keys fail here
+            else:
+                TrainConfig(**run.settings)  # extra="forbid": typos fail here
         assert len({r.name for r in runs}) == len(runs)
         counts[path.stem] = len(runs)
-    assert counts == {"ablations": 15, "deberta": 12, "distilbert": 12}
+    assert counts == {"ablations": 15, "crf-ablations": 15, "deberta": 12, "distilbert": 12}
 
 
 def test_bio_weighting_modes() -> None:

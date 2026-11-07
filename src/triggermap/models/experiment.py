@@ -41,6 +41,21 @@ def plan(config: Mapping[str, Any]) -> list[PlannedRun]:
     return runs
 
 
+CRF_SETTINGS = frozenset(
+    {"model_id", "use_pos", "use_context", "max_train_documents", "c1", "c2"}
+    | {"max_iterations", "seed"}
+)
+
+
+def crf_settings(settings: Mapping[str, Any]) -> dict[str, Any]:
+    """Keyword arguments for ``CrfExtractor.train`` from a ``family = "crf"`` run."""
+    rest = {k: v for k, v in settings.items() if k != "family"}
+    unknown = sorted(set(rest) - CRF_SETTINGS)
+    if unknown:  # typos in a config must fail, as TrainConfig does for transformers
+        raise ValueError(f"unknown CRF settings: {', '.join(unknown)}")
+    return rest
+
+
 @dataclass(frozen=True)
 class RunResult:
     run: PlannedRun
@@ -68,6 +83,10 @@ COLUMNS = [
 ]
 
 
+def _cell(value: Any) -> str:
+    return "n/a" if value is None else str(value)
+
+
 def render_report(title: str, results: Sequence[RunResult], context: Mapping[str, str]) -> str:
     lines = [f"# {title}", "", *(f"- {k}: {v}" for k, v in context.items()), ""]
     lines += [
@@ -85,7 +104,7 @@ def render_report(title: str, results: Sequence[RunResult], context: Mapping[str
         lines.append(
             f"| {result.run.name} | {meta['training_documents']} | "
             + " | ".join(cells)
-            + f" | {meta.get('best_epoch')} | {meta.get('train_seconds')} |"
+            + f" | {_cell(meta.get('best_epoch'))} | {_cell(meta.get('train_seconds'))} |"
         )
     groups: dict[str, list[float]] = {}
     for result in results:

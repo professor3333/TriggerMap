@@ -156,7 +156,7 @@ item can be highlighted in the original advisory.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
@@ -216,6 +216,12 @@ to three times as many agreeing conditions. Its held-out typed F1 is clearly hig
 0.30 and 0.35 (+0.100 [+0.034, +0.172] and +0.100 [+0.024, +0.171]), but its precision is not
 clearly different, and its false-prerequisite rate is higher at every target (not clearly).
 The CRF therefore stays the default model; see [`reports/calibration/`](reports/calibration/README.md).
+
+**Ablations and learning curve (CRF).** On the 172 agreement records, removing the heading/list
+context features (−0.006 typed F1 [−0.027, +0.020]) or the part-of-speech features (+0.002
+[−0.025, +0.032]) makes no clear difference. Typed agreement rises from 0.054 with 30 training
+documents to 0.143 with 120, then stays flat (0.145 with all 239); span agreement keeps rising
+slowly. See [`reports/crf-ablations/`](reports/crf-ablations/README.md).
 
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
