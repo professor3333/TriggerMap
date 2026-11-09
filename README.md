@@ -159,7 +159,7 @@ item can be highlighted in the original advisory.
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
-| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
+| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
 
 ### Preliminary pilot results (dev split only)
 

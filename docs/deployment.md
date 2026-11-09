@@ -80,6 +80,20 @@ save (which must not duplicate) and export, and reads the saved review back.
 For transformer releases, build the image with `--build-arg EXTRAS="serve neural"`. uv
 installs CPU-only PyTorch from the lockfile.
 
+### Hosted deployment record
+
+**2026-11-09, AWS EC2:** release v0.1.0 (CRF `crf-batches-01-02`, image
+`sha256:0b9e2f30…adac`) was deployed with the steps above on a 2 vCPU / 4 GiB x86-64 instance
+running Ubuntu 24.04, behind Caddy with automatic HTTPS (an `sslip.io` name). `triggermap app
+verify` passed every check:
+- `/readyz` matched `release.json`;
+- extraction of the bundled sample returned 4 conditions;
+- a review was saved, and its retry did not duplicate it;
+- the review was retrievable and exported.
+
+The same host produced the [target-host benchmarks](benchmarks.md). The instance was a
+temporary test deployment and was shut down afterwards; there is no permanent public instance.
+
 ## Scheduled refresh
 
 Advisories change. Refresh the snapshot daily from the host's crontab:
