@@ -1,0 +1,80 @@
+{
+  "environment": {
+    "measured_at": "2026-11-09T03:34:45+00:00",
+    "system": "Linux",
+    "machine": "x86_64",
+    "cpu_model": "Intel(R) Xeon(R) Platinum 8488C",
+    "logical_cpus": 2,
+    "cpu_limit": null,
+    "memory_gb": 3.72,
+    "in_container": false,
+    "python": "3.12.16",
+    "git_commit": "55e1778",
+    "matches_target_host": true
+  },
+  "results": [
+    {
+      "config": {
+        "kind": "crf",
+        "model_dir": "crf-batches-01-02",
+        "threads": null,
+        "batch_size": null,
+        "label": "crf",
+        "name": "crf"
+      },
+      "model_id": "crf-batches-01-02",
+      "cold_start": {
+        "imports_s": 0.22,
+        "load_s": 2.501,
+        "first_extraction_s": 1.4,
+        "total_s": 4.121
+      },
+      "buckets": {
+        "natural": {
+          "n": 100,
+          "p50": 0.0231,
+          "p95": 0.1314,
+          "max": 0.3479,
+          "mean": 0.0423,
+          "docs_per_s": 23.619
+        },
+        "~2000": {
+          "n": 60,
+          "p50": 0.1227,
+          "p95": 0.1446,
+          "max": 0.1764,
+          "mean": 0.1195
+        },
+        "~512": {
+          "n": 60,
+          "p50": 0.0395,
+          "p95": 0.0617,
+          "max": 0.0892,
+          "mean": 0.0425
+        }
+      },
+      "peak_rss_mb": 276.2
+    }
+  ],
+  "load": [
+    {
+      "requests": 1000,
+      "concurrency": 4,
+      "distinct_texts": 100,
+      "cache": "bypassed (unique raw text per request)",
+      "succeeded": 1000,
+      "success_rate": 1.0,
+      "status_counts": {
+        "200": 1000
+      },
+      "latency_s": {
+        "p50": 0.1403,
+        "p95": 0.6144,
+        "p99": 1.0167
+      },
+      "throughput_rps": 18.6,
+      "elapsed_s": 53.78,
+      "label": "crf"
+    }
+  ]
+}

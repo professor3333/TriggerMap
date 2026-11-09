@@ -1,0 +1,19 @@
+{
+  "requests": 1000,
+  "concurrency": 4,
+  "distinct_texts": 100,
+  "cache": "bypassed (unique raw text per request)",
+  "succeeded": 1000,
+  "success_rate": 1.0,
+  "status_counts": {
+    "200": 1000
+  },
+  "latency_s": {
+    "p50": 0.1403,
+    "p95": 0.6144,
+    "p99": 1.0167
+  },
+  "throughput_rps": 18.6,
+  "elapsed_s": 53.78,
+  "label": "crf"
+}

@@ -159,7 +159,7 @@ item can be highlighted in the original advisory.
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
-| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; target-host numbers and hosted release pending | 🟨 harness and proxy results |
+| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
 
 ### Preliminary pilot results (dev split only)
 
@@ -373,9 +373,23 @@ acceptance gate has been evaluated, because labels after the pilot are model dra
 [release notes](docs/release_notes/v0.1.0.md). Its rollback drill (rules `r1` → CRF `v0.1.0`
 → `r1`) passed on local Docker.
 
-## Serving cost (local proxy)
+## Serving cost
 
-Measured on an 8 GB Apple M1 with inference limited to 2 threads. This is **not the target
+**On the target host (2 vCPU / 4 GB x86-64, AWS EC2, 2026-11-09)**, the released CRF
+(`crf-batches-01-02`, v0.1.0) meets every serving target:
+
+| Measure | CRF v0.1.0 | Target |
+|---|---:|---:|
+| Warm p95 latency, ~512-token advisory | 0.06 s | ≤ 2.5 s |
+| Warm p95 latency, ~2,000-token advisory | 0.14 s | ≤ 8 s |
+| Throughput, natural workload (in process) | 23.6 docs/s | ≥ 0.25 docs/s |
+| Peak memory (in process) | 276 MB | ≤ 3 GB |
+| HTTP load test, 1,000 requests at concurrency 4 (Compose stack) | 100% succeeded, p95 0.61 s, 18.6 req/s | ≥ 99.5% |
+
+Full report: [`reports/benchmarks/target-host-crf.md`](reports/benchmarks/target-host-crf.md).
+The transformer models have not been measured on this host.
+
+**Local proxy for the transformers.** Measured on an 8 GB Apple M1 with inference limited to 2 threads. This is **not the target
 host**, and the transformer bundles have untrained heads, so latency and memory are real but
 accuracy is not measured. Details and caveats: [`docs/benchmarks.md`](docs/benchmarks.md).
 

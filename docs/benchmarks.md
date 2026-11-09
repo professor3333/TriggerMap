@@ -71,6 +71,29 @@ FP32 ONNX is numerically exact. INT8 moves the logits, and DeBERTa much more tha
 DistilBERT. With untrained heads the INT8 *predictions* are not meaningful, so whether INT8
 is usable is decided only by the ≤ 1-point typed-F1 gate on a trained model.
 
+## Results on the target host: CRF v0.1.0
+
+Full tables: [`reports/benchmarks/target-host-crf.md`](../reports/benchmarks/target-host-crf.md)
+(raw JSON and checkpoint next to it).
+- **Host:** AWS EC2, 2 vCPU / 4 GiB x86-64 (Intel Xeon Platinum 8488C, 3.72 GB visible), Ubuntu
+  24.04. The harness recognised it as the documented host.
+- **Model:** the released v0.1.0 bundle `crf-batches-01-02`, measured on 2026-11-09.
+
+| Measure | Result | Target |
+|---|---:|---:|
+| Warm p95, ~512 tokens | 0.062 s | ≤ 2.5 s ✅ |
+| Warm p95, ~2,000 tokens | 0.145 s | ≤ 8 s ✅ |
+| Natural throughput, in process | 23.6 docs/s | ≥ 0.25 ✅ |
+| Peak RSS | 276 MB | ≤ 3,072 MB ✅ |
+| Cold start (imports, load, first extraction) | 4.1 s | not a target |
+| Load test: 1,000 requests, concurrency 4 | 100% succeeded; p50 0.14 s, p95 0.61 s, p99 1.02 s; 18.6 req/s | ≥ 99.5% ✅ |
+
+- **How the load test ran:** against the Docker Compose stack of release v0.1.0, from a client
+  on the same host, so the client shared the 2 vCPUs. The service's latency is therefore, if
+  anything, overstated.
+- **Not measured on this host:** the transformers. Measuring them needs a trained bundle, and
+  the INT8 ≤ 1-point gate still applies.
+
 ## Results so far: local proxy (Apple M1, 2 inference threads)
 
 Full tables: [`reports/benchmarks/local-m1-2threads.md`](../reports/benchmarks/local-m1-2threads.md)
