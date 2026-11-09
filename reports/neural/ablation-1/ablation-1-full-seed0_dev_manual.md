@@ -1,0 +1,57 @@
+# Hand-labelled dev: ablation-1-full-seed0
+
+- Gold: `annotations/pilot/pilot-2.jsonl` (dev split of `splits/pool-v1.json`; origin: manual; 10 documents)
+- Predictions: `reports/neural/ablation-1/predictions/ablation-1-full-seed0.jsonl` (ablation-1-full-seed0)
+- Bootstrap: 1000 resamples, project clusters, seed 0
+- Documents: 10 (9 with gold conditions, 1 without)
+
+## Headline metrics (95% bootstrap intervals)
+
+| Metric | Estimate | 95% CI |
+|---|---:|:---:|
+| Typed condition micro-F1 (span + category + role) | 0.364 | [0.148, 0.588] |
+| Exact span F1 | 0.400 | [0.190, 0.638] |
+| Exact span precision | 0.289 | [0.133, 0.500] |
+| Exact span recall | 0.647 | [0.333, 1.000] |
+| Role macro-F1 (roles with gold support) | 0.222 | [0.100, 0.612] |
+| Category macro-F1 | 0.329 | [0.211, 0.748] |
+| Group exact-match F1 | 0.000 | [0.000, 0.000] |
+| Complete-document exact match, documents with conditions | 0.111 | [0.000, 0.300] |
+| Complete-document exact match, documents without conditions | 1.000 | [0.000, 1.000] |
+| False prerequisite rate (lower is better) | 0.483 | [0.280, 0.655] |
+| Reversed meaning rate (lower is better) | 0.000 | [0.000, 0.000] |
+| Category accuracy on exactly matched spans | 1.000 | [1.000, 1.000] |
+| Role accuracy on exactly matched spans | 0.909 | [0.625, 1.000] |
+
+## Per-role results (exact span + role)
+
+| Label | Precision | Recall | F1 | Gold support |
+|---|---:|---:|---:|---:|
+| REQUIRED | 0.345 | 0.625 | 0.444 | 16 |
+| EXCEPTION | 0.000 | 0.000 | 0.000 | 0 |
+| NOT_REQUIRED | 0.000 | 0.000 | 0.000 | 0 |
+| UNCERTAIN | 0.000 | 0.000 | 0.000 | 1 |
+
+## Per-category results (exact span + category)
+
+| Label | Precision | Recall | F1 | Gold support |
+|---|---:|---:|---:|---:|
+| CONFIGURATION | 0.125 | 1.000 | 0.222 | 1 |
+| USAGE | 0.316 | 0.667 | 0.429 | 9 |
+| ACCESS | 0.571 | 0.800 | 0.667 | 5 |
+| PLATFORM | 0.000 | 0.000 | 0.000 | 2 |
+
+## Precision versus coverage
+
+| Coverage | Confidence ≥ | Typed precision | Retained recall |
+|---:|---:|---:|---:|
+| 11% | 0.971 | 1.000 | 0.235 |
+| 21% | 0.947 | 0.625 | 0.294 |
+| 29% | 0.919 | 0.545 | 0.353 |
+| 39% | 0.863 | 0.467 | 0.412 |
+| 50% | 0.799 | 0.474 | 0.529 |
+| 61% | 0.725 | 0.391 | 0.529 |
+| 71% | 0.677 | 0.333 | 0.529 |
+| 79% | 0.621 | 0.333 | 0.588 |
+| 89% | 0.561 | 0.294 | 0.588 |
+| 100% | 0.263 | 0.263 | 0.588 |

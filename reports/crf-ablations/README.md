@@ -75,8 +75,8 @@ Every run, with intervals, is in [`experiment.md`](experiment.md).
   agreement much. The limit is the attribute classifiers (category and role), not the number of
   spans.
 - **The group-objective ablation does not apply to the CRF.** Its group classifier is separate
-  and predicts no matching group. That ablation is planned for the transformer
-  (`configs/experiments/ablations.toml`), which needs a GPU.
+  and predicts no matching group. The transformer's ablations, including the group objective,
+  are in [`../neural/ablation-1/`](../neural/ablation-1/README.md).
 
 Every number here is agreement with model drafts or a 10-document slice; neither is a release
 result.

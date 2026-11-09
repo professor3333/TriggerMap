@@ -68,8 +68,10 @@ On a T4 it takes about 1–1.5 hours:
 ```
 
 Only `triggermap-neural-results.tgz` is needed back. `score_neural.sh` picks one best run per
-grid, which suits model comparisons but not ablations, so these results are scored per variant
-instead.
+grid, which suits model comparisons but not ablations. Score this run with
+`bash scripts/gpu/score_ablations.sh <archive>` instead: it reports every seed and compares
+each variant with the full model trained with the same seed. Results of the first run are in
+[`reports/neural/ablation-1/`](../reports/neural/ablation-1/README.md).
 
 ## Scoring on the development machine
 

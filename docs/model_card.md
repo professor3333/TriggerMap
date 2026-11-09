@@ -143,7 +143,16 @@ Measured on the CRF, as agreement with the 172 model-drafted dev records
 - **Learning curve:** typed agreement rises from 0.054 with 30 training documents to 0.143 with
   120, then stays flat at about 0.14. Span agreement keeps rising slowly.
 
-The group-objective ablation and transformer learning curves need a GPU and have not been run.
+Measured on DeBERTa-v3-small, as agreement with the held-out half (61 documents), three seeds
+each ([`reports/neural/ablation-1/`](../reports/neural/ablation-1/README.md)):
+- **Learning curve:** typed agreement is 0.075 with 60 training documents, 0.097 with 120 and
+  0.197 with 239. Every reduced-data seed is clearly worse, so unlike the CRF, DeBERTa is
+  still data-limited.
+- **Context:** removing it makes no clear difference to held-out typed agreement. The
+  false-prerequisite rate is higher, and hand-labelled typed F1 lower, for all three seeds
+  (each clear for one seed).
+- **Group objective:** not measurable, because no run reproduces a drafted group exactly.
+  Without it, results vary four times as much across seeds.
 
 ## Release process
 

@@ -223,6 +223,14 @@ context features (−0.006 typed F1 [−0.027, +0.020]) or the part-of-speech fe
 documents to 0.143 with 120, then stays flat (0.145 with all 239); span agreement keeps rising
 slowly. See [`reports/crf-ablations/`](reports/crf-ablations/README.md).
 
+**Ablations and learning curve (DeBERTa, held-out half, three seeds each).** DeBERTa needs far
+more data than the CRF: typed agreement is 0.075 with 60 training documents, 0.097 with 120 and
+0.197 with all 239, and every reduced-data seed is clearly worse than the full model. Removing
+heading/list context or the group objective makes no clear difference to held-out typed
+agreement. Without context, the false-prerequisite rate is higher for all three seeds, and
+hand-labelled typed F1 is lower for all three (clear for one seed each). See
+[`reports/neural/ablation-1/`](reports/neural/ablation-1/README.md).
+
 95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
 the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
 are in [`reports/pilot/`](reports/pilot/README.md). The paired difference from adding `batch-01` (+0.214 typed F1,
