@@ -77,8 +77,8 @@ Training data can be restricted the
 same way (`train --origin manual`), and each model bundle records the origins it was trained
 on (`training_origins` in `metadata.json`).
 
-**Current status (2026-11-05).** Only 22 records are `manual` (10 in dev, 4 in test). Every
-batch after the pilot is model-drafted, by the owner's decision, so new results are reported as
+**Current status (2026-11-09).** Only 22 records are `manual` (10 in dev, 4 in test). Every
+batch after the pilot, including the test batch `batch-04`, is model-drafted, by the owner's decision, so new results are reported as
 agreement with the drafting model, labelled as such, and the release gates in
 [`targets.md`](targets.md) cannot be judged as declared.
 

@@ -156,7 +156,7 @@ item can be highlighted in the original advisory.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–03, 06: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–04, 06, 07: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
@@ -174,7 +174,7 @@ split has not been touched.
 | CRF (`crf-pilot-2`, pilot train split) | 0.231 [0.062, 0.417] | 0.231 [0.062, 0.417] | 0.444 [0.000, 0.667] |
 | CRF (`crf-pilot-2-batch-01`, + 100 model-drafted `batch-01` records) | 0.444 [0.133, 0.667] | 0.444 [0.133, 0.667] | 0.300 [0.000, 0.750] |
 
-**Label source.** Every annotation batch after the pilot (472 advisories annotated, 22 by hand)
+**Label source.** Every annotation batch after the pilot (710 advisories annotated, 22 by hand)
 was submitted from model drafts, by the owner's decision. Accuracy is therefore measured only on
 the 10 hand-labelled dev documents above. Later results are reported as *agreement with the
 drafting model*, never as accuracy, and the release gates in [`docs/targets.md`](docs/targets.md)

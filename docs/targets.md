@@ -10,7 +10,7 @@ allowed once a release evaluation on the test split has been run for the release
 
 ## Status (2026-11-05): gates cannot be judged as declared
 
-Every annotation batch after the pilot (batches 01, 02, 03 and 06) was submitted from model
+Every annotation batch after the pilot (batches 01, 02, 03, 04, 06 and 07) was submitted from model
 drafts, and the owner decided on 2026-11-05 to continue with model-drafted labels rather than
 hand labelling. The gates below are judged on hand-labelled (`origin: manual`) test records,
 and only 4 test records are hand-labelled, so **no release can be shown to meet them**. The
@@ -98,3 +98,4 @@ about 512 tokens, ≤ 8 s at about 2,000 tokens, peak memory ≤ 3 GB, throughpu
 |---|---|
 | 2026-11-02 | First declaration, after the pilot and before any test results. |
 | 2026-11-05 | Status note added: labels after the pilot are model drafts, so the gates cannot be judged as declared. No target changed; the test-access log still has no entries. |
+| 2026-11-09 | batch-04 (138 test records) and batch-07 (100 dev records) submitted from model drafts by the owner's decision; hand-labelled test records remain 4. No target changed; the test-access log still has no entries. |

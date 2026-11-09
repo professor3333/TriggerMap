@@ -82,6 +82,8 @@ provenance only.
 | `batch-02` | 100 | 0 | 99 | 1 | v0.2 |
 | `batch-03` | 112 | 0 | 112 | 0 | v0.2 |
 | `batch-06` | 60 | 0 | 60 | 0 | v0.2 |
+| `batch-07` | 100 | 0 | 100 | 0 | v0.2 |
+| `batch-04` | 138 | 0 | 138 | 0 | v0.2 |
 
 - **`manual`:** labelled by hand in Label Studio, with working time recorded.
 - **`model_draft_accepted`:** a model pre-annotation submitted unchanged.
@@ -121,8 +123,11 @@ Annotated so far, by split:
 | `batch-02` | 100 | 0 | 0 | 0 |
 | `batch-03` | 0 | 112 | 0 | 0 |
 | `batch-06` | 0 | 60 | 0 | 0 |
+| `batch-07` | 0 | 100 | 0 | 0 |
+| `batch-04` | 0 | 0 | 138 | 0 |
 
-Test records are never read for development, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
+Test records are never read for development. The batch-04 test texts were read once, to draft
+their model labels; nothing was tuned or scored on them, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
 
 ## Sampling
 
