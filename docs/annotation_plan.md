@@ -10,10 +10,10 @@ in `splits/pool-v1.json` (see [`splits.md`](splits.md)). Every batch is committe
 | `batches/batch-01.json` | train | 100 | natural | train | done under v0.2 (`batch-01`; model drafts, no `manual` records) |
 | `batches/batch-02.json` | train | 100 | enriched (cue top quartile, ≤ 800 words) | train | done under v0.2 (`batch-02`; model drafts, no `manual` records) |
 | `batches/batch-03.json` | dev | 112 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-03`; model drafts, no `manual` records) |
-| `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | **last**, after guidelines are frozen |
+| `batches/batch-04.json` | test | 138 | natural, ≤ 2 per leakage group | test | done under v0.2 (`batch-04`; model drafts, no `manual` records) |
 | `batches/batch-05.json` | train | 261 | 183 uncertainty from `crf-batches-01-02` + 78 natural, ≤ 3 per leakage group | train | next (drawn 2026-11-05) |
 | `batches/batch-06.json` | dev | 60 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-06`; model drafts, no `manual` records) |
-| `batches/batch-07.json` | dev | 100 | natural, ≤ 3 per leakage group | dev (calibration, thresholds, regression checks) | by hand, before batch-04 (drawn 2026-11-07) |
+| `batches/batch-07.json` | dev | 100 | natural, ≤ 3 per leakage group | dev | done under v0.2 (`batch-07`; model drafts, no `manual` records) |
 
 Totals when complete: train 39 + 100 + 100 + 261 = 500; dev 38 + 112 + 60 + 100 = 310;
 test 12 + 138 = 150. Batch-06 was added to give dev hand-labelled documents, but it was
@@ -52,7 +52,7 @@ data only. Only `manual` records count toward evaluation (see [`targets.md`](tar
 
 ## Label source decision (2026-11-05)
 
-Batches 01, 02, 03 and 06 were all submitted from model drafts. The owner decided to continue
+Batches 01, 02, 03, 04, 06 and 07 were all submitted from model drafts. The owner decided to continue
 with model-drafted labels instead of hand labelling. Results against them are reported as
 agreement with the drafting model, and the release gates in [`targets.md`](targets.md) cannot
 be judged as declared. If hand labelling resumes, the procedure below still applies.
@@ -77,6 +77,11 @@ Smaller sittings are fine: a partial export can be imported, and each later impo
 the earlier file.
 
 ## Hand-labelled dev and test batches (batch-07, batch-04)
+
+**Status (2026-11-09):** both batches were submitted from model drafts by the owner's decision,
+so neither adds `manual` records. The drafting process read the batch-04 test texts; nothing
+was tuned or scored on them. The plan below applies only if hand labelling resumes, in fresh
+projects created from the task files.
 
 The release gates in [`targets.md`](targets.md) are judged on `manual` records only. Two batches
 make them judgeable, labelled by hand with the procedure above:
