@@ -174,7 +174,7 @@
 <footer>
   Every checklist item is a verbatim span of the advisory, linked to its source text. Answers stay in this page until you export them.<br>
   Model <code>{{ extraction.model_id }}</code> · preprocessing <code>{{ extraction.preprocessing_version }}</code> · text SHA-256 <code>{{ extraction.content_hash[:16] }}…</code>
-  {% if source_url %}· Advisory text from the <a href="https://github.com/github/advisory-database" rel="noopener noreferrer">GitHub Advisory Database</a> (CC BY 4.0){% endif %}
+  {% if source_url %}· Advisory text from the <a href="https://github.com/github/advisory-database" rel="noopener noreferrer">GitHub Advisory Database</a> (<a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener noreferrer">CC BY 4.0</a>; shown with display markup removed and condition highlights added){% endif %}
 </footer>
 
 <script id="payload" type="application/json">{{ payload | safe }}</script>
