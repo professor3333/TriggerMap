@@ -201,11 +201,13 @@ model drafting runs of the 100 `batch-07` documents agree with each other at onl
 [`reports/drafter-consistency/`](reports/drafter-consistency/README.md).
 
 **Two references (batch-07, 100 dev documents, agreement only).** Scored against both drafts,
-the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). DeBERTa (run 2)
-against the CRF changes direction between the drafts (−0.020 and +0.014, neither clear). Its
-clear differences are recall and invention: it finds 0.394 of the 94 conditions both drafts
-agree on (CRF 0.181), but 0.504 of its REQUIRED predictions overlap nothing in either draft
-(CRF 0.380). See [`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md). Its disagreements with the drafts, by
+the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). A DeBERTa trained
+with the run-3 recipe minus the group objective (`ablation-1-no-group-seed1`, the closest available
+bundle to the run-3 candidate) leads the CRF under both drafts (+0.040, not clear; +0.105, clear). It
+finds 0.457 of the 94 conditions both drafts agree on (CRF 0.181), and its invented-prerequisite
+rate against both drafts is not clearly different (0.340 against 0.380). The pre-set switching rule
+needs a clear gain in precision or invention, so the CRF stays the default. DeBERTa run 2 changes
+direction between the drafts and invents clearly more (0.504). See [`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md). Its disagreements with the drafts, by
 error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
 
 **Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same
