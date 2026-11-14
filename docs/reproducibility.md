@@ -11,7 +11,7 @@ reproduces the committed results within the tolerances declared below.
 | Rules (`rules-2`) predictions | byte-identical | yes, 2026-11-14 |
 | CRF (`crf-batches-01-02`) retrained from the annotations: bundle files and predictions | byte-identical | yes, 2026-11-14 |
 | Evaluation reports built from those predictions (point estimates and bootstrap intervals, seed 0) | byte-identical | yes, 2026-11-14 |
-| Transformer predictions from a given bundle, on CPU | identical conditions, confidences to 3 decimal places | yes for the run-2 DeBERTa bundle: 60 of 60 `batch-06` documents (2026-11-14) |
+| Transformer predictions from a given bundle, on CPU | identical conditions (span, category, role); confidences within 0.001 | yes, 60 `batch-06` documents each (2026-11-14): run-2 DeBERTa bundle identical; `ablation-1-no-group-seed1` identical conditions, one confidence 0.3434 (Kaggle GPU) vs 0.3435 (CPU) |
 | Transformer **retraining** on a GPU | GPU kernels are not bit-deterministic, so the target is the seed spread. A reproduced run should fall within the reported seed mean ± 2 SD (DeBERTa run 3, `sqrt` 5e-5: 0.197 ± 0.011 held-out typed F1). | no; this is a target, and it needs a GPU run |
 
 The exact tolerances hold for the locked environment (`uv.lock`, Python 3.12), the pinned
