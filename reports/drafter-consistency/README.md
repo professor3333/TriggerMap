@@ -22,8 +22,9 @@ created 8 to 80 seconds before the annotation was submitted, with a recorded ann
 
 **What this measures.** The table shows how closely two model drafting runs agree with each
 other. It is not accuracy, it is not inter-annotator agreement, and it is not human
-self-consistency. Draft 2 is not used for training or model selection. All existing agreement
-results still use draft 1.
+self-consistency. Draft 2 is not used for training or model selection. The single-reference agreement results
+still use draft 1. Systems are scored against both drafts in
+[`../batch-07-comparison/`](../batch-07-comparison/README.md).
 
 ## Result
 

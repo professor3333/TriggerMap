@@ -192,7 +192,14 @@ typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0
 [`reports/agreement/`](reports/agreement/README.md). The drafts themselves are unstable: two
 model drafting runs of the 100 `batch-07` documents agree with each other at only 0.375 typed F1
 [0.309, 0.444] (0.431 span F1), so low agreement scores partly reflect noisy reference labels; see
-[`reports/drafter-consistency/`](reports/drafter-consistency/README.md). Its disagreements with the drafts, by
+[`reports/drafter-consistency/`](reports/drafter-consistency/README.md).
+
+**Two references (batch-07, 100 dev documents, agreement only).** Scored against both drafts,
+the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). DeBERTa (run 2)
+against the CRF changes direction between the drafts (−0.020 and +0.014, neither clear). Its
+clear differences are recall and invention: it finds 0.394 of the 94 conditions both drafts
+agree on (CRF 0.181), but 0.504 of its REQUIRED predictions overlap nothing in either draft
+(CRF 0.380). See [`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md). Its disagreements with the drafts, by
 error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
 
 **Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same
@@ -282,6 +289,8 @@ uv run triggermap compare annotations/pilot/pilot-2.jsonl reports/pilot/predicti
     reports/pilot/predictions/crf-pilot-2.jsonl --gold-origin manual   # paired bootstrap, B - A
 uv run triggermap evaluate annotations/batches/batch-03.jsonl reports/agreement/predictions/crf-batches-01-02.jsonl \
     --add-gold annotations/batches/batch-06.jsonl --split dev   # agreement with model drafts, not accuracy
+uv run triggermap multiref annotations/batches/batch-07.jsonl annotations/second-drafts/batch-07.jsonl \
+    reports/batch-07-comparison/predictions/crf-batches-01-02.jsonl reports/batch-07-comparison/predictions/rules-2.jsonl
 ```
 
 **Transformers** (DistilBERT, DeBERTa-v3-small; needs a CUDA GPU, see

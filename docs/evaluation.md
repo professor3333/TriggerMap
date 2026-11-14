@@ -56,6 +56,11 @@ gated.
   called *clear* only when the whole interval lies on one side of zero. The release gate
   "improvement over the strongest baseline" needs a paired interval with a lower bound above
   zero.
+- **Two references.** `triggermap multiref REF_A REF_B P1.jsonl P2.jsonl …` (dev only) scores
+  systems against two references of the same documents, such as two model drafts: F1 against
+  each, recall on the conditions both mark identically, and invented prerequisites against
+  their union. It also reports paired differences from the first system, and whether a
+  difference keeps its direction under both references.
 
 ## Which data a score may use
 
@@ -110,6 +115,7 @@ the predictions shown **without** a flag.
 ```bash
 uv run triggermap evaluate GOLD.jsonl PRED.jsonl --split dev --gold-origin manual --out report.md
 uv run triggermap compare GOLD.jsonl A.jsonl B.jsonl --split dev --gold-origin manual --out compare.md
+uv run triggermap multiref REF_A.jsonl REF_B.jsonl A.jsonl B.jsonl --out multiref.md   # two references, dev only
 uv run triggermap calibrate --gold GOLD.jsonl --pred PRED.jsonl     # dev halves → review policy (manual gold)
 uv run triggermap errors --gold GOLD.jsonl --pred PRED.jsonl        # error catalogue, dev only (manual gold)
 uv run triggermap threshold PRED.jsonl --min-confidence T --out KEPT.jsonl   # what a reviewer sees unflagged

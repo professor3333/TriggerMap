@@ -396,6 +396,62 @@ def _evaluate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _multiref(args: argparse.Namespace) -> int:
+    """Systems against two references of the same documents; dev split only."""
+    from triggermap.corpus.splits import load_split
+    from triggermap.eval import multiref
+    from triggermap.eval.runner import load_gold, load_predictions
+
+    refs = [load_gold(args.ref_a), load_gold(args.ref_b)]
+    assignment = load_split(args.split_manifest)["assignment"]
+    outside = sorted({aid for ref in refs for aid in ref if assignment.get(aid) != "dev"})
+    if outside:
+        raise SystemExit(
+            f"multiref scores the dev split only; {len(outside)} documents are not dev "
+            f"(first: {outside[0]})"
+        )
+    preds = [load_predictions(path) for path in args.pred]
+    names = [", ".join(sorted({p.model_id for p in pred.values()})) or "none" for pred in preds]
+    if len(set(names)) != len(names):
+        raise SystemExit("each prediction file must come from a different model")
+    try:
+        docs = {
+            name: multiref.collect_two(refs[0], refs[1], pred)
+            for name, pred in zip(names, preds, strict=True)
+        }
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    clusters = _clusters(args)
+    intervals = {n: multiref.score(d, clusters, args.samples, args.seed) for n, d in docs.items()}
+    baseline = docs[names[0]]
+    comparisons = {
+        n: multiref.compare(baseline, d, clusters, args.samples, args.seed)
+        for n, d in docs.items()
+        if n != names[0]
+    }
+    consensus = multiref.consensus_size(*refs)
+    report = multiref.render(
+        args.title,
+        {
+            "Reference A": f"`{args.ref_a}`",
+            "Reference B": f"`{args.ref_b}`",
+            "Predictions": ", ".join(f"`{p}`" for p in args.pred),
+            "Bootstrap": f"{args.samples} resamples, {args.clusters} clusters, seed {args.seed}",
+        },
+        names,
+        intervals,
+        comparisons,
+        {
+            "Documents": len(refs[0]),
+            "Conditions in A": sum(len(r.conditions) for r in refs[0].values()),
+            "Conditions in B": sum(len(r.conditions) for r in refs[1].values()),
+            "Consensus conditions (identical in A and B)": consensus,
+        },
+    )
+    _write_report(report, args.out)
+    return 0
+
+
 def _compare(args: argparse.Namespace) -> int:
     from triggermap.eval.bootstrap import paired_bootstrap
     from triggermap.eval.metrics import collect, summary
@@ -1248,6 +1304,23 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--title", default="Paired comparison")
     compare.add_argument("--out", type=Path)
     compare.set_defaults(handler=_compare)
+
+    multiref = commands.add_parser(
+        "multiref", help="score systems against two references of the same dev documents"
+    )
+    multiref.add_argument("ref_a", type=Path, help="reference A (AdvisoryAnnotation JSONL)")
+    multiref.add_argument("ref_b", type=Path, help="reference B, same documents")
+    multiref.add_argument(
+        "pred", type=Path, nargs="+", help="predictions; the first is the paired baseline"
+    )
+    multiref.add_argument("--clusters", choices=["document", "project"], default="project")
+    multiref.add_argument("--processed", type=Path, default=DEFAULT_PROCESSED)
+    multiref.add_argument("--samples", type=int, default=1000)
+    multiref.add_argument("--seed", type=int, default=0)
+    multiref.add_argument("--split-manifest", type=Path, default=DEFAULT_SPLIT)
+    multiref.add_argument("--title", default="Scores against two references")
+    multiref.add_argument("--out", type=Path)
+    multiref.set_defaults(handler=_multiref)
 
     predict = commands.add_parser("predict", help="run an extraction system over documents")
     predict.add_argument("--model", choices=MODEL_KINDS, default="rules")

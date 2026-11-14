@@ -30,7 +30,7 @@ advisory-database commit it was taken from, and the SHA-256 of the annotated tex
 | `batches/batch-07.jsonl` | Batch-07 annotations (dev pool, natural), 100 records, guidelines v0.2. |
 | `batches/batch-04.jsonl` | Batch-04 annotations (test pool, natural), 138 records, guidelines v0.2. |
 | `batches/batch-*_report.md` | Batch import reports. |
-| `second-drafts/batch-07.jsonl` | A second model draft of the same 100 batch-07 documents (Label Studio project 9). Used only to measure consistency between drafting runs; never training or reference data. |
+| `second-drafts/batch-07.jsonl` | A second model draft of the same 100 batch-07 documents (Label Studio project 9). Used to measure consistency between drafting runs and as a second reference next to draft 1; never training or selection data. |
 
 ## Origin
 
@@ -85,9 +85,10 @@ records for provenance only.
 100 batch-07 documents. It was submitted one task at a time between 2026-11-12 and 2026-11-14,
 and every record is `model_draft_accepted` (`model-project9-guidelines-0.2`): each one is an
 unchanged copy of a pre-annotation made seconds earlier. It does not replace
-`batches/batch-07.jsonl` and is not used for training, selection or scoring systems. Its
-consistency with draft 1 is in
-[`reports/drafter-consistency/`](../reports/drafter-consistency/README.md).
+`batches/batch-07.jsonl` and is not used for training or selection. Its consistency with
+draft 1 is in [`reports/drafter-consistency/`](../reports/drafter-consistency/README.md), and
+systems are scored against both drafts in
+[`reports/batch-07-comparison/`](../reports/batch-07-comparison/README.md).
 
 Records follow the schema in `src/triggermap/schema/models.py` and the rules in
 `docs/annotation_guidelines.md`.
