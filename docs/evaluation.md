@@ -82,6 +82,11 @@ batch after the pilot, including the test batch `batch-04`, is model-drafted, by
 agreement with the drafting model, labelled as such, and the release gates in
 [`targets.md`](targets.md) cannot be judged as declared.
 
+The model drafts are not stable reference labels. Two model drafting runs of the 100 `batch-07`
+documents agree at 0.375 typed F1 [0.309, 0.444] and 0.431 exact span F1
+([`reports/drafter-consistency/`](../reports/drafter-consistency/README.md)). Agreement scores
+should be read against that.
+
 Synthetic, template-generated data (`tests/synthetic.py`) exists only to test the learners.
 Its scores are never reported as results.
 

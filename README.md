@@ -189,7 +189,10 @@ cannot be judged as declared.
 Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
 typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
 [0.000, 0.640], and the difference from `crf-pilot-2-batch-01` is not clear; see
-[`reports/agreement/`](reports/agreement/README.md). Its disagreements with the drafts, by
+[`reports/agreement/`](reports/agreement/README.md). The drafts themselves are unstable: two
+model drafting runs of the 100 `batch-07` documents agree with each other at only 0.375 typed F1
+[0.309, 0.444] (0.431 span F1), so low agreement scores partly reflect noisy reference labels; see
+[`reports/drafter-consistency/`](reports/drafter-consistency/README.md). Its disagreements with the drafts, by
 error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
 
 **Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same

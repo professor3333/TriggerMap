@@ -21,7 +21,19 @@ FILES = sorted((ROOT / "annotations").glob("*/*.jsonl"))
 def _sample_for(path: Path) -> Path:
     if path.parent.name == "pilot":
         return path.parent / "pilot_manifest.json"
+    if path.parent.name == "second-drafts":
+        return ROOT / "annotations/batches" / path.with_suffix(".json").name
     return path.with_suffix(".json")
+
+
+@pytest.mark.parametrize(
+    "path", sorted((ROOT / "annotations/second-drafts").glob("*.jsonl")), ids=lambda p: p.name
+)
+def test_second_drafts_are_model_drafts(path: Path) -> None:
+    """Second drafts are kept for drafter-consistency checks only and are never hand labels."""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        record = AdvisoryAnnotation.model_validate_json(line)
+        assert record.origin not in (None, AnnotationOrigin.MANUAL), record.advisory_id
 
 
 def test_annotation_files_exist() -> None:

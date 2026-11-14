@@ -83,6 +83,7 @@ provenance only.
 | `batch-03` | 112 | 0 | 112 | 0 | v0.2 |
 | `batch-06` | 60 | 0 | 60 | 0 | v0.2 |
 | `batch-07` | 100 | 0 | 100 | 0 | v0.2 |
+| `batch-07-draft-2` (second draft, not training data) | 100 | 0 | 100 | 0 | v0.2 |
 | `batch-04` | 138 | 0 | 138 | 0 | v0.2 |
 
 - **`manual`:** labelled by hand in Label Studio, with working time recorded.
@@ -93,7 +94,10 @@ provenance only.
 Only `manual` records measure accuracy. All 22 `manual` records are in `pilot-2` (10 of them in
 dev), so every batch so far is model-drafted. Model-drafted records are used for training, and scores
 against them measure agreement with the drafting model. No record has been adjudicated by a
-second annotator.
+second annotator. The batch-07 documents were drafted twice by models (`batch-07-draft-2`), and
+the two drafts agree at 0.375 typed F1 [0.309, 0.444]
+([`reports/drafter-consistency/`](../reports/drafter-consistency/README.md)). That is
+consistency between model drafting runs, not inter-annotator agreement.
 
 ## Splits
 
