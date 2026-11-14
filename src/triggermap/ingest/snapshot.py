@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
 
 REPO_URL = "https://github.com/github/advisory-database.git"
@@ -37,4 +38,11 @@ def snapshot_commit(dest: Path) -> str:
 
 
 def snapshot_commit_date(dest: Path) -> str:
-    return _git("log", "-1", "--format=%cI", cwd=dest)
+    """Committer date of HEAD in UTC, ``YYYY-MM-DDTHH:MM:SSZ``.
+
+    Formatted here from the Unix timestamp because ``git log --format=%cI`` prints a UTC
+    offset as ``Z`` in newer git and ``+00:00`` in older git, which made the snapshot
+    manifest depend on the git version.
+    """
+    seconds = int(_git("log", "-1", "--format=%ct", cwd=dest))
+    return datetime.fromtimestamp(seconds, tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
