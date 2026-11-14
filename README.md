@@ -133,6 +133,12 @@ item can be highlighted in the original advisory.
 
 ## See it
 
+**[Live demo](https://professor3333.github.io/TriggerMap/)**: three unedited outputs of the released
+model as static review pages, built by `scripts/demo/build_site.sh`. They show an ordinary case
+(aiohttp, mostly right), a hard scope case (Flask, two of five conditions found, one invented
+prerequisite) and an abstention (Django, nothing found and said so). All three are dev documents
+and none was used for training.
+
 <div align="center">
 <img src="docs/assets/app-review.png" alt="TriggerMap review application for the Flask advisory: highlighted conditions in the advisory text beside an editable checklist grouped under 'All of these must hold', each item showing why it needs review and Present, Absent and Unknown answers." width="92%">
 </div>

@@ -1,0 +1,13 @@
+{
+  "built_from_commit": "d84963e313181215b140e03d2be619d73dabb844",
+  "model": "crf-batches-01-02 (release v0.1.0)",
+  "review_policy": "review-policy-0",
+  "preprocessing_version": "1",
+  "advisory_snapshot_commit": "1912cbd6ce9d4cb141636adc4abafb4eb77a93e6",
+  "pages": {
+    "aiohttp.html": "GHSA-5h86-8mv2-jq9f",
+    "flask.html": "GHSA-m2qf-hxjv-5gpq",
+    "django.html": "GHSA-xgxc-v2qg-chmh"
+  },
+  "license": "Advisory text: GitHub Advisory Database, CC BY 4.0, shown with display markup removed and condition highlights added. Code: MIT."
+}

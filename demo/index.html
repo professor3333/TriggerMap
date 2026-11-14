@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="description" content="TriggerMap turns English security advisories for Python packages into evidence-linked exposure checklists. Three real outputs of the released model: an ordinary case, a hard case and an abstention.">
+<title>TriggerMap demo</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --panel: #ffffff; --ink: #0f172a; --muted: #64748b; --line: #e2e8f0;
+    --accent: #2563eb; --code: #f1f5f9;
+    --ok: #15803d; --ok-bg: #dcfce7; --mid: #b45309; --mid-bg: #fef3c7; --off: #9a3412; --off-bg: #fff7ed;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220; --panel: #111a2e; --ink: #e2e8f0; --muted: #94a3b8; --line: #1e293b;
+      --accent: #60a5fa; --code: #0f172a;
+      --ok: #4ade80; --ok-bg: #14532d66; --mid: #fbbf24; --mid-bg: #78350f66; --off: #fdba74; --off-bg: #431407;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  a { color: var(--accent); }
+  code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code);
+    padding: 1px 5px; border-radius: 4px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 40px 0 32px; }
+  .brand { color: var(--muted); font-size: 13px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; }
+  h1 { margin: 8px 0 12px; font-size: clamp(26px, 5vw, 36px); line-height: 1.2; letter-spacing: -.01em; }
+  .lede { margin: 0; max-width: 720px; color: var(--muted); font-size: 17px; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 18px; font-size: 15px; }
+  main { padding: 32px 0 16px; }
+  h2 { font-size: 13px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin: 0 0 14px; }
+  .cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .case { display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 20px; text-decoration: none; color: inherit;
+    transition: border-color .15s, transform .15s; }
+  .case:hover, .case:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+  .tag { align-self: flex-start; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 10px; }
+  .ok { color: var(--ok); background: var(--ok-bg); }
+  .mid { color: var(--mid); background: var(--mid-bg); }
+  .off { color: var(--off); background: var(--off-bg); }
+  .case h3 { margin: 12px 0 2px; font-size: 18px; line-height: 1.35; }
+  .id { color: var(--muted); font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .case p { margin: 10px 0 0; font-size: 14.5px; }
+  .open { margin-top: auto; padding-top: 14px; color: var(--accent); font-size: 14px; font-weight: 600; }
+  .notes { margin-top: 32px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin: 6px 0; font-size: 14.5px; }
+  footer { padding: 24px 0 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">TriggerMap · demo</div>
+    <h1>Under what conditions is a vulnerability reachable?</h1>
+    <p class="lede">TriggerMap reads English security advisories for Python packages and suggests
+      the deployment conditions they state: a setting, a feature in use, the attacker's access, a
+      platform. Each item is a verbatim span of the advisory, with its role and logic, for a person
+      to confirm or correct. These are three unedited outputs of the released model: one ordinary
+      case, one hard case and one abstention.</p>
+    <div class="links">
+      <a href="https://github.com/professor3333/TriggerMap">Source code and results</a>
+      <a href="https://github.com/professor3333/TriggerMap/releases/tag/v0.1.0">Release v0.1.0</a>
+      <a href="provenance.json">How these pages were built</a>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <h2>Three real outputs</h2>
+  <div class="cases">
+    <a class="case" href="aiohttp.html">
+      <span class="tag ok">Ordinary case · mostly right</span>
+      <h3>aiohttp directory traversal</h3>
+      <span class="id">GHSA-5h86-8mv2-jq9f</span>
+      <p>Finds the web-server use and the <code>follow_symlinks</code> setting, and does not
+        turn "even when symlinks are not present" into a prerequisite. It also repeats
+        overlapping spans, keeps a bare "set to True" fragment, and does not group the conditions.</p>
+      <span class="open">Open the review page →</span>
+    </a>
+    <a class="case" href="flask.html">
+      <span class="tag mid">Hard scope case · partly right</span>
+      <h3>Flask session cookie disclosure</h3>
+      <span class="id">GHSA-m2qf-hxjv-5gpq</span>
+      <p>The advisory lists five conditions that must all hold. The model finds two of them. It misses
+        both required absences ("does not access or modify the session", "does not set a
+        Cache-Control header") and the default-on <code>SESSION_REFRESH_EACH_REQUEST</code>, and it
+        wrongly marks a background phrase as a requirement.</p>
+      <span class="open">Open the review page →</span>
+    </a>
+    <a class="case" href="django.html">
+      <span class="tag off">Abstention · nothing found</span>
+      <h3>Django MultiPartParser traversal</h3>
+      <span class="id">GHSA-xgxc-v2qg-chmh</span>
+      <p>The model finds no conditions, and the page says so plainly, without claiming the
+        conditions do not apply. Both model drafts of this advisory mark the
+        <code>MultiPartParser</code> requirement and the carve-out "built-in upload handlers were
+        not affected"; the model finds neither.</p>
+      <span class="open">Open the review page →</span>
+    </a>
+  </div>
+  <div class="notes">
+    <ul>
+      <li>Model: the CRF <code>crf-batches-01-02</code> from release v0.1.0, with review policy
+        <code>review-policy-0</code>. The policy is not calibrated, so every item is marked
+        <em>review required</em>. All three advisories are dev documents; none was used for training.</li>
+      <li>Extraction supports a review. It is not a judgement of whether a deployment is vulnerable,
+        and "no explicit conditions found" is not "not affected".</li>
+      <li>Measured quality is low and is reported with intervals in the repository's README. On the
+        10 hand-labelled dev documents, typed-condition F1 is 0.370 [0.000, 0.640]. Larger dev sets
+        exist only as model drafts, which measure agreement, not accuracy.</li>
+      <li>The pages are static. Answers you click stay in your browser until you export them, and
+        nothing is sent anywhere.</li>
+    </ul>
+  </div>
+</main>
+<footer class="wrap">
+  Advisory text from the <a href="https://github.com/github/advisory-database">GitHub Advisory Database</a>
+  (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>), shown with display markup
+  removed and condition highlights added. Code under the MIT license.
+</footer>
+</body>
+</html>
