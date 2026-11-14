@@ -270,6 +270,11 @@ uv run triggermap corpus stats             # writes docs/corpus_stats.md
 commit, every filtering count, each quarantined file with its reason, and the SHA-256 of the
 output. Rebuilding from the same commit reproduces it byte for byte.
 
+A full fresh-clone check (`bash scripts/reproduce/clean_clone.sh EMPTY_DIR`) rebuilds the corpus,
+retrains the CRF and regenerates the rules, CRF and agreement reports. On 2026-11-14 every
+regenerated file was byte-identical to the commit (208 s, macOS arm64). Tolerances and what is not
+covered (transformer retraining) are in [`docs/reproducibility.md`](docs/reproducibility.md).
+
 **Extract and review** (rules baseline; no labels needed):
 
 ```bash
