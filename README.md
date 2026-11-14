@@ -272,7 +272,7 @@ output. Rebuilding from the same commit reproduces it byte for byte.
 
 A full fresh-clone check (`bash scripts/reproduce/clean_clone.sh EMPTY_DIR`) rebuilds the corpus,
 retrains the CRF and regenerates the rules, CRF and agreement reports. On 2026-11-14 every
-regenerated file was byte-identical to the commit (208 s, macOS arm64). Tolerances and what is not
+regenerated file was byte-identical to the commit on macOS arm64 and on Linux x86-64 (Docker). Tolerances and what is not
 covered (transformer retraining) are in [`docs/reproducibility.md`](docs/reproducibility.md).
 
 **Extract and review** (rules baseline; no labels needed):
