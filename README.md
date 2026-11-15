@@ -359,7 +359,7 @@ them to MLflow). Reports carry leakage-group bootstrap intervals and mean ± SD 
 uv sync --extra serve
 uv run triggermap app sync                    # load the advisory snapshot (6,350 advisories)
 uv run triggermap app create-user alice       # prints an API token once
-uv run triggermap app run                     # http://127.0.0.1:8000
+uv run triggermap app run                     # http://127.0.0.1:8000 (--port to change)
 ```
 
 Look up an advisory by GHSA, CVE or PYSEC id, paste advisory text, or upload an OSV-Scanner
@@ -372,8 +372,8 @@ JSON report. The same features are available as a JSON API: `POST /v1/extraction
 ```bash
 uv run triggermap corpus sample-pilot      # reproduce the pilot sample (seed 20261020)
 uv run triggermap annotate tasks           # Label Studio tasks for the sample
-uv run triggermap annotate import data/label_studio/export.json --annotator A1
-uv run triggermap annotate gate --export data/label_studio/export.json   # docs/pilot_gate.md
+uv run triggermap annotate import data/label_studio/export.json --annotator A1   # rewrites pilot-1 (labels identical; schema version updated)
+uv run triggermap annotate gate --gold annotations/pilot/pilot-2.jsonl --export data/label_studio/export.json   # docs/pilot_gate.md
 ```
 
 The importer validates every exported annotation (offsets, labels, groups, document status),
@@ -433,6 +433,10 @@ rollback` restores all three at once, and `triggermap app verify` checks a runni
 against its release manifest end to end. Rollback is exercised by
 [`deploy/rollback_drill.sh`](deploy/rollback_drill.sh); the runbook is in
 [`docs/deployment.md`](docs/deployment.md).
+
+**v0.2.0 (preview)** is the current release. It serves the same CRF bundle as v0.1.0 and adds the
+declared test evaluation, two-reference scoring, the ONNX/INT8 check, the prospective check,
+fresh-clone reproduction and the public demo; see the [release notes](docs/release_notes/v0.2.0.md).
 
 **v0.1.0 (preview)** serves `crf-batches-01-02` with every prediction flagged for review. No
 acceptance gate has been evaluated, because labels after the pilot are model drafts; see the

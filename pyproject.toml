@@ -1,6 +1,6 @@
 [project]
 name = "triggermap"
-version = "0.1.0"
+version = "0.2.0"
 description = "Extract vulnerability prerequisites and exceptions from Python security advisories into evidence-linked exposure checklists."
 license = "MIT"
 license-files = ["LICENSE"]
