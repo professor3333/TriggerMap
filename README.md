@@ -166,7 +166,7 @@ and none was used for training.
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact; INT8 fails the accuracy gate on the trained DeBERTa), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
-| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · no prospective batch or usability study |
+| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · prospective check on 259 new advisories (behaviour only, no labels) · no usability study |
 
 ### Held-out test results (declared release evaluation, 2026-11-15)
 
@@ -189,6 +189,14 @@ prerequisites. DeBERTa has clearly higher recall and clearly fewer reversed mean
 (rules), and no difference is clear. The release gates in [`docs/targets.md`](docs/targets.md)
 are judged on hand-labelled test records only, so they **cannot be judged** with 4. Full report,
 with per-class support: [`reports/test-evaluation/`](reports/test-evaluation/README.md).
+
+**Prospective check (259 advisories published after the snapshot, behaviour only).** These
+have no labels, so there is no accuracy or agreement. The input has shifted: new advisories
+have a median of 515 words (dev: 79). 71% need more than one 512-token transformer window
+(dev: 13%), and median length in the corpus has risen steadily through 2026. On them the CRF
+suggests 4.4 conditions per advisory (dev: 1.1) and reports "no explicit conditions found"
+for 7.7% (dev: 43.8%). NOT_REQUIRED, EXCEPTION and negation-flagged items are more common, which
+is where both models are weakest. See [`reports/prospective/`](reports/prospective/README.md).
 
 ### Preliminary pilot results (dev split only)
 

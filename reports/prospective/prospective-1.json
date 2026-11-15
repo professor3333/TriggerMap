@@ -1,0 +1,1829 @@
+{
+ "sample_version": "prospective-1",
+ "params": {
+  "rule": "advisory id absent from the pinned corpus and published after the pinned snapshot's commit date",
+  "pinned_commit": "1912cbd6ce9d4cb141636adc4abafb4eb77a93e6",
+  "cutoff": "2026-10-20T03:38:30Z"
+ },
+ "source_commit": "9b0169eb7fb17b26d940fbcc7cdd6f2e88bebd37",
+ "source_commit_date": "2026-11-15T00:35:35Z",
+ "corpus_sha256": "d81bf85c39818897f05f40208fd3ae8ec413a6f2a918dd1c78e21eea7a47f6f9",
+ "counts": {
+  "prospective": 259
+ },
+ "items": [
+  {
+   "advisory_id": "GHSA-22hg-r758-rrw9",
+   "content_hash": "89d7bdd5e1373bcb1588bf4cd6d26f08657f0c7f7afc8efdb7258a94e335233c",
+   "published": "2026-10-21T20:39:49Z",
+   "words": 2098,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-22qq-2fwx-7p67",
+   "content_hash": "47f5f340f298f26001d7120a19e29d9b07e3569efe2cd0f3d7edd6514abb0198",
+   "published": "2026-10-27T14:46:51Z",
+   "words": 131,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-23mf-xhv8-69c2",
+   "content_hash": "8618f71f4dcbda3d0d8b70e42ffb510e816540b5ee50f282e57454e6046a3075",
+   "published": "2026-10-27T15:28:03Z",
+   "words": 2973,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-24rc-8hj2-v98c",
+   "content_hash": "a258ead303337a188cf1396e9b6ec7413ea339969c0dc817acad5755691d0fda",
+   "published": "2026-10-22T15:59:35Z",
+   "words": 294,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-254f-3936-288h",
+   "content_hash": "a926acc7bdd9c218d98daaa081b9a83c521239108a64e867272bf7b6ea77652d",
+   "published": "2026-10-21T21:11:07Z",
+   "words": 504,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-26mh-57q7-jfvr",
+   "content_hash": "59405454653e300545421d83cb0f91043fe471850e19fbee416ef2fb036518c6",
+   "published": "2026-10-29T16:34:26Z",
+   "words": 521,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-26p8-2jq9-3vq9",
+   "content_hash": "0ab3a8b3da963ed86ec2a9c22fafbfa8cc025914baa70f12f1f41788477a4af1",
+   "published": "2026-10-27T21:26:32Z",
+   "words": 1362,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-27h8-gf7j-v5hc",
+   "content_hash": "b7d501171e1147a811ae0fe29e7f77f29ceb0374545ed0330838b6669b80defa",
+   "published": "2026-10-21T20:32:37Z",
+   "words": 2223,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-2g95-wg33-c5x2",
+   "content_hash": "accd839dbdb3979f31b8a553fbd5d1d6dba18908e54afc3d152ab194b72e21ab",
+   "published": "2026-10-23T22:00:33Z",
+   "words": 2833,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-2h4w-29cv-2cmv",
+   "content_hash": "d7311e432b5deeb92360f23df68f274c38990d05dc7f9633f7551f4494133d30",
+   "published": "2026-11-10T15:57:17Z",
+   "words": 807,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-2qm8-x737-gmw5",
+   "content_hash": "513792ccb2bd88104c1e570292705549a08a162d78e228db049b6359f20b5de6",
+   "published": "2026-10-30T23:07:04Z",
+   "words": 1035,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-2qrf-pqgx-qh9v",
+   "content_hash": "06e08603a2e85a02fdd9b84f6db1427934c78359ec5263c71048044857d3e722",
+   "published": "2026-10-23T20:46:12Z",
+   "words": 447,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-2wqp-q3c6-ccj5",
+   "content_hash": "17cd84b515446b46a450d418cbbe51a16cdccfbdb65b27acabfedbbe8a351630",
+   "published": "2026-10-23T22:07:26Z",
+   "words": 600,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-332p-7hrc-92wf",
+   "content_hash": "ed7175ebae2e860bfbb319067212aa6203f837aa3b62b9dc1c8f907068c3ab40",
+   "published": "2026-10-21T21:28:09Z",
+   "words": 4106,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-33wh-fxxf-88vv",
+   "content_hash": "d96d5a01de5e603cf1d0c8f790c0ac4b735f9b62289485be70e51a4c389c9c1c",
+   "published": "2026-10-22T16:17:13Z",
+   "words": 1161,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3476-c5c2-fr73",
+   "content_hash": "44cf9f7f3c4768d3b0a8eeb9ff07d8b49ee7aae71589ceef25ec8f5ba27ea87c",
+   "published": "2026-10-23T20:45:04Z",
+   "words": 406,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3547-9m27-7rxg",
+   "content_hash": "4ae6a84845553fb301f0100dad7fa3bc47c79370ed30483a31ad650f17c33775",
+   "published": "2026-10-22T16:16:09Z",
+   "words": 1507,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-354v-3q48-cv69",
+   "content_hash": "1adfa7daae6c35de4a710e1d7e5b8cf95b4f06969f9192618fd0091ef231368e",
+   "published": "2026-10-22T15:46:31Z",
+   "words": 322,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3589-pxp7-3gj8",
+   "content_hash": "a27d6b166f632563fbe8960f42303a9b1812e6b0ef2ba47b8beaceeab45084fb",
+   "published": "2026-10-21T15:42:26Z",
+   "words": 53,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3633-r77q-h3v3",
+   "content_hash": "4303c41da19d1f04d669239c830e1d608349d4a07db8fd511edd4f7b680f50fb",
+   "published": "2026-10-27T15:37:31Z",
+   "words": 191,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-394h-qwmc-48pf",
+   "content_hash": "4146db000994651c64ff706dcf737dd1a5221410826bc9cd4f196a8accc34848",
+   "published": "2026-10-23T22:24:43Z",
+   "words": 1206,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-39mj-jf6j-2qj3",
+   "content_hash": "d9b0cd35698d4301a024a439c29d7caae40492c05e968a875476e21c1aef8e50",
+   "published": "2026-10-21T16:54:44Z",
+   "words": 80,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3fx2-cqw9-xr3c",
+   "content_hash": "a4cc8b1c44484987e089d8b4a3f1d10640397524610a96e7f3387e713e91b6de",
+   "published": "2026-10-28T21:05:47Z",
+   "words": 281,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3hch-x692-6qj3",
+   "content_hash": "b99169094ee2a819be02fef6216a0568cad33e81dda3fa25f0664f49873d94dd",
+   "published": "2026-11-10T15:57:20Z",
+   "words": 144,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3j72-p6qg-6xp7",
+   "content_hash": "b314188c5c2db06f99223fa390d1598a4feaf3963eb36ae5d690a12e4151c30b",
+   "published": "2026-10-22T16:01:46Z",
+   "words": 477,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3jp2-3mrg-2vxc",
+   "content_hash": "a7a0959377860e71ca69034974787d68c82f3a5cf01c9a56872e49c908721ece",
+   "published": "2026-10-27T13:30:17Z",
+   "words": 270,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-3w55-933p-8pv5",
+   "content_hash": "8a51150027ff0b8169a56887fdd5b19ba155a9399907479edb03f259ada7ce1b",
+   "published": "2026-10-27T15:34:33Z",
+   "words": 487,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-42gh-23hr-vphw",
+   "content_hash": "baee984cad4f6b73b810561b10aa4b7f40e858009f89cdbf8d6910f45f7811eb",
+   "published": "2026-10-30T23:08:55Z",
+   "words": 57,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-43mp-35q3-x3fq",
+   "content_hash": "8f941fc9edf543846cea3dd84a5c010a605fd24f532560947562f86cbd62bad8",
+   "published": "2026-10-21T21:31:34Z",
+   "words": 953,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4558-3h8r-v8xp",
+   "content_hash": "55eaa3476f51de3c965b724140ed946e643ac97d478a08475cd8abcf3afaad15",
+   "published": "2026-10-21T20:00:32Z",
+   "words": 1381,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-45c3-73f7-pv4m",
+   "content_hash": "32ac0585486858a1cfb4cf3dbb13cdbcd002405e6573676f1b301a6ad939889b",
+   "published": "2026-10-27T15:37:37Z",
+   "words": 100,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-462x-pgg6-55fp",
+   "content_hash": "0741cc246fecd5749669878648c3d5e2bb6c5377ef4dd6a4ece777afcd02acf9",
+   "published": "2026-10-20T20:49:26Z",
+   "words": 640,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-48m4-24cq-37qf",
+   "content_hash": "a7c1a0ae9aed1841e755502b6218ddfecf325323718d802ed76db86ec258c69d",
+   "published": "2026-10-28T21:16:24Z",
+   "words": 319,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-494p-63j8-28p3",
+   "content_hash": "be2927ee7d0d1091da1dd9b3ea6ae7ec5d2ab511a0d1709e9d1f1882cd041679",
+   "published": "2026-10-23T22:25:22Z",
+   "words": 1761,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4f8h-vr72-p32c",
+   "content_hash": "5d7d06777fa547f4e28d0b9e7ff29a2869f87689013e06c71f993750843e487c",
+   "published": "2026-10-23T22:26:57Z",
+   "words": 1266,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4hm6-w6qq-w73v",
+   "content_hash": "5c5f38fc6be898279093e31eeb851c457ad4ac3f83ccfa77366d0879288b8bb1",
+   "published": "2026-10-28T21:09:42Z",
+   "words": 281,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4j63-6c4x-wfg4",
+   "content_hash": "d68e8f25caa18d94deda4095c040c6c42f87a5bb164c333f182bef8ad282103f",
+   "published": "2026-11-13T00:45:18Z",
+   "words": 626,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4rm8-3hmm-39fg",
+   "content_hash": "dcee9ae64b01c681aa884fad59d90df046f52a3de0ad5cd580873b05ae3c065b",
+   "published": "2026-10-22T16:01:14Z",
+   "words": 578,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4rr5-89j8-mwwm",
+   "content_hash": "17a2e502301c8541b19c209ce32f83eb52222045947ef76bf6195d4a37b3b7ab",
+   "published": "2026-10-21T21:24:19Z",
+   "words": 444,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4v6f-7vjh-6x4m",
+   "content_hash": "0b1bdd8e43c44124dfec3d1aca617dfc51b448dc4d7b0541acedd71d4f84ca5f",
+   "published": "2026-10-23T20:48:29Z",
+   "words": 272,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-4vqv-7265-gm2w",
+   "content_hash": "9a97adfa01e2a998652ab0175d2d1714a0529ed2c16634b68902294edea1b56f",
+   "published": "2026-10-30T23:08:39Z",
+   "words": 57,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5324-3w58-qpp2",
+   "content_hash": "10ab828164cedb054c807c138087c5548fb9dcaf2566adf05f01a57462c24b30",
+   "published": "2026-10-28T21:17:08Z",
+   "words": 545,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-53xc-49m8-p798",
+   "content_hash": "24e8c55ee5bc261165c69c6d78ba07172755b859761da474b1f43387a14d212e",
+   "published": "2026-10-23T20:45:35Z",
+   "words": 458,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-542m-9234-8gvf",
+   "content_hash": "22155ccb11ea3646922b6d867dc9844cd52fbad9b260b956f47213e0122b6817",
+   "published": "2026-10-28T21:14:52Z",
+   "words": 288,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-558c-9hv2-4prj",
+   "content_hash": "1066edf1270117b9414633c196c6d6f3c286d44db795fae71218766780c59398",
+   "published": "2026-10-22T17:03:12Z",
+   "words": 1010,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-567q-5qvw-pf92",
+   "content_hash": "04b774575c39cf0a17429a36560d7ae6b52dfb2a991df6d4dc3cd2d194dd40d6",
+   "published": "2026-10-23T22:27:32Z",
+   "words": 3034,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5849-834g-hvw5",
+   "content_hash": "6879171905292a2c54ccebe2b12ead8de58ff96fd9eb6c73cff30ee9f009f8e0",
+   "published": "2026-10-30T23:13:16Z",
+   "words": 64,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-58r4-6rv3-gfh8",
+   "content_hash": "e0a36000dc70663efacceb86b0814a2d090b557b28b26644e2eebec189cce525",
+   "published": "2026-10-20T20:56:22Z",
+   "words": 248,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5cjw-f85j-cv6r",
+   "content_hash": "153404b686d5504f1e5753cf8e96234a44420560100c75bc6c93389d7c66870c",
+   "published": "2026-11-13T20:31:22Z",
+   "words": 76,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5h93-6whr-6q8j",
+   "content_hash": "a90f16330d982776bf582bf037d322903e5be51a758aa998918040aacf0d8071",
+   "published": "2026-10-27T21:05:34Z",
+   "words": 624,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5hx5-vpf9-5wcv",
+   "content_hash": "f08db30f0aa66dcaee77c9d6baf5874e1472710f73499af779768bbae4dd6f7b",
+   "published": "2026-10-21T19:58:10Z",
+   "words": 78,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5j9r-fx4x-rpvg",
+   "content_hash": "c63b1e8c162efe5f0be00e55f6e7d67293b969540f4a6530712f885f394ed5d5",
+   "published": "2026-10-28T19:50:05Z",
+   "words": 380,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5vjq-rrrf-7h2q",
+   "content_hash": "6d3d90867670bd136af6dc76af8760adf51b69f3118041a7bd2b3b15810ba5e2",
+   "published": "2026-10-21T16:46:23Z",
+   "words": 399,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5x8w-8jj5-q52h",
+   "content_hash": "0871181d0b84c9363ff41c77f234086232cb07344bd46896f54accfdde8b462f",
+   "published": "2026-10-23T21:55:21Z",
+   "words": 2299,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-5xm2-6676-qcp9",
+   "content_hash": "caa7d462040207cfa59835568bac9aa6c1c713b38886341648a066873b2121c3",
+   "published": "2026-10-21T21:17:56Z",
+   "words": 3055,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-62m5-6wh8-28x7",
+   "content_hash": "8af7a1e8d82796550806db64dd2b25f3b2570317adfb61fbc7daf83fb175c153",
+   "published": "2026-10-30T23:08:24Z",
+   "words": 69,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-62m9-f875-rqw6",
+   "content_hash": "7464016778ee725fc16435a60314ad070533078506f0ed7e049eeccbe945f342",
+   "published": "2026-11-10T15:57:15Z",
+   "words": 333,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-64vx-6h2c-rjh7",
+   "content_hash": "3b15bd8a2d8a750dbf01df83afc18251baca786bdab4c357df0def35d5733a2a",
+   "published": "2026-11-05T17:51:02Z",
+   "words": 644,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-654x-cwwv-5j9c",
+   "content_hash": "511453755168473f62c7b08bcd9ec020338df06c2811c9dadb2f851a57325abf",
+   "published": "2026-10-23T21:53:21Z",
+   "words": 265,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-65qm-jvmh-6pqg",
+   "content_hash": "42faca1bc2dfa3520a76f560f031df5ba62541951f298a31b413a48210e0e8d6",
+   "published": "2026-10-20T20:53:36Z",
+   "words": 2100,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-65v8-q222-64xx",
+   "content_hash": "29d10c2f782538258d7f566805f1d7ea53d55027739a0c38efb21b7019f073f1",
+   "published": "2026-11-10T15:57:02Z",
+   "words": 401,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6627-m3xw-93mp",
+   "content_hash": "816e336fef416050d74932cbd9eb693e04405c7b1ff50931714ec7c03cbc65be",
+   "published": "2026-10-28T21:09:04Z",
+   "words": 2168,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6655-6qjp-jx7x",
+   "content_hash": "80cb14c32e876f49a295c9ef8f52f6086fa0fd5e5b4d43703d3fe3f0a051c105",
+   "published": "2026-11-13T16:39:43Z",
+   "words": 159,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6757-hggm-hp2w",
+   "content_hash": "6cbb7a373f0cb16d428324fe406a420bd3e358abc21274aef47363f58a6d6abe",
+   "published": "2026-10-28T21:15:15Z",
+   "words": 911,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-69hj-f68j-2879",
+   "content_hash": "458154c9f48dcd84986543e517cf2e7b47512b12348e7a7584e26b566b0432e3",
+   "published": "2026-10-28T21:08:35Z",
+   "words": 2438,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6c7f-9265-g8fw",
+   "content_hash": "0ca673bbd3d7bfcbbc3afc0947fb1c87adf6fdcc5a22ca3f4ebc4262f1613a1d",
+   "published": "2026-10-23T20:55:15Z",
+   "words": 73,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6cjc-53gc-5rqm",
+   "content_hash": "78384808017473b837cfeb707a9d4529fdb4ef8f19a1a520a18ce056de978b49",
+   "published": "2026-10-20T19:57:24Z",
+   "words": 38,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6f4g-xm8v-pgv6",
+   "content_hash": "df205f5497b59b0316e294972b73d7d77b1853f6958c01cfc81ab8ed44988dbd",
+   "published": "2026-11-10T15:56:59Z",
+   "words": 328,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6hmw-9432-67qq",
+   "content_hash": "3b35abd4057e1d884d1e493dd9121263b291af30410d0877d541b0e829fb4adc",
+   "published": "2026-10-23T22:06:44Z",
+   "words": 371,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6hp3-vr39-rqw8",
+   "content_hash": "1bf0596a3339c54dae8e667270b5811bb3f20ec5b9d1e8a5935d127bd97ff3f1",
+   "published": "2026-10-27T13:30:10Z",
+   "words": 898,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6jp4-8v48-cc5v",
+   "content_hash": "7028494068e7dc36155bea78acaecdffa96dfc3c6e7d2d6bd8c57d242b241a88",
+   "published": "2026-10-28T21:23:44Z",
+   "words": 442,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6pwm-x34p-fvj2",
+   "content_hash": "87a9067a32046f6e474d543fb7dddecf87688edf715865eb103cb52890df443c",
+   "published": "2026-10-28T21:16:42Z",
+   "words": 281,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6q48-6c7w-9gw2",
+   "content_hash": "45ce7dd98dfd117f31a256e0b9890c3f9a6a80d15f0ade336d1f574e07b0e511",
+   "published": "2026-10-20T19:35:05Z",
+   "words": 126,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6v38-4h7w-rj9h",
+   "content_hash": "d77c617ff7e11390bd2ce6dee873f70d3acadaac694aa13dfba51def55e53816",
+   "published": "2026-10-27T14:50:18Z",
+   "words": 421,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6vvc-x485-93v7",
+   "content_hash": "8f8bbce98ac09c576aeb13aee905b44909fd839512e59f5398a4690bdb9104b2",
+   "published": "2026-10-22T16:49:56Z",
+   "words": 62,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6w3r-xr62-4xcp",
+   "content_hash": "650a89d138ce03c9823d05fa9acf688d8d134c004541e314112d27c2d05fb00f",
+   "published": "2026-10-23T22:21:57Z",
+   "words": 952,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6wcv-rj3c-mhv3",
+   "content_hash": "301938c15449529dbf977fe6cad629271498b8af99fbf328d78b695f4e652f40",
+   "published": "2026-11-10T15:56:56Z",
+   "words": 437,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-6xmv-cjr5-w3q8",
+   "content_hash": "df9d8cce82e70027623c04a8b5823f73cc079e753eb53e57e154a43bf254050b",
+   "published": "2026-11-09T19:46:27Z",
+   "words": 326,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-74r2-7ff9-mjj2",
+   "content_hash": "874388558ce7546474871940163a7076539136e6af297ba2cdf2054e9920e06c",
+   "published": "2026-10-21T20:42:11Z",
+   "words": 2331,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7587-9684-52r6",
+   "content_hash": "259e6875c54687aad614a4ac111cdb6a1f6ff832183c30a08208d7bce487e0a4",
+   "published": "2026-10-22T12:31:17Z",
+   "words": 58,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-763v-5pjm-fx36",
+   "content_hash": "0f50ab5479172e06322e38a947da70a48365f7624a80823d3d36b2f0cfc618ec",
+   "published": "2026-10-27T15:34:28Z",
+   "words": 255,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-78g4-xqwv-q3g8",
+   "content_hash": "a24fa51d96fbddc931d4f9fc8872826f4dd3cf320f2c8b13b289dcf86c3f2a59",
+   "published": "2026-10-22T17:01:08Z",
+   "words": 955,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7984-qgvg-3j9c",
+   "content_hash": "caf2abf1812144b3d470700d14584826d4ffee0e8638cf6fd1c7ae5b6c146967",
+   "published": "2026-10-30T22:58:16Z",
+   "words": 1084,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7g44-g9rc-x53w",
+   "content_hash": "c2a90f5edae8438fa94ea918d04c0454a9897b1afed3b2bd81efab052cb11c65",
+   "published": "2026-11-13T16:34:59Z",
+   "words": 1198,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7hp6-4w63-5g45",
+   "content_hash": "48c70fcb710523c408c87ff0d885da2d5a25a326b1e0fcdc19275e7a270e6921",
+   "published": "2026-10-27T15:04:14Z",
+   "words": 198,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7mh2-4gg2-979f",
+   "content_hash": "75d81ca0d2c792d3b61655fee94d838b368bb23b5ebbd90cd6787b1f3292b17b",
+   "published": "2026-10-21T16:48:30Z",
+   "words": 71,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7mwm-ghpf-9vrm",
+   "content_hash": "a6c51b5d0f133c84046e707ec024093bce609a682f791e75d5aaf375b544315b",
+   "published": "2026-10-21T20:03:56Z",
+   "words": 2212,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7vr2-2fgp-9w7p",
+   "content_hash": "37e8519500079263404c6b1033b930665d057d44dbe7f72fc8bb97f5cbe6aa7c",
+   "published": "2026-10-27T15:38:48Z",
+   "words": 1392,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-7xgj-8392-5q4r",
+   "content_hash": "63cc0599fcf7c3a81f0a9259da06f2d1fadd0aef35a152a21e4de7b31463da9a",
+   "published": "2026-10-23T21:32:06Z",
+   "words": 578,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8397-8qf6-f2gm",
+   "content_hash": "badff2042ff5b7a700f609162403b1627bfd41bd6ccaab1493d182f0c0f72315",
+   "published": "2026-10-28T21:15:41Z",
+   "words": 763,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-83vg-56qc-22m7",
+   "content_hash": "2d6fb612a66f84d0cb17e00ee4c76d32e70bb0e3a217cc1e7375f26dedb4fc1e",
+   "published": "2026-10-22T16:41:14Z",
+   "words": 662,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-85gg-2gfq-q95m",
+   "content_hash": "8fa0c29edf5ccbc89c0256e17e5ce06ec52e1145ac4f82dc4c63b07839d67d1e",
+   "published": "2026-11-09T22:16:41Z",
+   "words": 902,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-88f4-frh5-gmcr",
+   "content_hash": "0912423d52f5f36b2f3a0134febb3dbffb1a3a63746dc76a97e3f0c51999f309",
+   "published": "2026-11-10T15:57:07Z",
+   "words": 442,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-89p3-fcch-88ph",
+   "content_hash": "8fdf7f16d53f56327bcfaccaa2f026859503b8c2bc0ffc5d5ff8f5c65efcc38f",
+   "published": "2026-11-14T00:08:50Z",
+   "words": 1121,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8fx7-8jr8-84rv",
+   "content_hash": "805a1adedff6f3a862d22bab38ee838adb90e37c8ef7ce83af95ac3f144a1afa",
+   "published": "2026-11-13T21:02:19Z",
+   "words": 1324,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8g5g-8vmr-9782",
+   "content_hash": "e926c65a0f5c7d7f230d68d8d43852b773b7c6ba8ec6b313727ad26ee43cb0a0",
+   "published": "2026-10-20T20:40:07Z",
+   "words": 1630,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8m4g-j4wp-wgcg",
+   "content_hash": "4cbf0d4eb192addf726a6709ff354d3a5432bf66651dbcf91a5ebc6bffdc68bd",
+   "published": "2026-10-27T16:09:22Z",
+   "words": 772,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8mx5-7m5m-r77g",
+   "content_hash": "673b9d5903f622558bb241065d85181651bddc0b58ab3215b2354cc860f4d36f",
+   "published": "2026-10-28T21:08:55Z",
+   "words": 2068,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8prr-f582-jqq3",
+   "content_hash": "afdf5d1620067fb4b580830c97a8ed8f82017351516a81e6db323609d980a476",
+   "published": "2026-10-28T21:13:18Z",
+   "words": 271,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8rjx-v5ww-45pp",
+   "content_hash": "0803a501ea0621cd1e485cc4acf977676d58a058132d6864103764b1ed5ca87d",
+   "published": "2026-10-21T16:39:38Z",
+   "words": 325,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-8v59-qmwv-4p6q",
+   "content_hash": "a5b446fe03d1e901a939d86cabe399977542280341b648e8cbfcffaa2f883a72",
+   "published": "2026-11-10T21:58:53Z",
+   "words": 361,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-98qm-wvgf-w4cf",
+   "content_hash": "ce7d333ad37fb8e4d704054c80684c67567d0ed10a9b0dbbabe4b4f6cbbeaa93",
+   "published": "2026-10-27T15:36:35Z",
+   "words": 175,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9c4x-gm8v-wgc4",
+   "content_hash": "1ff9ca53f865aaa842077686caa5dbc90cc4788436a8d7e860dac585f5e526ae",
+   "published": "2026-10-28T21:08:59Z",
+   "words": 2956,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9fpx-fr6j-2vh6",
+   "content_hash": "d2010451dfeec5567ea07ddecb0419c38905e71e991255685d177691f15e8bb4",
+   "published": "2026-11-06T19:39:38Z",
+   "words": 29,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9gh4-xw24-9xh5",
+   "content_hash": "05a3fffd8213129d1cb9ee1f298e5f3be7b9e1b328bbd8cf0dbf6c52239c14e3",
+   "published": "2026-10-30T22:58:10Z",
+   "words": 314,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9j6q-wvj5-jgjg",
+   "content_hash": "f778c19f1d0b9d1d5de82134226c24cf2618ebbf2f11c97cff080f03123bcf37",
+   "published": "2026-10-28T21:08:40Z",
+   "words": 2243,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9m75-vc3g-4x39",
+   "content_hash": "608990b7fe6947e1978f2b817ececf1c8dd5b197c29da313cb4bc3a3d7b1b54a",
+   "published": "2026-10-30T23:03:51Z",
+   "words": 1312,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9mx8-4j7g-633p",
+   "content_hash": "538938ee6ae8467dc93416bcad5950b631f51c80f9da3d14abe2f94d23b435c0",
+   "published": "2026-10-21T16:55:10Z",
+   "words": 61,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9pg5-8c7x-5hfx",
+   "content_hash": "15357f20bc77b0d1df676945fba3911dac4de7e8cffdbd1d99eaad948f986797",
+   "published": "2026-10-30T14:54:25Z",
+   "words": 305,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9v8h-qqgm-4m35",
+   "content_hash": "9a261aaaf7a26768b76735810dedc9da785162e5a36312faa75b759dd5687210",
+   "published": "2026-10-22T15:32:49Z",
+   "words": 86,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9v9v-9qvf-h2hj",
+   "content_hash": "e9ccff54d58115bb6d7f637c8ea062f339529e2ffd6b24ca4c10ca46adc70c73",
+   "published": "2026-10-22T16:03:14Z",
+   "words": 379,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9vhv-g5hf-m7m7",
+   "content_hash": "7fcb2b93ca03cf36f000ba6137b2dce5ce10bce6d361b9098b9e6d9ec6ae1680",
+   "published": "2026-11-09T22:01:34Z",
+   "words": 524,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9vhv-jxww-xfm5",
+   "content_hash": "36de0a87ceaf67cdb317e47fcdda9ddba43d3ec4d6cd8a8597430a235d3e2fc2",
+   "published": "2026-10-23T22:28:19Z",
+   "words": 2195,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-9xw5-w5jj-pvcg",
+   "content_hash": "0abc639974431a3e6915aaa34e3ef81fccee31047cf51790ec90b24a7f4e5cdf",
+   "published": "2026-10-20T19:52:09Z",
+   "words": 47,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-c5mf-xmp2-59rc",
+   "content_hash": "f74f5de3c6998efaca3628cbf09a63ed9eef602acded0a7febe1d29a21961f3d",
+   "published": "2026-10-27T15:39:13Z",
+   "words": 1202,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-c6hw-5grf-ff96",
+   "content_hash": "01409d222ca347f03569a012733bda364beb17821b2484f695ad2d60d1421f21",
+   "published": "2026-10-20T20:42:00Z",
+   "words": 3762,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-c73q-w75p-j82v",
+   "content_hash": "44059938720945e27225a19bc18683b2ac031608bf6ed63cccc016653e90603c",
+   "published": "2026-10-30T23:09:04Z",
+   "words": 1076,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-c947-3pg5-gm8q",
+   "content_hash": "23e7462dc98266f6e9a4d30b0f16e17e71b31a7868a4c6424f7382c39440b24e",
+   "published": "2026-10-21T16:39:58Z",
+   "words": 303,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-c978-59m8-c77v",
+   "content_hash": "4f0a88afd92eec3dbebfcbc26714af6501067f307e9cc20a491fb5f9d71f0717",
+   "published": "2026-10-21T21:30:12Z",
+   "words": 1058,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cg8m-r9f2-5wm2",
+   "content_hash": "93bff98db81a282da1253fbcf54a4e5e05e5dc6641b6df1c0db20af599dcb85f",
+   "published": "2026-10-22T16:18:57Z",
+   "words": 137,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cgf9-327m-v77c",
+   "content_hash": "61fd47f340b4d4e60f38843e12feb9e3ce1d53db8dbf92e23066b442e8808dd5",
+   "published": "2026-10-22T16:49:22Z",
+   "words": 58,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cggf-277g-3q54",
+   "content_hash": "8c5e6723e7ab3e45e0f572ed173f8ea91ab504167ac1f17912af5021c436d1f5",
+   "published": "2026-10-30T23:13:01Z",
+   "words": 60,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cp25-j9x5-p5xm",
+   "content_hash": "5f5d42d5d1e614fd05d521593627e4cfcf2bcbb559ad47762585b0f141566239",
+   "published": "2026-11-09T22:05:06Z",
+   "words": 210,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cp9v-662q-vvx9",
+   "content_hash": "154388c71c2174ca1c84788b356d2a7b18c64c7017bce68fa39537a9f111af42",
+   "published": "2026-10-21T20:30:25Z",
+   "words": 308,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-crv4-6mhj-j5jh",
+   "content_hash": "9cae11ddbf59867f26951bdd0fb4fbcf17828b6c277bf32b43a901af3eacfb31",
+   "published": "2026-10-23T22:00:11Z",
+   "words": 3105,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cw65-gx24-rc82",
+   "content_hash": "ba694ad38511e0bd18f060a911511af550c7d0ef3869556b72c6d4754977cb52",
+   "published": "2026-10-21T21:35:56Z",
+   "words": 1078,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cwm5-jh59-mwxr",
+   "content_hash": "a52d278cf5c5acf4ef64fd12b32ddc4a1d9d0cf3ca93e741fcca569b624c5833",
+   "published": "2026-10-23T20:45:26Z",
+   "words": 424,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cwqr-hh33-gh44",
+   "content_hash": "2c258d028ce38358d7170c717080f15945d21039670791b9e15ca438700a7338",
+   "published": "2026-10-28T21:08:49Z",
+   "words": 3081,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cx28-75q4-x26q",
+   "content_hash": "6282736ea9b45b9e31af7f348b2a34fc238e05288d2a6baf1b6ab8c66c8b451d",
+   "published": "2026-10-23T22:26:04Z",
+   "words": 1121,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-cx6f-vjhg-g3cc",
+   "content_hash": "b00821e3b8c236293fb1fbb80fa80241a495884730824d4a33f65f72508408c3",
+   "published": "2026-10-23T20:47:16Z",
+   "words": 1202,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f2g6-542v-9j58",
+   "content_hash": "a1c9407a605024c80650768c3234755f85c137d149be0e171d673261a78c47c0",
+   "published": "2026-10-21T21:21:07Z",
+   "words": 2955,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f42p-wjw5-97qh",
+   "content_hash": "da438a315fb16e24061b3a6c3ba55329ecd16ee6390927f65852647452689337",
+   "published": "2026-11-09T21:56:25Z",
+   "words": 567,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f54x-cmq8-qg57",
+   "content_hash": "79c29698f5a98c593be88b8d048e9773ceceb8cf83e78b11bc59fa165c250088",
+   "published": "2026-10-22T16:49:40Z",
+   "words": 60,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f5m9-jfrj-jjj7",
+   "content_hash": "86263897e709a85cc9ea3becbaad8c678c81109ea4054faca66de7610376a848",
+   "published": "2026-10-27T21:06:54Z",
+   "words": 234,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f9j4-qggq-h239",
+   "content_hash": "00a8539fa25f007fd695bfb448e14040b9c5de94ea9b3d9c9e31bd15188767ba",
+   "published": "2026-10-27T15:26:50Z",
+   "words": 1110,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-f9xw-jh8m-3mwq",
+   "content_hash": "15dc148561650f800b57bd1b29687c7d8adb5f853d7b3651ab8173820ec6787c",
+   "published": "2026-10-20T20:01:40Z",
+   "words": 77,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fc2g-4w5p-6whm",
+   "content_hash": "98b6e677c271c1122fedfd4947d4b6493250fe35e74b55abb055937dee636f17",
+   "published": "2026-10-23T22:23:11Z",
+   "words": 1123,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fc9g-5qg7-mf45",
+   "content_hash": "c47a610e143a6b7919936de34d1311a8e73f595e43203d0192b5a8b3f10af1e1",
+   "published": "2026-10-21T20:38:43Z",
+   "words": 74,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fch4-3c6x-j4gc",
+   "content_hash": "6238363b0570232fc1c74331e58fe6cfbe7aa5d5f36fd833e3556567fe87e78d",
+   "published": "2026-10-27T15:39:08Z",
+   "words": 652,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-ffr9-mgrr-wcvr",
+   "content_hash": "ed59622d908b8c600fb193fc1e56888b677bb6679cc53f1d03b3c3d60db5fcf3",
+   "published": "2026-11-13T21:08:55Z",
+   "words": 1184,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fg9w-wfp5-j933",
+   "content_hash": "fd14e6a6396970552b351309132db310a06680f80b5341cc6ea93c0d36705007",
+   "published": "2026-11-13T23:20:56Z",
+   "words": 1135,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fj95-fr6c-h845",
+   "content_hash": "5b4256328ec9c785d7f308bbd50d849aadbe78ade5692c07457733f4112b10df",
+   "published": "2026-10-28T21:08:13Z",
+   "words": 3399,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fm9c-5rcf-2q5p",
+   "content_hash": "029fc3a8ca5843963a0c83527e777ccc668f0a20e569bdd675a257dc9205d80d",
+   "published": "2026-10-30T23:03:37Z",
+   "words": 380,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fq56-3cx3-fjxp",
+   "content_hash": "c2afc406a440f838b44ef00f72481ffce753f5cd2a6c28edc023eef3bd2ded02",
+   "published": "2026-10-28T21:08:08Z",
+   "words": 2948,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fqpv-mq26-pr4j",
+   "content_hash": "377c3cdbe312b37a470f175b2d373c10b44d333532e171ea80b76fae3ad52dd9",
+   "published": "2026-11-06T19:41:23Z",
+   "words": 25,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-frvg-qw88-hww9",
+   "content_hash": "41c20f0ceafab4049953a722882d9e6db1ac70dbc1d96dd852620d14b1abd1f4",
+   "published": "2026-10-27T14:45:53Z",
+   "words": 796,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-fx3j-rwgx-fr94",
+   "content_hash": "b4a9d28e660fc0b96fa449733576e9571aba0f40df85bfe5e2137f37e55d20cd",
+   "published": "2026-10-27T15:26:32Z",
+   "words": 867,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-g4qv-2jxx-769h",
+   "content_hash": "c01151a424a257d47999c1c3be2a11c105669f2530f785eb0a3ba515fb1f7d02",
+   "published": "2026-10-22T16:02:39Z",
+   "words": 523,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-g5ff-637f-6q2m",
+   "content_hash": "875ffc80df070050a0c086894663936968f49888fbd0c14524619e4a2e03b7ef",
+   "published": "2026-10-27T15:32:36Z",
+   "words": 145,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-g7cr-3p24-7wf7",
+   "content_hash": "db989458dc5655d8798f611a8322a14797940dd111da527df7f6ac3d5b1752b9",
+   "published": "2026-10-22T16:05:39Z",
+   "words": 3698,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-g842-9rc4-69pw",
+   "content_hash": "c495b31de0b1622c1e15aaaf7c4c3f7e9cf33709c823418040d02e1f21a28aa4",
+   "published": "2026-10-22T15:57:17Z",
+   "words": 331,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gcwf-c25f-p9rv",
+   "content_hash": "07d24df9d8f003ea20b23b70b612161ed8a04e23a8dee2b05ca1e6e33afde8c3",
+   "published": "2026-11-09T23:24:14Z",
+   "words": 297,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gg2r-wvfm-q9rx",
+   "content_hash": "158f1b44239576867b6bd4b85aca8e346665db368950cda72edc652d56f42bc4",
+   "published": "2026-10-21T21:12:56Z",
+   "words": 108,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gh9r-c94j-cmp5",
+   "content_hash": "7bc0618f48951742fc6491ed81630e1c8458e31e5ca4df4161092c05a4d5fceb",
+   "published": "2026-11-03T20:29:16Z",
+   "words": 548,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gj9m-f8ph-pmhr",
+   "content_hash": "508ef7d7acd5275e75b451cf01fcc945d59f290e910b7dca9feae4c8dbca8592",
+   "published": "2026-11-09T22:15:27Z",
+   "words": 380,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gmh7-3g9r-mjh5",
+   "content_hash": "77585ac6912ff7ba9d6b838e4999326be38d5eac8f34db108500dac1a6b5ea69",
+   "published": "2026-10-23T20:54:12Z",
+   "words": 62,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gpwc-27cw-rh9r",
+   "content_hash": "9b6cc2072e4e339b9dd068a58c1aeffdfe5071564f3bae401b9ae43a2b1059a5",
+   "published": "2026-11-13T21:16:34Z",
+   "words": 1211,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gq48-pqfc-9p58",
+   "content_hash": "f6350782a7d8df15e65a0d70a83beb66274cd8cd376cd4162249dec584eea962",
+   "published": "2026-10-27T15:26:57Z",
+   "words": 2092,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gq5q-89c7-vhvx",
+   "content_hash": "127ddf852cc7ada8f4e09dbd96abdd25ed6e99ba74a8283caeb9081657f24470",
+   "published": "2026-10-28T21:15:35Z",
+   "words": 1257,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gx76-c99x-2c96",
+   "content_hash": "7f60d64c82721df68bf90b307bc0690f5573882f9aee147dc0e9d1d63060d080",
+   "published": "2026-10-20T19:58:14Z",
+   "words": 57,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-gx7p-2j49-hfq4",
+   "content_hash": "1b7c9b1defb5096a7315348ea67e4da346b47a6e71f9e1d9b927bd19f58061cd",
+   "published": "2026-10-23T20:58:36Z",
+   "words": 288,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-h2r5-x5m7-3935",
+   "content_hash": "f8effc860346f19489dc606c5144ffa7c877bf7e027f785665c448b3da7b1ace",
+   "published": "2026-10-28T21:16:51Z",
+   "words": 1208,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-h3rc-6mm3-gc2m",
+   "content_hash": "9258e3004eb9c4ca2240d849904969c62b2ab25c14952d96942349abd3c0c8d7",
+   "published": "2026-10-27T15:36:17Z",
+   "words": 520,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-h3rc-j82p-2c3h",
+   "content_hash": "c4f31b91706b305f9006ead60d5a77a3cc48288a174ccb7092a649643f9d4098",
+   "published": "2026-10-28T21:15:29Z",
+   "words": 712,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-h667-4jj2-cgv4",
+   "content_hash": "442d6f707a8004c85fbdacb031a7c0843e8614a086fcb24ac5eaa177b7875837",
+   "published": "2026-11-09T18:50:00Z",
+   "words": 287,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-h7ww-273w-6cm8",
+   "content_hash": "d3ee47a330b0309e64d68955cb9a372c23ef42503304d3ead6036c637f35c174",
+   "published": "2026-10-23T20:46:47Z",
+   "words": 82,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-hhww-mrg2-969h",
+   "content_hash": "cf7c02fc980055470c9be0780665c96f48606d4c5ac52f5b5b60c90e88da6ae3",
+   "published": "2026-10-27T15:31:56Z",
+   "words": 131,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-hhxq-47xx-j5xx",
+   "content_hash": "775da39a9bd68e18e3ffef2df0dd17ea31097c19db5dfcc1a42bdceeaccb1cd7",
+   "published": "2026-10-23T22:19:15Z",
+   "words": 853,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-hq85-5cpj-mr62",
+   "content_hash": "1b1f9df60b5d02044e692e9d12efa621cf5c05de2b840edaf909d8814d2e64b1",
+   "published": "2026-10-20T19:37:52Z",
+   "words": 105,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-hr4h-4c45-v4q4",
+   "content_hash": "fd7a4d6ad7e44f9ea5640744156a675ad8fdc1fb6beb9e35b06b05ed887e22d9",
+   "published": "2026-11-10T21:40:50Z",
+   "words": 352,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-j456-xh4h-cpf2",
+   "content_hash": "ba4afcca065d782f932e4fb7fd16b7143d54f455680a3876208c100588fcdbf4",
+   "published": "2026-10-27T14:50:30Z",
+   "words": 976,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-j4m9-6w36-pw47",
+   "content_hash": "0d8796fd526af5a332776a2de0b2861de54112cdb8e120865b733ee133af0ed0",
+   "published": "2026-10-21T20:06:34Z",
+   "words": 418,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-j586-36cw-2gc2",
+   "content_hash": "add40339c3b3e685e19bfa29c38f8ca597e3cb43edf6c3f4af7716f92a2c60ec",
+   "published": "2026-10-27T15:04:07Z",
+   "words": 470,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-j7qq-vr8c-xvw3",
+   "content_hash": "46a90b9a0a4903cc8cabbf0126ef8fe61d579ad5ac93951c2640d311f9a86d10",
+   "published": "2026-10-27T21:26:39Z",
+   "words": 997,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-j8f7-rjxc-mr56",
+   "content_hash": "274b16ac65ce25a74fa5d4afba1455e79ef96607c13547e76a601aaa5718b0a4",
+   "published": "2026-10-28T21:08:30Z",
+   "words": 331,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jf3h-8jvx-vcrg",
+   "content_hash": "0a702dfa926763181a27cacfb6b2fe1cd0ab3b913fbe233e8e9ba1799f5a409c",
+   "published": "2026-11-10T15:57:05Z",
+   "words": 422,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jg86-v3jv-hrpm",
+   "content_hash": "f737e3bac625911e99399b863a8417b7610ecd9ea913e17ab0ba06105a36fb88",
+   "published": "2026-10-21T21:11:44Z",
+   "words": 2359,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jj36-9pvh-vj5r",
+   "content_hash": "080773fc65a6fb6047ff0e5a28ef8fe2edb2f75784a6fbda9e0cf8ee3c110e16",
+   "published": "2026-10-27T14:45:29Z",
+   "words": 942,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jj7h-c3hg-m23x",
+   "content_hash": "754094573161b811f4c1d0bfbf023757e791b357f7fe64a032e2e334803b0258",
+   "published": "2026-10-27T15:37:48Z",
+   "words": 852,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jpxq-7h8p-2q76",
+   "content_hash": "c7474f551d9fc30fdaeda6d1bfbf9e59442a8b317fc7ef56a5b1ee83bfcdf0c4",
+   "published": "2026-10-30T14:54:20Z",
+   "words": 1949,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jqc4-5cvw-7w85",
+   "content_hash": "d6454d419a7d0ec3d918aaa3b9828d84d0274fe7f159575735c41002d3ab580d",
+   "published": "2026-10-23T22:28:41Z",
+   "words": 2647,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jr96-gvgh-j3r4",
+   "content_hash": "fac3314f9e22a8e1f7c32e8818955a77379fffce23ea039a4baf147616c3489b",
+   "published": "2026-10-23T20:54:27Z",
+   "words": 82,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-jv6m-48w5-5rpr",
+   "content_hash": "03d0cc2be71bfad581049882747c38844eb6e5a77dda50451734de2331d5974f",
+   "published": "2026-11-13T18:05:15Z",
+   "words": 431,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-m462-7rxw-wvpg",
+   "content_hash": "1aa3538ca93bd7c03003e5b505ba74909fc72c5331f7a96af9bf2cff491f9fe6",
+   "published": "2026-10-28T21:08:23Z",
+   "words": 3298,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-m4pr-6v3c-6fgr",
+   "content_hash": "f2f7abec177687f1071d53a03c236d9e1b1c64259059df66aea31a186a8eb1e8",
+   "published": "2026-10-28T21:16:30Z",
+   "words": 313,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-m4w4-3r8h-jw98",
+   "content_hash": "89bad50a5f3eef6e54d600a76309c95119f40a98dd4191f5f180e99515881b3e",
+   "published": "2026-10-27T13:30:41Z",
+   "words": 201,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-m64x-33q8-m5h7",
+   "content_hash": "5e9bf24a2c55a18a4db0d5422b2ea13f4c9143c9d3f7f29d4e19bebb0dc06567",
+   "published": "2026-10-27T15:26:24Z",
+   "words": 872,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-m65p-9j7q-6w33",
+   "content_hash": "873024f9505435cabe996a1d1984373c77d61c76f4000f223e99b7ec777a732d",
+   "published": "2026-10-27T21:26:56Z",
+   "words": 590,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mf5v-w3w3-f6cg",
+   "content_hash": "3cfea847292942793e728a9f205962b74c228b73d001956497eef0d80523150b",
+   "published": "2026-11-13T16:43:18Z",
+   "words": 297,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mfr5-77xh-9j7h",
+   "content_hash": "57f412fc6a7eb07905a2084a2ae96239df6530a16723e92c3822f48d4ddd439f",
+   "published": "2026-10-30T23:12:20Z",
+   "words": 53,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mm57-4v3p-rchx",
+   "content_hash": "cefc5af0d6617601551985291bcb99defc5a9c4e9d94322ba3eee2cfc10950dc",
+   "published": "2026-10-30T23:06:46Z",
+   "words": 701,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mmhr-3c5m-f64f",
+   "content_hash": "ed25f7afa7fedd2820e52ffd6dabf4a6ff6f3d970dc876b5a357094cef9643bf",
+   "published": "2026-11-13T00:49:46Z",
+   "words": 735,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mpqx-q82w-9x46",
+   "content_hash": "6542aebe781b7f26175dc419b1478ec889441d4b116871f6046fa1f46e4882bc",
+   "published": "2026-10-30T22:58:31Z",
+   "words": 453,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-mrfp-p49p-3hf2",
+   "content_hash": "cbed69442d076fe26f932b89645dfb5f9cc6d008f5feee4f20d596125ccc7373",
+   "published": "2026-10-22T16:00:47Z",
+   "words": 1289,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p2mm-64f6-gmpp",
+   "content_hash": "9e6823f061a9bbac297ebfe43bda634c8133fc6bfba1cfce9ab6048529b4ee6f",
+   "published": "2026-11-09T19:48:08Z",
+   "words": 259,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p3m5-h5v9-vqj6",
+   "content_hash": "9e1026521123eb8ea69cf52451140679b876fa07c36fc0d634ecc4c6f68cb6e4",
+   "published": "2026-10-27T15:37:24Z",
+   "words": 189,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p4wg-p73j-c528",
+   "content_hash": "f1fb0d650a50cab1b6ede4e57d9a349b42708483f5ab12d3301a3180f169433c",
+   "published": "2026-10-20T20:50:49Z",
+   "words": 381,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p623-mxf7-qxjm",
+   "content_hash": "37fcc16c5d37d10cb2fcb392ade93182efdf1921bdb8bca7b61a21addaedc18e",
+   "published": "2026-11-10T15:57:29Z",
+   "words": 122,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p8hx-v2p6-rp84",
+   "content_hash": "150cdc52f720dbc361e91419820a63deac4e4c9e2ae253dc9bf528ebe3bdafa4",
+   "published": "2026-10-22T15:56:37Z",
+   "words": 536,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-p92p-rxj5-7p2x",
+   "content_hash": "8cde83a9c1dd544e297f9e7b1c9f7fc4565e7a7eb1dc3f4963b611be945aab06",
+   "published": "2026-10-23T20:43:44Z",
+   "words": 1141,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pcg2-g6cj-q92c",
+   "content_hash": "e81c9eb4902fee3febbf9a02ae4960750e954c0e9788c18ed764b66c9cc4d1ed",
+   "published": "2026-10-28T22:43:41Z",
+   "words": 239,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pchr-8j38-3x4p",
+   "content_hash": "02d8f8869b37833410b947837b72191b15047eb3bd834fe54b696e9ce87abd54",
+   "published": "2026-10-20T20:51:40Z",
+   "words": 2144,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pjh6-c8mg-3x7m",
+   "content_hash": "b4668351f2b1d430151952cd39f2653c61a8be17aaabaacb94777d9854b25bdc",
+   "published": "2026-10-28T21:10:17Z",
+   "words": 418,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pjvx-prjx-h659",
+   "content_hash": "8072a34703aeb4bca3861a7c36ef81e994d41166118cfd35c339158facf52cf3",
+   "published": "2026-10-22T16:23:28Z",
+   "words": 179,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pqxq-w44r-73xw",
+   "content_hash": "e9ce2c4f210bea15c54019337b36c72a7f571b0492a3c8977e337cb91bda53be",
+   "published": "2026-10-20T19:52:21Z",
+   "words": 54,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pw9p-v7r6-gx4p",
+   "content_hash": "7017066530935742687888482de811a7fa3f9e2686aa3ba53f8721afab22d86a",
+   "published": "2026-10-28T22:43:45Z",
+   "words": 352,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-pxh4-856f-4h89",
+   "content_hash": "50674098ea06fa5788816a5c0d32b2c0502f182c7d32d5d6043c11bf428ce482",
+   "published": "2026-10-22T15:48:04Z",
+   "words": 1549,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-q45j-58j2-45rg",
+   "content_hash": "a384181ddf8ee2785cacc9937ab5adb972158b6cfb6bd708c4f05192c780ad13",
+   "published": "2026-10-20T20:52:43Z",
+   "words": 2816,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-q686-2qmg-hqc7",
+   "content_hash": "12617a8dfe84ec81ac6d20f297e52ea538df816649797392c04002411eefe315",
+   "published": "2026-10-27T15:38:53Z",
+   "words": 1615,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-q69g-f4f5-v8m7",
+   "content_hash": "7409d3e97ffd05cce516ab6436c49b31389375da6fa98a0ef4ce537d204f7002",
+   "published": "2026-10-28T21:16:37Z",
+   "words": 373,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-q7qq-6mhp-9rc4",
+   "content_hash": "ac36f08703f3a8610a01640ee0306f2757a503b447983f289b602f23acafd325",
+   "published": "2026-10-23T20:44:43Z",
+   "words": 515,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-q97c-p368-75c4",
+   "content_hash": "c23d8a61ea5795a2acc05e466b851386d42b6b197bdeff541a0320443b31ba9f",
+   "published": "2026-10-28T21:15:08Z",
+   "words": 331,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-qfv9-64jg-mh7p",
+   "content_hash": "adee7e14c52a6c49b8c493355f60421e615546da0122ca2d50fba8ab4aaf154e",
+   "published": "2026-10-21T16:55:35Z",
+   "words": 53,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-qg35-44qx-7vrr",
+   "content_hash": "4f05167983e00c89421abffa3f936c9405f96e23f3fc4682e1261fd4622121af",
+   "published": "2026-11-13T20:55:16Z",
+   "words": 1461,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-qmx5-4p3x-wvqf",
+   "content_hash": "04ca4899e8f458369b6694c3d93f34bebbbd33bdc6abbaed73b03410dcc471b0",
+   "published": "2026-10-23T22:20:43Z",
+   "words": 906,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-qr6x-7v33-6qmg",
+   "content_hash": "84010205bdb0c36d1d7f022bf78a20845727f530b91e854c2a135df880a94d7e",
+   "published": "2026-10-27T14:45:36Z",
+   "words": 387,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r4hm-p9f9-fj9v",
+   "content_hash": "12160abc5f1c866cfb13a36de0c6992c9dcda158b99890e9bddcd73028a5e853",
+   "published": "2026-11-06T19:50:34Z",
+   "words": 33,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r4j5-9xpp-3985",
+   "content_hash": "225f587a1d94039e9dffe8fe6fe503c97e1d10ca4d64aa0f8b48a7254fd44760",
+   "published": "2026-10-28T22:43:50Z",
+   "words": 314,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r53h-rw34-8h97",
+   "content_hash": "c4b47fdd5227e78eca01decb6b7c83f825cab1162983e8cfc15bd67aad643926",
+   "published": "2026-11-14T00:07:59Z",
+   "words": 932,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r57g-mc79-8hj2",
+   "content_hash": "c27d666e7911d4c6e8b8ae81bb0561f67d00bd5db2c1fade4d52d69372339e11",
+   "published": "2026-10-21T17:21:15Z",
+   "words": 1090,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r77w-qph3-7vf8",
+   "content_hash": "57de323eaaa3cf1827fd9b2b2ba49942cf57ff8d0225d364fee3ad02d618410c",
+   "published": "2026-10-22T16:27:14Z",
+   "words": 639,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-r7j4-crjv-h467",
+   "content_hash": "3e20f51d35a481c259eae502a6bbd5bed6a9e3089cc3ce4260c59a177537433f",
+   "published": "2026-11-10T18:28:35Z",
+   "words": 918,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-rfgq-q3w2-pmv2",
+   "content_hash": "43d515b1c77da7f97cdd92fd941d8a0a57a5f1129869707dd3bd938b4d573cb7",
+   "published": "2026-10-21T20:44:07Z",
+   "words": 2621,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-rfpc-qcw5-3pc4",
+   "content_hash": "bfbd40d1eff4e9a836a1f99e49c1e173e1cf17a5d579789666593bef8ca16072",
+   "published": "2026-10-28T21:08:45Z",
+   "words": 2104,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-rm8w-w798-g545",
+   "content_hash": "2410da5bebca6cbea663140167867ca29866989a0b3c542c8e1a7cfa1686db8a",
+   "published": "2026-11-10T15:57:22Z",
+   "words": 465,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-rw7v-4hrq-x6r9",
+   "content_hash": "95a0dda4250dbbe7b309ef69a116b8fa898b6b0bbfbf6e069c5f4461e6e7bb84",
+   "published": "2026-10-27T14:43:16Z",
+   "words": 463,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-rwrf-2pqf-9j8j",
+   "content_hash": "f28a6b0af172d002a7bff4ea76720326a856c75c6981c731dcc4cbe0d3881cc8",
+   "published": "2026-10-27T21:05:29Z",
+   "words": 329,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-v4x8-3wr5-3wq8",
+   "content_hash": "4254aa376c9b6f666e0b966d4583cd4a40e8efa279765ddcf62889dc6db67ff3",
+   "published": "2026-10-23T21:59:08Z",
+   "words": 4038,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-v8f3-6phw-6mh9",
+   "content_hash": "35ef5c477d209b96b2574a29fed01b9ab732a16911222b1c57fe354d8fec62c4",
+   "published": "2026-11-14T00:05:57Z",
+   "words": 1175,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-v9pv-5gc8-w2m6",
+   "content_hash": "bca5c956b07d546ebdf8bddfbc59cd8a3074d573601f13cfd60b560e90f1a55f",
+   "published": "2026-10-22T16:00:15Z",
+   "words": 767,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vcw3-r3fx-j444",
+   "content_hash": "714777612448f7f7bfe07cd0a6712f95701b4afc7276ce7e89e17bc5f5ce3c1f",
+   "published": "2026-10-27T13:27:58Z",
+   "words": 43,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vj8h-fx38-h3vc",
+   "content_hash": "4b37cd672cc88d51d38f912e83bb2821fdef877e1e76b89f9e801822ea190366",
+   "published": "2026-10-22T16:26:40Z",
+   "words": 703,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vpp8-g58w-m8mp",
+   "content_hash": "e4ec16f2e67b98732f0385763ba568e6da44e8780894a0cd5eef2fece504c098",
+   "published": "2026-10-29T16:41:06Z",
+   "words": 424,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vqqp-x5qm-5qp4",
+   "content_hash": "dd00424055850763c43371374780c47d3633b5fc581a99b90883023fb819b77c",
+   "published": "2026-10-23T21:31:30Z",
+   "words": 676,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vqrg-773h-4wxc",
+   "content_hash": "7b77d4e7a2e3ac95ba0ca68b92d13514c3dbdb3a332cce7a6b9dbcee0c7a2a6b",
+   "published": "2026-10-27T15:32:45Z",
+   "words": 836,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vvf4-9x63-8xvv",
+   "content_hash": "7f15b3f128cd9ff691a1c47a85abd61ec16b0515ed3b2a1986d7bf199084ebc0",
+   "published": "2026-11-13T20:19:13Z",
+   "words": 152,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vvpg-rrww-wpmh",
+   "content_hash": "8afecbdf147f44138fe6bbd9f7788526e592bb6e950ea3725308733f631526c9",
+   "published": "2026-10-28T21:15:49Z",
+   "words": 280,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vvr2-h2jp-838m",
+   "content_hash": "abaa8094628df1519458d0ce0a6beb837be44e5ae1ac67dc72dd05c9fb95a332",
+   "published": "2026-11-09T21:21:32Z",
+   "words": 1661,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vx6w-vv9f-6gvg",
+   "content_hash": "4b2b1fe45e4a0c832727c4d487addae0fd262d2b9b2a88eb642b076504e54b94",
+   "published": "2026-10-20T20:53:21Z",
+   "words": 1970,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-vxj4-q4g9-crj7",
+   "content_hash": "4a62ee73c481823a2cba65662f1b10c1697deb65919814e1807921f22b899c3b",
+   "published": "2026-10-21T16:49:01Z",
+   "words": 437,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-w4fh-qvv9-3v23",
+   "content_hash": "5be94fe33bc4f681ca967b447edbfb1d22e728379c8e15ffa325d5a23b056a37",
+   "published": "2026-10-27T21:06:59Z",
+   "words": 249,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-w7qv-268h-9h3f",
+   "content_hash": "9635016685cb56668b50988da60c0684c188f12c8228f6380737c2d38dc14912",
+   "published": "2026-11-09T18:15:18Z",
+   "words": 58,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-w889-685w-c8fh",
+   "content_hash": "a8c2493eea5cf07257e32bdc6675c4fa5011982869883ed9840efba5fd55e0eb",
+   "published": "2026-10-21T19:58:44Z",
+   "words": 1100,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-w8jc-g24h-crhw",
+   "content_hash": "8e1fa3cda79660aa02a5a5d869ee18aa666f5d355e3a615172f279f54e59c2e0",
+   "published": "2026-10-27T15:26:43Z",
+   "words": 606,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-wf6j-7hvr-gr93",
+   "content_hash": "bc303e97c40cb48321428d0c19a8445edf7e6cecbe554880e812e4983cdf6847",
+   "published": "2026-10-27T17:08:41Z",
+   "words": 394,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-wfhq-q4j2-c37m",
+   "content_hash": "40eba4c4100c459f17a1f291d78d72c87665c6320a5516075f41fe53a38ac425",
+   "published": "2026-10-28T21:09:09Z",
+   "words": 2886,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-whr6-fgpq-fpv9",
+   "content_hash": "8300ec40ac1b4012d162ffdc5fdaee3541b0e93164dd0cf1268a76f27c026f2f",
+   "published": "2026-11-10T15:57:10Z",
+   "words": 529,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-wqgw-9xfh-qf2g",
+   "content_hash": "183f2f3b22231189e10db4ccfe9c5f0a3211c05269a460dd94980a27126dc281",
+   "published": "2026-11-12T23:35:39Z",
+   "words": 2785,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-wqw6-wpr3-45rh",
+   "content_hash": "35e74781d4a6dc0e3b4200c0ffaa9f075cc42c7c3bfc42adc0e39db4452e278e",
+   "published": "2026-10-27T14:43:19Z",
+   "words": 457,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-x3rh-gjgm-fmqc",
+   "content_hash": "245af816e722a29a67a706957cff0c1a26ad9fb9ff2b02d64874a7c50f28d3d8",
+   "published": "2026-10-30T23:07:28Z",
+   "words": 58,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-x4rv-c3wx-4cr8",
+   "content_hash": "be8db7a965b7ae7e28495864cfca7788f86597c40984bb6345017d81782e0cee",
+   "published": "2026-10-27T15:39:18Z",
+   "words": 733,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-x567-49g5-p4cf",
+   "content_hash": "473d4021dc7f1780f7c3dec2475fa1d9372fce2911163592ec7a8b9143a0f15e",
+   "published": "2026-10-28T21:14:59Z",
+   "words": 377,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-x585-4vv8-2mh2",
+   "content_hash": "0b0f3143f4e28d198a2f7819a349ba4a803a3a09d67eff00ee4361b44d93f529",
+   "published": "2026-11-13T01:09:54Z",
+   "words": 215,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xcq7-p3pf-p88h",
+   "content_hash": "ecc73202a98b89110770c08cb48331073d5473f4dece62be001676b334d49c3b",
+   "published": "2026-10-22T16:22:07Z",
+   "words": 1596,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xcvg-w56q-r89m",
+   "content_hash": "5344398c0f7cb77dc2d09401d19a10ca4294ea002b504559092f88f125d6b8d2",
+   "published": "2026-11-12T23:34:43Z",
+   "words": 4367,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xgh8-jp6q-p5x8",
+   "content_hash": "4278b6d917db62ead8de0563ffda19221c55c88c3583257f78051067dd37b340",
+   "published": "2026-10-21T20:45:06Z",
+   "words": 2315,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xmj3-9gf7-h52w",
+   "content_hash": "9b8cf2132066e1e816e66ca72ce0bd1f145bcfc38dfcebdf83b1590eac6b795c",
+   "published": "2026-10-23T21:44:11Z",
+   "words": 294,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xvh5-g6gv-559v",
+   "content_hash": "f8876ff1dbe477942c0d7bb1a432743ed1edfa8e39a2214f90d15adc7c8b9404",
+   "published": "2026-10-21T21:29:16Z",
+   "words": 5469,
+   "intended_use": "prospective"
+  },
+  {
+   "advisory_id": "GHSA-xw6w-gcfp-cf8m",
+   "content_hash": "48905c67f3579c5552075b7cc1081f0cbe849cd87fc989dfe68480ca38c3195c",
+   "published": "2026-10-22T16:18:05Z",
+   "words": 961,
+   "intended_use": "prospective"
+  }
+ ]
+}

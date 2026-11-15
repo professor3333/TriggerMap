@@ -1,0 +1,24 @@
+{
+  "counts": {
+    "excluded:not_pypi": 30939,
+    "excluded:withdrawn": 259,
+    "kept": 6612,
+    "scanned": 37810
+  },
+  "filter": {
+    "ecosystem": "PyPI",
+    "exclude_withdrawn": true
+  },
+  "outputs": {
+    "advisories.jsonl": "d81bf85c39818897f05f40208fd3ae8ec413a6f2a918dd1c78e21eea7a47f6f9"
+  },
+  "preprocessing_version": "1",
+  "quarantined": [],
+  "source": {
+    "commit": "9b0169eb7fb17b26d940fbcc7cdd6f2e88bebd37",
+    "commit_date": "2026-11-15T00:35:35Z",
+    "license": "CC-BY-4.0",
+    "path": "advisories/github-reviewed",
+    "repository": "https://github.com/github/advisory-database.git"
+  }
+}

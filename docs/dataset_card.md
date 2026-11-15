@@ -159,6 +159,10 @@ logged in [`test-access-log.md`](test-access-log.md)).
   pilot gate marks `UNCERTAIN` and `UNRESOLVED` unsupported ([`pilot_gate.md`](pilot_gate.md)).
 - **There is a single annotator.** Repeat annotation will be reported as self-consistency,
   never as inter-annotator agreement.
+- **Newer advisories are much longer.** Median length was 43–133 words from 2018 to 2025, then
+  215 (2026 first half) and 394 (second half, to the snapshot). The 259 advisories published
+  after the snapshot have a median of 515 words, and most need several transformer windows. The
+  annotated data is mostly shorter and older ([`reports/prospective/`](../reports/prospective/README.md)).
 
 ## License and attribution
 
