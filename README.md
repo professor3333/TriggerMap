@@ -195,20 +195,22 @@ cannot be judged as declared.
 Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
 typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
 [0.000, 0.640], and the difference from `crf-pilot-2-batch-01` is not clear; see
-[`reports/agreement/`](reports/agreement/README.md). The drafts themselves are unstable: two
+[`reports/agreement/`](reports/agreement/README.md). Its disagreements with the drafts, by error
+type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md). The drafts themselves are
+unstable: two
 model drafting runs of the 100 `batch-07` documents agree with each other at only 0.375 typed F1
 [0.309, 0.444] (0.431 span F1), so low agreement scores partly reflect noisy reference labels; see
 [`reports/drafter-consistency/`](reports/drafter-consistency/README.md).
 
 **Two references (batch-07, 100 dev documents, agreement only).** Scored against both drafts,
-the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). A DeBERTa trained
-with the run-3 recipe minus the group objective (`ablation-1-no-group-seed1`, the closest available
-bundle to the run-3 candidate) leads the CRF under both drafts (+0.040, not clear; +0.105, clear). It
-finds 0.457 of the 94 conditions both drafts agree on (CRF 0.181), and its invented-prerequisite
-rate against both drafts is not clearly different (0.340 against 0.380). The pre-set switching rule
-needs a clear gain in precision or invention, so the CRF stays the default. DeBERTa run 2 changes
-direction between the drafts and invents clearly more (0.504). See [`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md). Its disagreements with the drafts, by
-error type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md).
+the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). The run-3 DeBERTa
+candidate leads the CRF under both drafts (+0.028, not clear; +0.109, clear). It finds 0.426 of the
+94 conditions both drafts agree on (CRF 0.181), and its invented-prerequisite rate against both
+drafts is not clearly different (0.327 against 0.380). The pre-set switching rule needs a clear gain
+in precision or invention, so the CRF stays the default. A run-3-recipe bundle without the group
+objective gives nearly the same result; DeBERTa run 2 changes direction between the drafts and
+invents clearly more (0.504). See
+[`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md).
 
 **Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same
 training data. Early stopping and the choice of each grid's best run (of 12) used only a

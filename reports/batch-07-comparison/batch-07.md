@@ -2,7 +2,7 @@
 
 - Reference A: `annotations/batches/batch-07.jsonl`
 - Reference B: `annotations/second-drafts/batch-07.jsonl`
-- Predictions: `reports/batch-07-comparison/predictions/crf-batches-01-02.jsonl`, `reports/batch-07-comparison/predictions/rules-2.jsonl`, `reports/batch-07-comparison/predictions/ablation-1-no-group-seed1.jsonl`, `reports/batch-07-comparison/predictions/deberta-2-base-bio_weightingsqrt-learning_rate5e-05-seed0.jsonl`
+- Predictions: `reports/batch-07-comparison/predictions/crf-batches-01-02.jsonl`, `reports/batch-07-comparison/predictions/rules-2.jsonl`, `reports/batch-07-comparison/predictions/deberta-3-base-bio_weightingsqrt-learning_rate5e-05-seed2.jsonl`, `reports/batch-07-comparison/predictions/ablation-1-no-group-seed1.jsonl`, `reports/batch-07-comparison/predictions/deberta-2-base-bio_weightingsqrt-learning_rate5e-05-seed0.jsonl`
 - Bootstrap: 1000 resamples, project clusters, seed 0
 - Documents: 100
 - Conditions in A: 182
@@ -13,18 +13,18 @@ Scores against model drafts measure agreement with the drafts, not accuracy. 95%
 
 ## Scores
 
-| Metric | `crf-batches-01-02` | `rules-2` | `ablation-1-no-group-seed1` | `deberta-2-base-bio_weightingsqrt-learning_rate5e-05-seed0` |
-|---|---:|---:|---:|---:|
-| Typed F1 vs reference A | 0.158 [0.101, 0.220] | 0.060 [0.009, 0.125] | 0.198 [0.149, 0.257] | 0.138 [0.102, 0.176] |
-| Typed F1 vs reference B | 0.136 [0.090, 0.189] | 0.054 [0.017, 0.101] | 0.241 [0.189, 0.297] | 0.149 [0.116, 0.184] |
-| Span F1 vs reference A | 0.192 [0.128, 0.254] | 0.102 [0.042, 0.174] | 0.239 [0.183, 0.301] | 0.164 [0.122, 0.206] |
-| Span F1 vs reference B | 0.154 [0.112, 0.202] | 0.091 [0.050, 0.139] | 0.307 [0.251, 0.364] | 0.196 [0.159, 0.233] |
-| Recall on consensus conditions | 0.181 [0.106, 0.264] | 0.064 [0.010, 0.139] | 0.457 [0.344, 0.573] | 0.394 [0.293, 0.489] |
-| Predictions in both references | 0.156 [0.086, 0.238] | 0.113 [0.017, 0.256] | 0.106 [0.072, 0.151] | 0.056 [0.037, 0.079] |
-| Predictions in at least one reference | 0.321 [0.240, 0.412] | 0.208 [0.070, 0.395] | 0.252 [0.197, 0.314] | 0.143 [0.108, 0.177] |
-| Invented prerequisites vs A (lower is better) | 0.530 [0.430, 0.631] | 0.415 [0.271, 0.566] | 0.552 [0.486, 0.611] | 0.674 [0.611, 0.729] |
-| Invented prerequisites vs B (lower is better) | 0.390 [0.301, 0.480] | 0.245 [0.120, 0.375] | 0.407 [0.340, 0.470] | 0.554 [0.487, 0.614] |
-| Invented prerequisites vs both (lower is better) | 0.380 [0.291, 0.471] | 0.208 [0.091, 0.342] | 0.340 [0.271, 0.405] | 0.504 [0.437, 0.563] |
+| Metric | `crf-batches-01-02` | `rules-2` | `deberta-3-base-bio_weightingsqrt-learning_rate5e-05-seed2` | `ablation-1-no-group-seed1` | `deberta-2-base-bio_weightingsqrt-learning_rate5e-05-seed0` |
+|---|---:|---:|---:|---:|---:|
+| Typed F1 vs reference A | 0.158 [0.101, 0.220] | 0.060 [0.009, 0.125] | 0.186 [0.145, 0.235] | 0.198 [0.149, 0.257] | 0.138 [0.102, 0.176] |
+| Typed F1 vs reference B | 0.136 [0.090, 0.189] | 0.054 [0.017, 0.101] | 0.245 [0.187, 0.303] | 0.241 [0.189, 0.297] | 0.149 [0.116, 0.184] |
+| Span F1 vs reference A | 0.192 [0.128, 0.254] | 0.102 [0.042, 0.174] | 0.217 [0.173, 0.271] | 0.239 [0.183, 0.301] | 0.164 [0.122, 0.206] |
+| Span F1 vs reference B | 0.154 [0.112, 0.202] | 0.091 [0.050, 0.139] | 0.297 [0.239, 0.362] | 0.307 [0.251, 0.364] | 0.196 [0.159, 0.233] |
+| Recall on consensus conditions | 0.181 [0.106, 0.264] | 0.064 [0.010, 0.139] | 0.426 [0.320, 0.531] | 0.457 [0.344, 0.573] | 0.394 [0.293, 0.489] |
+| Predictions in both references | 0.156 [0.086, 0.238] | 0.113 [0.017, 0.256] | 0.098 [0.066, 0.141] | 0.106 [0.072, 0.151] | 0.056 [0.037, 0.079] |
+| Predictions in at least one reference | 0.321 [0.240, 0.412] | 0.208 [0.070, 0.395] | 0.254 [0.203, 0.309] | 0.252 [0.197, 0.314] | 0.143 [0.108, 0.177] |
+| Invented prerequisites vs A (lower is better) | 0.530 [0.430, 0.631] | 0.415 [0.271, 0.566] | 0.545 [0.472, 0.607] | 0.552 [0.486, 0.611] | 0.674 [0.611, 0.729] |
+| Invented prerequisites vs B (lower is better) | 0.390 [0.301, 0.480] | 0.245 [0.120, 0.375] | 0.382 [0.314, 0.450] | 0.407 [0.340, 0.470] | 0.554 [0.487, 0.614] |
+| Invented prerequisites vs both (lower is better) | 0.380 [0.291, 0.471] | 0.208 [0.091, 0.342] | 0.327 [0.258, 0.394] | 0.340 [0.271, 0.405] | 0.504 [0.437, 0.563] |
 
 ## `rules-2` minus `crf-batches-01-02` (paired)
 
@@ -46,6 +46,27 @@ Scores against model drafts measure agreement with the drafts, not accuracy. 95%
 Typed F1: clearly worse under both references.
 
 Span F1: clearly worse under both references.
+
+## `deberta-3-base-bio_weightingsqrt-learning_rate5e-05-seed2` minus `crf-batches-01-02` (paired)
+
+*Better* / *worse* means the whole 95% interval lies on one side of zero.
+
+| Metric | Difference | 95% CI | Verdict |
+|---|---:|:---:|---|
+| Typed F1 vs reference A | +0.028 | [-0.037, +0.098] | unclear |
+| Typed F1 vs reference B | +0.109 | [+0.049, +0.177] | better |
+| Span F1 vs reference A | +0.024 | [-0.048, +0.099] | unclear |
+| Span F1 vs reference B | +0.142 | [+0.070, +0.214] | better |
+| Recall on consensus conditions | +0.245 | [+0.125, +0.364] | better |
+| Predictions in both references | -0.058 | [-0.127, +0.007] | unclear |
+| Predictions in at least one reference | -0.067 | [-0.151, +0.011] | unclear |
+| Invented prerequisites vs A (lower is better) | +0.015 | [-0.071, +0.098] | unclear |
+| Invented prerequisites vs B (lower is better) | -0.008 | [-0.095, +0.081] | unclear |
+| Invented prerequisites vs both (lower is better) | -0.053 | [-0.149, +0.040] | unclear |
+
+Typed F1: same direction under both references; clear under one only.
+
+Span F1: same direction under both references; clear under one only.
 
 ## `ablation-1-no-group-seed1` minus `crf-batches-01-02` (paired)
 
