@@ -83,6 +83,23 @@ model drafts. `crf-batches-01-02` adds `batch-02` (239 records: 7 `manual`, 232 
 Its dev results, as agreement with the model drafts and as accuracy on the 10 hand-labelled
 documents, are in [`reports/agreement/`](../reports/agreement/README.md).
 
+## Held-out test results (declared release evaluation, 2026-11-15)
+
+Run once on the locked test split, which holds the newest project groups (temporal and
+project shift). Agreement with 146 model-drafted test records, not accuracy:
+
+| System | Typed F1 | Span precision | Span recall | False-prerequisite rate | Reversed-meaning rate |
+|---|---:|---:|---:|---:|---:|
+| CRF `crf-batches-01-02` (default) | 0.193 [0.154, 0.238] | 0.263 | 0.219 | 0.482 | 0.037 |
+| DeBERTa-v3-small run 3 | 0.154 [0.125, 0.186] | 0.114 | 0.393 | 0.650 | 0.005 |
+| `rules-2` | 0.048 [0.021, 0.082] | 0.101 | 0.053 | 0.646 | 0.043 |
+
+DeBERTa − CRF: typed F1 −0.039 [−0.080, −0.000], clear but only just. The CRF is clearly more
+precise and invents clearly fewer prerequisites; DeBERTa has clearly higher recall and fewer
+reversed meanings. On the 4 hand-labelled test records (7 conditions), no difference is clear,
+and the release gates cannot be judged. Per-class support and full tables:
+[`reports/test-evaluation/`](../reports/test-evaluation/README.md).
+
 ## Preliminary dev results
 
 These are measured on the **10 hand-labelled dev documents** (17 gold conditions). The intervals

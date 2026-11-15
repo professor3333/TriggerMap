@@ -78,7 +78,8 @@ against these batches are reported as agreement with the drafting model, not acc
 were also drawn for hand labelling and were submitted from model drafts on 2026-11-09, by the
 owner's decision: every record is `model_draft_accepted` (`model-batch-07-guidelines-0.2`,
 `model-batch-04-guidelines-0.2`), with no annotation time recorded. The drafting process read
-the batch-04 test texts; no model was developed, tuned or scored on them. CI checks batch-04
+the batch-04 test texts; no model was developed or tuned on them. They were scored once, in the
+declared release evaluation of 2026-11-15 (`reports/test-evaluation/`). CI checks batch-04
 records for provenance only.
 
 `second-drafts/batch-07.jsonl` (annotation version `batch-07-draft-2`) redrafts the same

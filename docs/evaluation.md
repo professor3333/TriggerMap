@@ -68,7 +68,7 @@ gated.
 |---|---|---|
 | train | training | Never scored as a result. |
 | dev | model selection, thresholds, calibration (on a held-out half) | Every reported number so far is dev. |
-| test | final release evaluation only | Locked. `--split test` refuses to run without `--release-evaluation "<reason>"`, and every such run is appended to [`test-access-log.md`](test-access-log.md) (no entries so far). |
+| test | final release evaluation only | Locked. `--split test` refuses to run without `--release-evaluation "<reason>"`, and every such run is appended to [`test-access-log.md`](test-access-log.md). Used once, in the declared release evaluation of 2026-11-15 ([`reports/test-evaluation/`](../reports/test-evaluation/README.md)). |
 | challenge set, prospective batch | reported separately | Never mixed into test numbers. |
 
 **Gold origin.** Each annotation records how its labels were made (`origin`, see
@@ -85,7 +85,10 @@ on (`training_origins` in `metadata.json`).
 **Current status (2026-11-09).** Only 22 records are `manual` (10 in dev, 4 in test). Every
 batch after the pilot, including the test batch `batch-04`, is model-drafted, by the owner's decision, so new results are reported as
 agreement with the drafting model, labelled as such, and the release gates in
-[`targets.md`](targets.md) cannot be judged as declared.
+[`targets.md`](targets.md) cannot be judged as declared. The owner has confirmed that no hand
+labels will come. The test split was evaluated once on 2026-11-15, on the owner's declaration:
+agreement on 146 model-drafted test records, and accuracy on the 4 hand-labelled ones
+([`reports/test-evaluation/`](../reports/test-evaluation/README.md)).
 
 The model drafts are not stable reference labels. Two model drafting runs of the 100 `batch-07`
 documents agree at 0.375 typed F1 [0.309, 0.444] and 0.431 exact span F1

@@ -162,10 +162,33 @@ and none was used for training.
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
 | 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
 | 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–04, 06, 07: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
+| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–04, 06, 07: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · dev: DeBERTa ≈ CRF, no clear winner · test: CRF ahead |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact; INT8 fails the accuracy gate on the trained DeBERTa), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
+| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · no prospective batch or usability study |
+
+### Held-out test results (declared release evaluation, 2026-11-15)
+
+Run once, on the owner's declaration, on the locked test split (newest project groups, so it
+measures temporal and project shift). It is logged in [`docs/test-access-log.md`](docs/test-access-log.md).
+The 146 model-drafted test records measure **agreement with the drafting model, not accuracy**.
+95% project-group bootstrap intervals.
+
+| Test split, 146 model-drafted records | Typed-condition micro-F1 | Exact span precision | Exact span recall | False-prerequisite rate | Reversed-meaning rate |
+|---|---:|---:|---:|---:|---:|
+| Rules (`rules-2`) | 0.048 [0.021, 0.082] | 0.101 | 0.053 | 0.646 | 0.043 |
+| CRF (`crf-batches-01-02`, default) | **0.193 [0.154, 0.238]** | **0.263** | 0.219 | **0.482** | 0.037 |
+| DeBERTa-v3-small (run 3) | 0.154 [0.125, 0.186] | 0.114 | **0.393** | 0.650 | **0.005** |
+
+The CRF agrees with the drafts better than DeBERTa (−0.039 typed F1 for DeBERTa, 95% CI
+[−0.080, −0.000], clear but only just). It is clearly more precise and invents clearly fewer
+prerequisites. DeBERTa has clearly higher recall and clearly fewer reversed meanings. It predicts
+8.4 conditions per document where the test drafts mark 2.4. Its dev lead did not transfer. On the
+4 hand-labelled test records (7 conditions), typed F1 is 0.125 (CRF), 0.133 (DeBERTa) and 0.167
+(rules), and no difference is clear. The release gates in [`docs/targets.md`](docs/targets.md)
+are judged on hand-labelled test records only, so they **cannot be judged** with 4. Full report,
+with per-class support: [`reports/test-evaluation/`](reports/test-evaluation/README.md).
 
 ### Preliminary pilot results (dev split only)
 

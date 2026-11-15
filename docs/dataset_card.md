@@ -131,7 +131,9 @@ Annotated so far, by split:
 | `batch-04` | 0 | 0 | 138 | 0 |
 
 Test records are never read for development. The batch-04 test texts were read once, to draft
-their model labels; nothing was tuned or scored on them, and no test evaluation has been run ([`test-access-log.md`](test-access-log.md) has no entries).
+their model labels; nothing was tuned on them. They were scored once, in the declared release
+evaluation of 2026-11-15 ([`reports/test-evaluation/`](../reports/test-evaluation/README.md),
+logged in [`test-access-log.md`](test-access-log.md)).
 
 ## Sampling
 

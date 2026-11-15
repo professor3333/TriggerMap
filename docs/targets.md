@@ -99,3 +99,4 @@ about 512 tokens, ≤ 8 s at about 2,000 tokens, peak memory ≤ 3 GB, throughpu
 | 2026-11-02 | First declaration, after the pilot and before any test results. |
 | 2026-11-05 | Status note added: labels after the pilot are model drafts, so the gates cannot be judged as declared. No target changed; the test-access log still has no entries. |
 | 2026-11-09 | batch-04 (138 test records) and batch-07 (100 dev records) submitted from model drafts by the owner's decision; hand-labelled test records remain 4. No target changed; the test-access log still has no entries. |
+| 2026-11-15 | Declared release evaluation on the test split (owner: "Final held-out evaluation of v0.1.0 (CRF) and the run-3 DeBERTa candidate; no hand labels will come"). With 4 hand-labelled test records the gates are reported as not judgeable; results in `reports/test-evaluation/`. No target changed, and none may change for these releases. |
