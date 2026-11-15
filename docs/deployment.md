@@ -134,9 +134,11 @@ each step, including that reviews saved along the way survive:
 TRIGGERMAP_HOST_PORT=8000 deploy/rollback_drill.sh <release-a> <release-b>
 ```
 
-Last run (2026-11-06, local Docker): rules release `r1`, then the v0.1.0 CRF release
-(`crf-batches-01-02`, a different image, bundle and policy), then rollback to `r1`. Every
-step verified, in 15 seconds total. The previous run was on 2026-10-20 (`r1` → `r2` → `r1`).
+Last run (2026-11-15, local Docker): v0.1.0, then v0.2.0 (a different image from the same CRF
+bundle and policy), then rollback to v0.1.0. Every step verified: ready check against the release
+manifest, extraction, idempotent review save, retrieval and export. Reviews were kept, and the
+run took 51 seconds. Earlier runs: 2026-11-06 (`r1` → v0.1.0 → `r1`, 15 s) and 2026-10-20
+(`r1` → `r2` → `r1`).
 
 The release image (`release.yml`) is built with `EXTRAS="serve baselines"`, so it serves both
 rules and CRF releases.
