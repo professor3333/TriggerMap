@@ -28,7 +28,7 @@ reviewer confirms or corrects every item before export.
 | System | What it is | Status |
 |---|---|---|
 | `rules-2` | Deterministic cue rules over the shared preprocessing (no learning) | Runs; 100% formatting-consistent on 300 documents |
-| CRF | `python-crfsuite` BIO span tagger with logistic-regression category, role and group classifiers. Features `crf-features-1`, optional spaCy part-of-speech tags | Trained on pilot data only |
+| CRF | `python-crfsuite` BIO span tagger with logistic-regression category, role and group classifiers. Features `crf-features-1`, optional spaCy part-of-speech tags | Default model: `crf-batches-01-02` (train split of `pilot-2`, `batch-01`, `batch-02`; 239 records), released in v0.1.0 |
 | DistilBERT | `distilbert/distilbert-base-cased` (Apache-2.0), revision `6ea81172465e8b0ad3fddeed32b986cdcdcffcf0` | Run 3: held-out agreement typed F1 0.099 (CRF 0.127), [`reports/neural/run-3/`](../reports/neural/run-3/README.md) |
 | DeBERTa-v3-small | `microsoft/deberta-v3-small` (MIT), revision `a36c739020e01763fe789b4b85e2df55d6180012` | Run 3: held-out agreement typed F1 0.185, false-prerequisite rate 0.483 (CRF 0.127 / 0.412; differences not clear), [`reports/neural/run-3/`](../reports/neural/run-3/README.md) |
 
@@ -42,6 +42,19 @@ The transformer models share one design:
 
 The configs are in `configs/experiments/`. All systems end in the same deterministic validator,
 which rejects invalid offsets, dangling group members and contradictory groups.
+
+## Downloads
+
+| Bundle | Release | File | SHA-256 |
+|---|---|---|---|
+| CRF `crf-batches-01-02` (default) | [v0.1.0](https://github.com/professor3333/TriggerMap/releases/tag/v0.1.0) | `crf-batches-01-02.tgz` (861,275 bytes) | `65677a7413e02a8da4ba3b920ac7eb8e02a8cba874876d93810d4ae5fc76d29a` |
+| DeBERTa-v3-small `deberta-3-base-bio_weightingsqrt-learning_rate5e-05-seed2` (not default) | [model-deberta-3-run3](https://github.com/professor3333/TriggerMap/releases/tag/model-deberta-3-run3) | `deberta-3-base-bio_weightingsqrt-learning_rate5e-05-seed2.tgz` (422,269,499 bytes) | `45b34cabfa51bc58e2eed6e4d0c6803693421b9ec93c8c572993cd2217caf4a9` |
+
+The DeBERTa archive holds the bundle (`model.safetensors` SHA-256 `1d09c400a41da2c2e92b2fb21758c41c6f84c6fa1a148f3c3b2c5f1879b7baf6`),
+its Platt calibration (`calibration/deberta-platt.yaml`), a `NOTICE` with the base model's MIT
+licence and the data attribution, and a README. Loaded on CPU it reproduces its committed
+predictions on the 60 `batch-06` documents. Run it as PyTorch or FP32 ONNX: dynamic INT8 fails
+the accuracy gate ([`reports/onnx-int8/`](../reports/onnx-int8/README.md)).
 
 ## Provenance
 

@@ -408,6 +408,13 @@ acceptance gate has been evaluated, because labels after the pilot are model dra
 [release notes](docs/release_notes/v0.1.0.md). Its rollback drill (rules `r1` → CRF `v0.1.0`
 → `r1`) passed on local Docker.
 
+**Model downloads.** The CRF bundle is attached to
+[v0.1.0](https://github.com/professor3333/TriggerMap/releases/tag/v0.1.0). The fine-tuned run-3
+DeBERTa-v3-small (weights, tokenizer, labels, calibration, provenance, MIT notice) is a separate
+model-only pre-release,
+[`model-deberta-3-run3`](https://github.com/professor3333/TriggerMap/releases/tag/model-deberta-3-run3).
+It is not the default model. Checksums are in [`docs/model_card.md`](docs/model_card.md#downloads).
+
 ## Serving cost
 
 **On the target host (2 vCPU / 4 GB x86-64, AWS EC2, 2026-11-09)**, the released CRF
