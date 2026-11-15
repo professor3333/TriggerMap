@@ -165,7 +165,7 @@ and none was used for training.
 | 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–04, 06, 07: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · DeBERTa ≈ CRF on held-out agreement, no clear winner |
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
-| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
+| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact; INT8 fails the accuracy gate on the trained DeBERTa), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
 
 ### Preliminary pilot results (dev split only)
 
@@ -433,9 +433,13 @@ accuracy is not measured. Details and caveats: [`docs/benchmarks.md`](docs/bench
 | rules-2 | 0.03 s | 0.04 s | 69 MB |
 | DistilBERT, PyTorch | 0.32 s | 0.92 s | 475 MB |
 | DeBERTa-v3-small, PyTorch | 0.20 s | 0.76 s | 701 MB |
-| DeBERTa-v3-small, ONNX INT8 | 0.54 s | 1.41 s | 538 MB |
+| DeBERTa-v3-small, ONNX INT8 (fails the accuracy gate, see below) | 0.54 s | 1.41 s | 538 MB |
 
-ONNX export is numerically exact against PyTorch (maximum logit difference ≈ 5 × 10⁻⁶). The
+ONNX export is numerically exact against PyTorch (maximum logit difference ≈ 5 × 10⁻⁶). On the
+trained run-3 DeBERTa, FP32 ONNX reproduces PyTorch on all 372 dev documents, but dynamic INT8
+fails the ≤ 1-point typed-F1 gate: −2.1 points on the hand-labelled dev documents, −7.4 points of
+agreement on 172 dev records, and only 51 of 372 documents unchanged
+([`reports/onnx-int8/`](reports/onnx-int8/README.md)). The
 rules service handled 1,000 of 1,000 load-test requests. The plan's targets (p95 ≤ 2.5 s and
 ≤ 8 s, ≤ 3 GB) will be judged only on the documented 2 vCPU / 4 GB x86-64 host.
 

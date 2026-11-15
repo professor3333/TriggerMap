@@ -91,8 +91,9 @@ Full tables: [`reports/benchmarks/target-host-crf.md`](../reports/benchmarks/tar
 - **How the load test ran:** against the Docker Compose stack of release v0.1.0, from a client
   on the same host, so the client shared the 2 vCPUs. The service's latency is therefore, if
   anything, overstated.
-- **Not measured on this host:** the transformers. Measuring them needs a trained bundle, and
-  the INT8 ≤ 1-point gate still applies.
+- **Not measured on this host:** the transformers. Measuring them needs a trained bundle. On
+  the trained run-3 DeBERTa, INT8 fails the ≤ 1-point gate (see below), so only PyTorch or FP32
+  ONNX would be candidates.
 
 ## Results so far: local proxy (Apple M1, 2 inference threads)
 
@@ -119,7 +120,10 @@ What this does and does not show:
   libraries, while ONNX Runtime's ARM FP32 kernels are slower. On x86, ONNX Runtime is
   usually faster. The runtime choice must therefore be made on the target host, not here.
 - INT8 roughly halves FP32 ONNX latency and memory, but it is only usable if a trained model
-  stays within 1 point of typed F1 (see the parity table above: DeBERTa's logits move more).
+  stays within 1 point of typed F1. **On the trained run-3 DeBERTa it does not:** typed F1 on
+  the hand-labelled dev documents drops by 2.1 points (0.346 → 0.326), agreement on 172 dev
+  records by 7.4 points, and only 51 of 372 documents keep their conditions. FP32 ONNX is exact
+  on all 372. See [`reports/onnx-int8/`](../reports/onnx-int8/README.md).
 - ONNX Runtime cold starts are 3 to 4 times faster than PyTorch's (no PyTorch import), which
   matters for restarts and rollbacks.
 - Batch size (windows per forward pass) had a small and inconsistent effect at this scale.
