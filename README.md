@@ -5,35 +5,133 @@
 <br>
 
 [![CI](https://github.com/professor3333/TriggerMap/actions/workflows/ci.yml/badge.svg)](https://github.com/professor3333/TriggerMap/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/badge/release-v0.2.0%20(preview)-8b5cf6)](https://github.com/professor3333/TriggerMap/releases/tag/v0.2.0)
+[![Live demo](https://img.shields.io/badge/demo-live-22c55e)](https://professor3333.github.io/TriggerMap/)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![Code: MIT](https://img.shields.io/badge/code-MIT-22c55e)](LICENSE)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-2563eb)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC%20BY%204.0-f59e0b)](annotations/README.md)
-![mypy strict](https://img.shields.io/badge/types-mypy%20strict-2563eb)
-![ruff](https://img.shields.io/badge/lint-ruff-d7ff64?logo=ruff&logoColor=black)
-![Status](https://img.shields.io/badge/status-phase%205%20%C2%B7%20app%20deployable-8b5cf6)
-
-**Read the advisory. Get the conditions. Check them against your deployment.**
-
-[Architecture](#architecture) ·
-[Why](#why-triggermap) ·
-[What it extracts](#what-it-extracts) ·
-[See it](#see-it) ·
-[Principles](#design-principles) ·
-[Status](#project-status) ·
-[Quickstart](#quickstart) ·
-[Data](#data-and-licensing)
 
 </div>
 
----
+**TriggerMap reads a security advisory for a Python package and tells you under what conditions
+the vulnerability is reachable.** A dependency scanner such as
+[OSV-Scanner](https://github.com/google/osv-scanner) says *which* package is affected. TriggerMap
+extracts the conditions stated in the advisory text (a setting, a feature in use, the attacker's
+access, a platform), with their role and logic. Every item links to the exact words that state
+it, so a developer can check it against their deployment and export the record.
 
-## Architecture
+<div align="center">
+
+<a href="https://professor3333.github.io/TriggerMap/"><img src="docs/assets/demo.gif" alt="The TriggerMap review page for a Flask advisory. Hovering a checklist item highlights its source span in the advisory text; the reviewer answers Present, Absent or Unknown for each item and exports the record." width="100%"></a>
+
+<sub><b><a href="https://professor3333.github.io/TriggerMap/">Try the live demo →</a></b> &nbsp;Real output of the released model on a Flask advisory, mistakes included: it finds two of the five listed conditions and marks one background phrase as required. One illustrative advisory, not an accuracy claim.</sub>
+
+</div>
+
+<div align="center">
+
+[What it extracts](#what-it-extracts) ·
+[Quickstart](#quickstart) ·
+[Results](#results) ·
+[How it works](#how-it-works) ·
+[Limitations](#limitations) ·
+[Documentation](#documentation)
+
+</div>
+
+## What it extracts
+
+Each checklist item is a contiguous **span of the advisory text** with a category and a role.
+Items can belong to a logical group.
+
+> When **using aiohttp as a web server** and **enabling static resource resolution** with
+> **`follow_symlinks` set to True**, it can lead to this vulnerability.
+
+| Span | Category | Role | Group |
+|---|---|---|---|
+| using aiohttp as a web server | `USAGE` | `REQUIRED` | `ALL` |
+| enabling static resource resolution | `USAGE` | `REQUIRED` | `ALL` |
+| follow_symlinks set to True | `CONFIGURATION` | `REQUIRED` | `ALL` |
+
+The three spans form one `ALL` group: every one of them must hold. The full label set:
+
+| | Labels |
+|---|---|
+| **Category** | `CONFIGURATION` · `USAGE` · `ACCESS` · `PLATFORM` |
+| **Role** | `REQUIRED` (includes required *absences*) · `EXCEPTION` · `NOT_REQUIRED` · `UNCERTAIN` |
+| **Group** | `ALL` · `ANY` · `UNRESOLVED` |
+
+Three rules shape everything else:
+
+- **Every item has evidence.** Checklist wording is the source span plus a fixed template.
+  Nothing is paraphrased, and there is no LLM in the serving path.
+- **Missing information stays visible.** "No explicit conditions found" is never shown as "not
+  affected", and uncertain or unsupported structure is routed to *Review required*.
+- **A person decides.** TriggerMap suggests items for review. It does not judge whether a
+  deployment is vulnerable.
+
+## Quickstart
+
+Requires [uv](https://docs.astral.sh/uv/) and Git.
+
+```bash
+git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap
+uv sync --extra baselines --extra serve    # Python 3.12 environment from uv.lock
+uv run pytest -m "not slow"                # offline test suite
+
+# Rebuild the pinned corpus: 6,350 PyPI advisories, ~360 MB download
+uv run triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6
+uv run triggermap ingest build
+
+# Render an evidence-linked review page for one advisory
+uv run triggermap view GHSA-m2qf-hxjv-5gpq --out review.html
+
+# Run the review application at http://127.0.0.1:8000 (--port to change)
+uv run triggermap app sync
+uv run triggermap app create-user alice    # prints an API token once
+uv run triggermap app run
+```
+
+Training, evaluation, annotation and GPU commands are in [`docs/usage.md`](docs/usage.md).
+A fresh clone reproduces the corpus, the CRF and the reports byte for byte on macOS and Linux
+([`docs/reproducibility.md`](docs/reproducibility.md)).
+
+## Results
+
+Only 22 advisories are hand-labelled. The other 688 annotated records are model drafts, so most
+scores measure **agreement with the drafting model, not accuracy**. The held-out test split was
+evaluated once, in a declared and logged run:
+
+| System | Typed-condition F1 | Span precision | Span recall | False-prerequisite rate |
+|---|---:|---:|---:|---:|
+| Rules | 0.048 [0.021, 0.082] | 0.101 | 0.053 | 0.646 |
+| **CRF** (default) | **0.193 [0.154, 0.238]** | **0.263** | 0.219 | **0.482** |
+| DeBERTa-v3-small | 0.154 [0.125, 0.186] | 0.114 | **0.393** | 0.650 |
+
+<sub>146 model-drafted test records. 95% project-group bootstrap intervals. A condition is correct only when its exact span, category and role all match; a group only when its members and operator match.</sub>
+
+- **The CRF is the default model.** It agrees with the test drafts better than the fine-tuned
+  DeBERTa (−0.039 typed F1 for DeBERTa, 95% CI [−0.080, −0.000]) and invents clearly fewer
+  prerequisites. The switching rule was fixed before the test set was used.
+- **Accuracy is barely measurable.** On the 4 hand-labelled test records no difference is clear,
+  so the release targets in [`docs/targets.md`](docs/targets.md) cannot be judged.
+- **The reference labels are noisy.** Two model drafting runs of the same 100 documents agree at
+  only 0.375 typed F1.
+- **New advisories are longer.** The 259 advisories published after the snapshot have a median
+  of 515 words, against 79 in the dev documents.
+- **Serving is fast.** On a 2 vCPU / 4 GB host the CRF answers in 0.06 s (p95, ~512 tokens) and
+  0.14 s (~2,000 tokens) with 276 MB peak memory, and handled 1,000 of 1,000 load-test requests.
+
+Everything else (dev results, calibration, ablations, ONNX/INT8, benchmarks) is in
+[`docs/results.md`](docs/results.md).
+
+## How it works
 
 ```mermaid
 flowchart LR
     subgraph Data["Dataset pipeline"]
         A[Pinned advisory<br>snapshot] --> B[Validate · normalise<br>preserve offsets]
-        B --> C[Annotation and<br>adjudication]
+        B --> C[Annotation]
         C --> D[Versioned dataset<br>and frozen splits]
     end
     subgraph Models["Modelling"]
@@ -48,521 +146,128 @@ flowchart LR
         G --> K
         K --> L[Evidence-linked<br>review UI]
         L --> M[Review storage<br>and export]
-        M --> N[Curated<br>correction queue]
     end
-    N -. human adjudication .-> C
 
     classDef done fill:#dcfce7,stroke:#16a34a,color:#14532d
-    classDef progress fill:#fef9c3,stroke:#ca8a04,color:#713f12
-    classDef planned fill:#f1f5f9,stroke:#94a3b8,color:#334155,stroke-dasharray:4 3
-    class A,B,H,I,J,L,M done
-    class C,D,E,F,G,K progress
-    class N planned
+    classDef limited fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    class A,B,D,G,H,I,J,K,L,M done
+    class C,E,F limited
 ```
 
-<sub>🟩 built · 🟨 in progress · ⬜ planned. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
-
-## Why TriggerMap
-
-A vulnerability alert tells you **a dependency is affected**. Whether **your deployment** is
-exposed usually depends on conditions buried in the advisory prose:
-
-| Question a developer asks | Typical advisory wording |
-|---|---|
-| Does it need an optional feature? | "…with `follow_symlinks` set to True" |
-| Must the app use a particular interface? | "When using aiohttp **as a web server**…" |
-| Does the attacker need an account? | "An **authenticated** user with edit permission…" |
-| Must several things hold at once? | Flask's advisory lists **five** jointly necessary conditions |
-| Is this a prerequisite or just a workaround? | "Disable the option immediately" is advice, not a condition |
-
-Dependency scanners such as [OSV-Scanner](https://github.com/google/osv-scanner) answer
-*which* package is affected. TriggerMap complements them by extracting the **conditions**,
-their **logic**, and the **exact sentence** that states each one. Developers can then verify
-the conditions against their application and keep a record of the answers.
-
-## What it extracts
-
-Each checklist item is a contiguous **span of the advisory text**. It carries a category and a
-role, and may belong to an explicit logical group:
-
-<table>
-<tr><th>Category</th><th>Role</th><th>Group</th></tr>
-<tr valign="top"><td>
-
-`CONFIGURATION` option or flag values<br>
-`USAGE` features, functions, modes used<br>
-`ACCESS` what the attacker must have<br>
-`PLATFORM` OS, runtime, infrastructure
-
-</td><td>
-
-`REQUIRED` must hold (incl. required *absences*)<br>
-`EXCEPTION` if it holds, you are not exposed<br>
-`NOT_REQUIRED` the text says it is unnecessary<br>
-`UNCERTAIN` the text does not settle it
-
-</td><td>
-
-`ALL` every member must hold<br>
-`ANY` one member suffices<br>
-`UNRESOLVED` connected, logic unclear
-
-</td></tr>
-</table>
-
-<details>
-<summary><b>Example record</b> for the aiohttp sentence in the banner</summary>
-
-```json
-{
-  "advisory_id": "GHSA-5h86-8mv2-jq9f",
-  "conditions": [
-    {"id": "c1", "span": [5, 34],   "category": "USAGE",         "role": "REQUIRED"},
-    {"id": "c2", "span": [39, 74],  "category": "USAGE",         "role": "REQUIRED"},
-    {"id": "c3", "span": [80, 107], "category": "CONFIGURATION", "role": "REQUIRED"}
-  ],
-  "groups": [{"operator": "ALL", "members": ["c1", "c2", "c3"]}]
-}
-```
-
-Offsets are zero-based and half-open, measured in the canonical text, which has display markup
-such as backticks removed. Every canonical character maps back to the raw Markdown, so each
-item can be highlighted in the original advisory.
-
-</details>
-
-## See it
-
-**[Live demo](https://professor3333.github.io/TriggerMap/)**: three unedited outputs of the released
-model as static review pages, built by `scripts/demo/build_site.sh`. They show an ordinary case
-(aiohttp, mostly right), a hard scope case (Flask, two of five conditions found, one invented
-prerequisite) and an abstention (Django, nothing found and said so). All three are dev documents
-and none was used for training.
-
-<div align="center">
-<img src="docs/assets/app-review.png" alt="TriggerMap review application for the Flask advisory: highlighted conditions in the advisory text beside an editable checklist grouped under 'All of these must hold', each item showing why it needs review and Present, Absent and Unknown answers." width="92%">
-</div>
-
-<sub>The review application on the Flask advisory (rules baseline, uncalibrated review policy). Each highlight links to its checklist item. Reviewers can correct category and role, add conditions by selecting text, regroup items, answer present, absent or unknown, and save versioned reviews that export as JSON or Markdown. This is one illustrative advisory, not an accuracy claim.</sub>
-
-## Design principles
-
-| | Principle | In practice |
-|---|---|---|
-| 🔗 | **Every claim has evidence** | Checklist wording is the source span plus a fixed template. No generated paraphrase, no LLM in the serving path. |
-| 🕳️ | **Missing information stays visible** | "No explicit conditions found" is never shown as "conditions do not apply". Unsupported structure is flagged for review rather than dropped. |
-| ↔️ | **Negation scope matters** | "does *not* set Cache-Control" is a required absence; "symlinks need *not* exist" removes a prerequisite. These are different labels. |
-| 🧪 | **Honest evaluation** | Project- and alias-grouped splits, a frozen blind test set, bootstrap confidence intervals, and strong baselines. |
-| 🧑‍⚖️ | **Label origin is recorded** | Every annotation record states how it was made: by hand, or a model draft accepted or edited. Scores are reported separately by origin. Reviewer corrections reach training only after adjudication. |
-
-## Project status
-
-Final audit against the Definition of Done, with evidence for each item: [`docs/definition_of_done.md`](docs/definition_of_done.md).
-
-| Phase | Scope | Status |
-|---|---|:---:|
-| 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |
-| 1 · Pilot | 100-document pilot (`pilot-2`: 22 hand-labelled, 78 from model drafts), [decision gate](docs/pilot_gate.md), guidelines v0.2 frozen, [acceptance targets](docs/targets.md) declared | ✅ done |
-| 2 · Baselines | Rules baseline, CRF + logistic-regression attributes and groups, evaluator with bootstrap CIs, evidence viewer | ✅ built · preliminary pilot dev scores |
-| 3 · Neural models | Frozen leakage-safe splits, annotation batches (01–04, 06, 07: model-drafted), DistilBERT and DeBERTa-v3 with span / role / group heads, experiment runner, CRF ablations and learning curve | 🟨 trained on model drafts (run 3) · dev: DeBERTa ≈ CRF, no clear winner · test: CRF ahead |
-| 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
-| 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
-| 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact; INT8 fails the accuracy gate on the trained DeBERTa), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
-| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · prospective check on 259 new advisories (behaviour only, no labels) · no usability study (no participants available) |
-
-### Held-out test results (declared release evaluation, 2026-11-15)
-
-Run once, on the owner's declaration, on the locked test split (newest project groups, so it
-measures temporal and project shift). It is logged in [`docs/test-access-log.md`](docs/test-access-log.md).
-The 146 model-drafted test records measure **agreement with the drafting model, not accuracy**.
-95% project-group bootstrap intervals.
-
-| Test split, 146 model-drafted records | Typed-condition micro-F1 | Exact span precision | Exact span recall | False-prerequisite rate | Reversed-meaning rate |
-|---|---:|---:|---:|---:|---:|
-| Rules (`rules-2`) | 0.048 [0.021, 0.082] | 0.101 | 0.053 | 0.646 | 0.043 |
-| CRF (`crf-batches-01-02`, default) | **0.193 [0.154, 0.238]** | **0.263** | 0.219 | **0.482** | 0.037 |
-| DeBERTa-v3-small (run 3) | 0.154 [0.125, 0.186] | 0.114 | **0.393** | 0.650 | **0.005** |
-
-The CRF agrees with the drafts better than DeBERTa (−0.039 typed F1 for DeBERTa, 95% CI
-[−0.080, −0.000], clear but only just). It is clearly more precise and invents clearly fewer
-prerequisites. DeBERTa has clearly higher recall and clearly fewer reversed meanings. It predicts
-8.4 conditions per document where the test drafts mark 2.4. Its dev lead did not transfer. On the
-4 hand-labelled test records (7 conditions), typed F1 is 0.125 (CRF), 0.133 (DeBERTa) and 0.167
-(rules), and no difference is clear. The release gates in [`docs/targets.md`](docs/targets.md)
-are judged on hand-labelled test records only, so they **cannot be judged** with 4. Full report,
-with per-class support: [`reports/test-evaluation/`](reports/test-evaluation/README.md).
-
-**Prospective check (259 advisories published after the snapshot, behaviour only).** These
-have no labels, so there is no accuracy or agreement. The input has shifted: new advisories
-have a median of 515 words (dev: 79). 71% need more than one 512-token transformer window
-(dev: 13%), and median length in the corpus has risen steadily through 2026. On them the CRF
-suggests 4.4 conditions per advisory (dev: 1.1) and reports "no explicit conditions found"
-for 7.7% (dev: 43.8%). NOT_REQUIRED, EXCEPTION and negation-flagged items are more common, which
-is where both models are weakest. See [`reports/prospective/`](reports/prospective/README.md).
-
-### Preliminary pilot results (dev split only)
-
-Measured on the **10 hand-labelled pilot documents in the dev split** (17 gold conditions,
-`pilot-2`). These are early, small-sample baselines, not final results: the intervals are wide,
-the CRF was trained on only 39 pilot documents (32 of them from model drafts), and the test
-split has not been touched.
-
-| System | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
-|---|---:|---:|---:|
-| Rules (`rules-2`) | 0.095 [0.000, 0.333] | 0.095 [0.000, 0.333] | 0.750 [0.000, 1.000] |
-| CRF (`crf-pilot-2`, pilot train split) | 0.231 [0.062, 0.417] | 0.231 [0.062, 0.417] | 0.444 [0.000, 0.667] |
-| CRF (`crf-pilot-2-batch-01`, + 100 model-drafted `batch-01` records) | 0.444 [0.133, 0.667] | 0.444 [0.133, 0.667] | 0.300 [0.000, 0.750] |
-
-**Label source.** Every annotation batch after the pilot (710 advisories annotated, 22 by hand)
-was submitted from model drafts, by the owner's decision. Accuracy is therefore measured only on
-the 10 hand-labelled dev documents above. Later results are reported as *agreement with the
-drafting model*, never as accuracy, and the release gates in [`docs/targets.md`](docs/targets.md)
-cannot be judged as declared.
-
-| Agreement with model drafts (172 dev records, not accuracy) | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
-|---|---:|---:|---:|
-| Rules (`rules-2`) | 0.107 [0.058, 0.154] | 0.142 [0.085, 0.195] | 0.330 [0.165, 0.467] |
-| CRF (`crf-pilot-2-batch-01`) | 0.128 [0.095, 0.168] | 0.174 [0.134, 0.215] | 0.416 [0.294, 0.493] |
-| CRF (`crf-batches-01-02`, + 100 model-drafted `batch-02` records) | 0.145 [0.105, 0.185] | 0.221 [0.171, 0.268] | 0.353 [0.260, 0.416] |
-
-Adding `batch-02` clearly improves exact-span agreement (+0.047, 95% CI [+0.004, +0.086]), but not
-typed agreement. On the 10 hand-labelled documents, `crf-batches-01-02` scores 0.370 typed F1
-[0.000, 0.640], and the difference from `crf-pilot-2-batch-01` is not clear; see
-[`reports/agreement/`](reports/agreement/README.md). Its disagreements with the drafts, by error
-type, are in [`docs/error_catalogue.md`](docs/error_catalogue.md). The drafts themselves are
-unstable: two
-model drafting runs of the 100 `batch-07` documents agree with each other at only 0.375 typed F1
-[0.309, 0.444] (0.431 span F1), so low agreement scores partly reflect noisy reference labels; see
-[`reports/drafter-consistency/`](reports/drafter-consistency/README.md).
-
-**Two references (batch-07, 100 dev documents, agreement only).** Scored against both drafts,
-the CRF beats `rules-2` clearly under each one (typed F1 +0.099 and +0.082). The run-3 DeBERTa
-candidate leads the CRF under both drafts (+0.028, not clear; +0.109, clear). It finds 0.426 of the
-94 conditions both drafts agree on (CRF 0.181), and its invented-prerequisite rate against both
-drafts is not clearly different (0.327 against 0.380). The pre-set switching rule needs a clear gain
-in precision or invention, so the CRF stays the default. A run-3-recipe bundle without the group
-objective gives nearly the same result; DeBERTa run 2 changes direction between the drafts and
-invents clearly more (0.504). See
-[`reports/batch-07-comparison/`](reports/batch-07-comparison/README.md).
-
-**Transformers.** DistilBERT and DeBERTa-v3-small were fine-tuned on one T4 GPU with the same
-training data. Early stopping and the choice of each grid's best run (of 12) used only a
-selection half of these model-drafted dev records. The comparison below is on the other,
-held-out half (61 documents in 46 project groups, `splits/selection-v1/`):
-
-| Agreement, held-out half (61 dev records, not accuracy) | Typed-condition micro-F1 | Exact span F1 | False-prerequisite rate |
-|---|---:|---:|---:|
-| CRF (`crf-batches-01-02`) | 0.127 [0.054, 0.201] | 0.176 [0.100, 0.261] | 0.412 [0.288, 0.538] |
-| DistilBERT (`distilbert-3`) | 0.099 [0.064, 0.142] | 0.118 [0.074, 0.177] | 0.463 [0.375, 0.545] |
-| DeBERTa-v3-small (`deberta-3`) | 0.185 [0.145, 0.235] | 0.221 [0.174, 0.277] | 0.483 [0.418, 0.544] |
-
-DeBERTa leads the CRF on typed agreement, but not clearly (+0.058, 95% CI [−0.008, +0.134]).
-Its false-prerequisite rate is not clearly different (+0.072 [−0.070, +0.196]). On the 10
-hand-labelled documents no difference is clear. See [`reports/neural/run-3/`](reports/neural/run-3/README.md);
-earlier runs are in [`run-2/`](reports/neural/run-2/README.md) and the failed first
-configuration in [`run-1/`](reports/neural/run-1/README.md).
-
-**Calibration and review thresholds.** Platt scaling fitted on the selection half cuts the
-held-out calibration error from 0.305 to 0.101 (CRF) and from 0.548 to 0.059 (DeBERTa). With
-review thresholds chosen on the selection half for the same target precision, DeBERTa keeps two
-to three times as many agreeing conditions. Its held-out typed F1 is clearly higher at targets
-0.30 and 0.35 (+0.100 [+0.034, +0.172] and +0.100 [+0.024, +0.171]), but its precision is not
-clearly different, and its false-prerequisite rate is higher at every target (not clearly).
-The CRF therefore stays the default model; see [`reports/calibration/`](reports/calibration/README.md).
-
-**Ablations and learning curve (CRF).** On the 172 agreement records, removing the heading/list
-context features (−0.006 typed F1 [−0.027, +0.020]) or the part-of-speech features (+0.002
-[−0.025, +0.032]) makes no clear difference. Typed agreement rises from 0.054 with 30 training
-documents to 0.143 with 120, then stays flat (0.145 with all 239); span agreement keeps rising
-slowly. See [`reports/crf-ablations/`](reports/crf-ablations/README.md).
-
-**Ablations and learning curve (DeBERTa, held-out half, three seeds each).** DeBERTa needs far
-more data than the CRF: typed agreement is 0.075 with 60 training documents, 0.097 with 120 and
-0.197 with all 239, and every reduced-data seed is clearly worse than the full model. Removing
-heading/list context or the group objective makes no clear difference to held-out typed
-agreement. Without context, the false-prerequisite rate is higher for all three seeds, and
-hand-labelled typed F1 is lower for all three (clear for one seed each). See
-[`reports/neural/ablation-1/`](reports/neural/ablation-1/README.md).
-
-95% project-group bootstrap intervals (1,000 resamples). Full reports, including scores against
-the 28 model-made dev records (which measure agreement with the drafting model, not accuracy),
-are in [`reports/pilot/`](reports/pilot/README.md). The paired difference from adding `batch-01` (+0.214 typed F1,
-95% CI [−0.026, +0.457]) is not clear; see [`reports/training-origin/`](reports/training-origin/README.md). Release targets, declared before any test
-result, are in [`docs/targets.md`](docs/targets.md).
-
-## Quickstart
-
-Requires [uv](https://docs.astral.sh/uv/) and Git.
-
-```bash
-git clone https://github.com/professor3333/TriggerMap.git && cd TriggerMap
-uv sync                                    # Python 3.12 environment from uv.lock
-uv run pytest -m "not slow"                # offline test suite
-```
-
-**Rebuild the corpus** from the pinned snapshot:
-
-```bash
-uv run triggermap ingest fetch --commit 1912cbd6ce9d4cb141636adc4abafb4eb77a93e6   # sparse clone, ~360 MB
-uv run triggermap ingest build             # PyPI filter, withdrawn excluded, malformed quarantined
-uv run triggermap corpus stats             # writes docs/corpus_stats.md
-```
-
-`ingest build` writes `data/processed/advisories.jsonl` (not committed) and the committed
-[`data/manifests/snapshot.json`](data/manifests/snapshot.json). The manifest records the source
-commit, every filtering count, each quarantined file with its reason, and the SHA-256 of the
-output. Rebuilding from the same commit reproduces it byte for byte.
-
-A full fresh-clone check (`bash scripts/reproduce/clean_clone.sh EMPTY_DIR`) rebuilds the corpus,
-retrains the CRF and regenerates the rules, CRF and agreement reports. On 2026-11-14 every
-regenerated file was byte-identical to the commit on macOS arm64 and on Linux x86-64 (Docker). Tolerances and what is not
-covered (transformer retraining) are in [`docs/reproducibility.md`](docs/reproducibility.md).
-
-**Extract and review** (rules baseline; no labels needed):
-
-```bash
-uv sync --extra baselines                  # adds CRF, scikit-learn and spaCy for the trained baseline
-uv run triggermap view GHSA-m2qf-hxjv-5gpq --out review.html          # evidence-linked review page
-uv run triggermap view --text-file advisory.md --out review.html      # any pasted advisory text
-uv run triggermap predict --out data/predictions/rules-2.jsonl        # whole corpus, validated output
-```
-
-**Train and evaluate** (once gold labels exist):
-
-```bash
-uv run triggermap train --gold annotations/pilot/pilot-1.jsonl --out artifacts/crf-1   # --origin manual: hand-made labels only
-uv run triggermap predict --model crf --model-dir artifacts/crf-1 --out data/predictions/crf-1.jsonl
-uv run triggermap evaluate annotations/pilot/pilot-1.jsonl data/predictions/crf-1.jsonl --out reports/crf-1.md
-uv run triggermap compare annotations/pilot/pilot-2.jsonl reports/pilot/predictions/rules-2.jsonl \
-    reports/pilot/predictions/crf-pilot-2.jsonl --gold-origin manual   # paired bootstrap, B - A
-uv run triggermap evaluate annotations/batches/batch-03.jsonl reports/agreement/predictions/crf-batches-01-02.jsonl \
-    --add-gold annotations/batches/batch-06.jsonl --split dev   # agreement with model drafts, not accuracy
-uv run triggermap multiref annotations/batches/batch-07.jsonl annotations/second-drafts/batch-07.jsonl \
-    reports/batch-07-comparison/predictions/crf-batches-01-02.jsonl reports/batch-07-comparison/predictions/rules-2.jsonl
-```
-
-**Transformers** (DistilBERT, DeBERTa-v3-small; needs a CUDA GPU, see
-[`docs/training_on_gpu.md`](docs/training_on_gpu.md)):
-
-```bash
-bash scripts/gpu/run_neural.sh                       # on the GPU machine: both grids, packed results
-bash scripts/gpu/score_neural.sh triggermap-neural-results.tgz   # back here: reports/neural/
-uv run triggermap experiment --config configs/experiments/deberta.toml --dry-run      # planned runs
-uv run triggermap predict --model transformer --model-dir artifacts/experiments/<run> --out preds.jsonl
-```
-
-Each run records the pinned base-checkpoint revision, the training-data and split hashes,
-hyperparameters, seed, per-epoch dev metrics, training time and peak GPU memory (and logs
-them to MLflow). Reports carry leakage-group bootstrap intervals and mean ± SD across seeds.
-
-**Run the review application** (FastAPI + SQLite):
-
-```bash
-uv sync --extra serve
-uv run triggermap app sync                    # load the advisory snapshot (6,350 advisories)
-uv run triggermap app create-user alice       # prints an API token once
-uv run triggermap app run                     # http://127.0.0.1:8000 (--port to change)
-```
-
-Look up an advisory by GHSA, CVE or PYSEC id, paste advisory text, or upload an OSV-Scanner
-JSON report. The same features are available as a JSON API: `POST /v1/extractions`,
-`POST /v1/imports/osv`, `POST /v1/reviews` (bearer token and `Idempotency-Key`), plus
-`/healthz`, `/readyz` and `/metrics`. Interactive API docs are served at `/docs`.
-
-**Annotate** with [Label Studio](https://labelstud.io/):
-
-```bash
-uv run triggermap corpus sample-pilot      # reproduce the pilot sample (seed 20261020)
-uv run triggermap annotate tasks           # Label Studio tasks for the sample
-uv run triggermap annotate import data/label_studio/export.json --annotator A1   # rewrites pilot-1 (labels identical; schema version updated)
-uv run triggermap annotate gate --gold annotations/pilot/pilot-2.jsonl --export data/label_studio/export.json   # docs/pilot_gate.md
-```
-
-The importer validates every exported annotation (offsets, labels, groups, document status),
-records its origin (manual, or a model draft accepted or edited), writes only clean records, and
-reports problems, label counts, origins and annotation pace. The procedure
-is in [`docs/pilot_protocol.md`](docs/pilot_protocol.md), and the labelling rules are in
-[`docs/annotation_guidelines.md`](docs/annotation_guidelines.md). The gate projects each role
-and group operator to 800 documents from the non-test pilot records and marks classes below 50
-as unsupported.
-
-## How results will be measured
-
-A condition counts as correct only when its **exact span, category and role** all match the gold
-annotation. A group counts as correct only when its **members and operator** both match. Reports
-give exact span P/R/F1, typed micro-F1, role macro-F1 with per-class support, group exact match,
-complete-document exact match (separately for advisories with and without conditions), the
-**false-prerequisite rate**, the **reversed-meaning rate**, and precision versus coverage. All of
-these come with document- or project-clustered bootstrap confidence intervals.
-"No explicit conditions found" is never treated as "not affected": TriggerMap supports review,
-it does not decide whether a deployment is vulnerable.
-
-The review policy ([`configs/review_policy.yaml`](configs/review_policy.yaml)) routes the
-following to *Review required*:
-- predictions below a confidence threshold calibrated on dev;
-- every `UNCERTAIN` role, `UNRESOLVED` group and `UNSUPPORTED_STRUCTURE` document;
-- negation, exception and workaround cues.
-
-Conditions a reviewer adds are marked `source: human`. Full metric definitions are in
-[`docs/evaluation.md`](docs/evaluation.md), and the release gates, declared before any test
-result, are in [`docs/targets.md`](docs/targets.md). The current systems and their limits are
-in the [model card](docs/model_card.md).
-
-## Data splits
-
-Every advisory is assigned to a **train, dev or test pool before scaled annotation**, so
-labels can never leak across splits. Advisories sharing a package, an upstream repository,
-an alias, or identical or near-identical text (MinHash, Jaccard ≥ 0.6) always land in the
-same pool. Test holds the **newest project groups**, so test scores measure temporal and
-project shift. Training code reads only the train pool. Evaluating on test requires an
-explicit `--release-evaluation` reason, and every such run is logged.
-
-| Pool | Advisories | Project groups | Published |
-|---|---:|---:|---|
-| train | 2,450 | 347 | 2018 → 2026 |
-| dev | 2,703 | 423 | 2018 → 2026 |
-| test | 1,197 | 558 | 2024-04 → 2026 |
-
-Details: [`docs/splits.md`](docs/splits.md) · annotation batches:
-[`docs/annotation_plan.md`](docs/annotation_plan.md).
+<sub>🟩 built · 🟨 built, limited by model-drafted labels. Training and serving share one preprocessing module, so offsets mean the same thing everywhere.</sub>
+
+- **Text:** Markdown is reduced to canonical text with a character-level map back to the raw
+  advisory. Every span is a zero-based, half-open offset pair, checked by a deterministic validator.
+- **Models:** deterministic rules, a CRF tagger with logistic-regression category, role and group
+  classifiers, and fine-tuned DistilBERT and DeBERTa-v3-small.
+- **Review policy:** uncertain roles, unresolved groups, low-confidence items and negation or
+  workaround cues are flagged *Review required* ([`configs/review_policy.yaml`](configs/review_policy.yaml)).
+- **Application:** one FastAPI process serves the JSON API and the review UI, with SQLite (WAL)
+  and append-only review history. Reviews export as JSON or Markdown.
+- **Stack:** Python 3.12 · uv · python-crfsuite · scikit-learn · spaCy · PyTorch · Transformers ·
+  FastAPI · SQLite · Docker Compose · GitHub Actions.
+
+## Data
+
+- **Source:** [GitHub Advisory Database](https://github.com/github/advisory-database), reviewed
+  advisories, pinned to commit `1912cbd6`. Of 36,910 advisories scanned, 6,350 are kept for PyPI.
+- **Annotations:** 710 advisories, of which 22 are hand-labelled. Every record states how its
+  labels were made ([`docs/dataset_card.md`](docs/dataset_card.md)).
+- **Splits:** train 2,450 · dev 2,703 · test 1,197. Advisories sharing a package, repository,
+  alias or near-duplicate text stay in one split, and test holds the newest project groups
+  ([`docs/splits.md`](docs/splits.md)).
+- **Committed:** annotations, split manifests and the snapshot manifest. Raw data, the processed
+  corpus and model weights are rebuilt or downloaded, not committed.
 
 ## Deployment
 
-One CPU host, Docker Compose: a Caddy proxy (automatic HTTPS), the app (read-only container,
-non-root), SQLite in WAL mode on a volume, Prometheus, and an on-demand advisory refresh job.
-A release pins the image, model bundle and review policy together. `triggermap release
-rollback` restores all three at once, and `triggermap app verify` checks a running service
-against its release manifest end to end. Rollback is exercised by
-[`deploy/rollback_drill.sh`](deploy/rollback_drill.sh); the runbook is in
-[`docs/deployment.md`](docs/deployment.md).
+One CPU host runs Docker Compose: a Caddy proxy, the app, SQLite on a volume and Prometheus. A
+release pins the image, model bundle and review policy together. Rollback restores all three at
+once, and it is tested by a drill ([`docs/deployment.md`](docs/deployment.md)).
 
-**v0.2.0 (preview)** is the current release. It serves the same CRF bundle as v0.1.0 and adds the
-declared test evaluation, two-reference scoring, the ONNX/INT8 check, the prospective check,
-fresh-clone reproduction and the public demo; see the [release notes](docs/release_notes/v0.2.0.md).
+| Release | Contents |
+|---|---|
+| [v0.2.0 (preview)](https://github.com/professor3333/TriggerMap/releases/tag/v0.2.0) | Current. Serving image and the CRF bundle. [Release notes](docs/release_notes/v0.2.0.md) |
+| [model-deberta-3-run3](https://github.com/professor3333/TriggerMap/releases/tag/model-deberta-3-run3) | Fine-tuned DeBERTa-v3-small weights. Not the default model |
+| [v0.1.0 (preview)](https://github.com/professor3333/TriggerMap/releases/tag/v0.1.0) | First release of the CRF. [Release notes](docs/release_notes/v0.1.0.md) |
 
-**v0.1.0 (preview)** serves `crf-batches-01-02` with every prediction flagged for review. No
-acceptance gate has been evaluated, because labels after the pilot are model drafts; see the
-[release notes](docs/release_notes/v0.1.0.md). Its rollback drill (rules `r1` → CRF `v0.1.0`
-→ `r1`) passed on local Docker.
+## Project status
 
-**Model downloads.** The CRF bundle is attached to
-[v0.1.0](https://github.com/professor3333/TriggerMap/releases/tag/v0.1.0). The fine-tuned run-3
-DeBERTa-v3-small (weights, tokenizer, labels, calibration, provenance, MIT notice) is a separate
-model-only pre-release,
-[`model-deberta-3-run3`](https://github.com/professor3333/TriggerMap/releases/tag/model-deberta-3-run3).
-It is not the default model. Checksums are in [`docs/model_card.md`](docs/model_card.md#downloads).
+| Phase | Status |
+|---|---|
+| 1 · Ingestion, label schema, pilot | ✅ done |
+| 2 · Rules and CRF baselines, evaluator | ✅ done |
+| 3 · Transformers (DistilBERT, DeBERTa) | 🟨 trained on model drafts; the CRF stays ahead on test |
+| 4 · Calibration, review policy, robustness | 🟨 built; thresholds not applied without hand labels |
+| 5 · API, review UI, storage, Docker, rollback | ✅ done |
+| 6 · Benchmarks, ONNX, hosted deployment | 🟨 CRF meets every serving target; transformers not measured on the target host |
+| 7 · Test evaluation, reproduction, demo | 🟨 done within the label limits; no usability study |
 
-## Serving cost
-
-**On the target host (2 vCPU / 4 GB x86-64, AWS EC2, 2026-11-09)**, the released CRF
-(`crf-batches-01-02`, v0.1.0) meets every serving target:
-
-| Measure | CRF v0.1.0 | Target |
-|---|---:|---:|
-| Warm p95 latency, ~512-token advisory | 0.06 s | ≤ 2.5 s |
-| Warm p95 latency, ~2,000-token advisory | 0.14 s | ≤ 8 s |
-| Throughput, natural workload (in process) | 23.6 docs/s | ≥ 0.25 docs/s |
-| Peak memory (in process) | 276 MB | ≤ 3 GB |
-| HTTP load test, 1,000 requests at concurrency 4 (Compose stack) | 100% succeeded, p95 0.61 s, 18.6 req/s | ≥ 99.5% |
-
-Full report: [`reports/benchmarks/target-host-crf.md`](reports/benchmarks/target-host-crf.md).
-The transformer models have not been measured on this host.
-
-**Local proxy for the transformers.** Measured on an 8 GB Apple M1 with inference limited to 2 threads. This is **not the target
-host**, and the transformer bundles have untrained heads, so latency and memory are real but
-accuracy is not measured. Details and caveats: [`docs/benchmarks.md`](docs/benchmarks.md).
-
-| Configuration | p95, ~512 tokens | p95, ~2,000 tokens | Peak memory |
-|---|---:|---:|---:|
-| rules-2 | 0.03 s | 0.04 s | 69 MB |
-| DistilBERT, PyTorch | 0.32 s | 0.92 s | 475 MB |
-| DeBERTa-v3-small, PyTorch | 0.20 s | 0.76 s | 701 MB |
-| DeBERTa-v3-small, ONNX INT8 (fails the accuracy gate, see below) | 0.54 s | 1.41 s | 538 MB |
-
-ONNX export is numerically exact against PyTorch (maximum logit difference ≈ 5 × 10⁻⁶). On the
-trained run-3 DeBERTa, FP32 ONNX reproduces PyTorch on all 372 dev documents, but dynamic INT8
-fails the ≤ 1-point typed-F1 gate: −2.1 points on the hand-labelled dev documents, −7.4 points of
-agreement on 172 dev records, and only 51 of 372 documents unchanged
-([`reports/onnx-int8/`](reports/onnx-int8/README.md)). The
-rules service handled 1,000 of 1,000 load-test requests. The plan's targets (p95 ≤ 2.5 s and
-≤ 8 s, ≤ 3 GB) will be judged only on the documented 2 vCPU / 4 GB x86-64 host.
-
-## Corpus at a glance
-
-Snapshot `1912cbd6` of the GitHub Advisory Database, reviewed advisories only:
-
-| 36,910 | 6,350 | 1,528 | 236 | 0 |
-|:---:|:---:|:---:|:---:|:---:|
-| advisories scanned | PyPI advisories kept | distinct packages | withdrawn, excluded | quarantined |
-
-More detail (lengths, structure, cue coverage, years, top packages) is in
-[`docs/corpus_stats.md`](docs/corpus_stats.md).
-
-## Repository layout
-
-```text
-src/triggermap/
-├── schema/      label inventory (single source of truth) + deterministic validator
-├── text/        Markdown → canonical text with offset map, segmentation, shared entry point
-├── ingest/      pinned snapshot, OSV parsing, PyPI filter, quarantine, manifests
-├── corpus/      statistics, cues, leakage groups, near-duplicates, frozen splits, batch sampling
-├── annotate/    Label Studio tasks and validated import
-├── models/      rules baseline · CRF + logistic regression · transformer (encoder + span,
-│                role and group heads, windows, bundles) · experiment runner
-├── eval/        metrics, cluster bootstrap, Markdown reports
-├── serve/       FastAPI app, review UI (strict CSP), SQLite storage, review policy, exports
-└── cli.py       `triggermap` command
-configs/         Label Studio config · experiment configs (pinned checkpoint revisions)
-splits/          frozen split manifest (pool-v1)
-annotations/     versioned annotations and sample manifests (CC BY 4.0)
-data/manifests/  committed snapshot manifest (raw and processed data are rebuilt, not committed)
-docs/            guidelines, pilot protocol, corpus statistics
-tests/           unit, property-based, synthetic end-to-end and real-export regression tests
-```
+Each Definition of Done item, with its evidence:
+[`docs/definition_of_done.md`](docs/definition_of_done.md).
 
 ## Limitations
 
-- **Most labels are model drafts.** 22 records are hand-labelled (10 dev, 4 test). Every batch
-  after the pilot was submitted from model drafts, and no more hand labels will come. Most scores
-  are therefore agreement with a drafting model, not accuracy. The accuracy slices are tiny, and
-  the release gates in [`docs/targets.md`](docs/targets.md) cannot be judged.
-- **The reference labels are unstable.** Two model drafting runs of the same 100 documents agree
-  at only 0.375 typed F1 ([`reports/drafter-consistency/`](reports/drafter-consistency/README.md)).
-- **There is one annotator, and no inter-annotator agreement.** The 22 hand-labelled records come
-  from a single annotator, and no repeat annotation was done.
-- **Independence is not guaranteed.** Advisories are copied across packages, aliases and revisions.
-  Grouping removes the duplicates it can detect (shared package, repository, alias, identical text,
-  MinHash near-duplicates), but some leakage risk remains.
-- **The scope is narrow:** one source (GitHub-reviewed advisories), the PyPI ecosystem, and English
-  only. Nothing is claimed about other sources or ecosystems.
-- **Writing style varies strongly by project,** and the test split holds the newest project
-  groups, so test results measure temporal and project shift.
-- **Rare structure is weak.** Group exact match is 0 for every system, EXCEPTION and NOT_REQUIRED
-  conditions are rarely right, and `UNCERTAIN` and `UNRESOLVED` are unsupported by the pilot gate.
-- **Nested and cross-window logic is marked unresolved, not modelled.** This matters more over
-  time: 71% of advisories published after the snapshot need more than one 512-token window
+- **Most labels are model drafts.** 22 records are hand-labelled (10 dev, 4 test), and no more
+  will come. Most scores are agreement, not accuracy, and the release targets cannot be judged.
+- **The reference labels are unstable.** Two drafting runs agree at only 0.375 typed F1
+  ([`reports/drafter-consistency/`](reports/drafter-consistency/README.md)).
+- **One annotator.** There is no inter-annotator agreement and no repeat annotation.
+- **Independence is not guaranteed.** Advisories are copied across packages, aliases and
+  revisions. Grouping removes the duplicates it can detect, but some leakage risk remains.
+- **Narrow scope:** GitHub-reviewed advisories, PyPI only, English only. The test split measures
+  temporal and project shift.
+- **Rare structure is weak.** Group exact match is 0 for every system. EXCEPTION and NOT_REQUIRED
+  conditions are rarely right, and `UNCERTAIN` and `UNRESOLVED` are unsupported.
+- **Nested and cross-window logic is marked unresolved, not modelled.** 71% of advisories published
+  after the snapshot need more than one 512-token window
   ([`reports/prospective/`](reports/prospective/README.md)).
-- **Absence of an extracted condition is not evidence that none exists.** "No explicit conditions
-  found" is never "not affected".
-- **Exported runtimes:** dynamic INT8 fails the accuracy gate for DeBERTa, and the transformers
-  have not been measured on the target host.
-- **No usability study.** No developer participants are available, now or later, so no usability
-  study will be run. The interface is checked only by automated API and UI tests and the public
-  demo. Walkthroughs by AI models are not reported as usability evidence.
+- **Absence of an extracted condition is not evidence that none exists.**
+- **Exported runtimes:** dynamic INT8 fails the accuracy gate for DeBERTa.
+- **No usability study.** No developer participants are available, so none will be run.
+  Walkthroughs by AI models are not reported as usability evidence.
 
-## Data and licensing
+## Documentation
 
-- **Source:** [GitHub Advisory Database](https://github.com/github/advisory-database), reviewed
-  advisories in the PyPI ecosystem, pinned to commit
-  `1912cbd6ce9d4cb141636adc4abafb4eb77a93e6`. Records use the
-  [OSV schema](https://ossf.github.io/osv-schema/).
-- **Advisory text and annotations:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-  Annotations are modified material derived from the advisories; attribution and details are in
-  [`annotations/README.md`](annotations/README.md). Counts, label origins, splits and known
-  biases are in the [dataset card](docs/dataset_card.md).
+| Topic | Where |
+|---|---|
+| All results | [`docs/results.md`](docs/results.md) · [`reports/`](reports) |
+| Commands | [`docs/usage.md`](docs/usage.md) |
+| Metrics and correctness | [`docs/evaluation.md`](docs/evaluation.md) · [`docs/targets.md`](docs/targets.md) |
+| Models | [`docs/model_card.md`](docs/model_card.md) · [`docs/training_on_gpu.md`](docs/training_on_gpu.md) |
+| Data and labelling | [`docs/dataset_card.md`](docs/dataset_card.md) · [`docs/annotation_guidelines.md`](docs/annotation_guidelines.md) · [`docs/splits.md`](docs/splits.md) |
+| Operations | [`docs/deployment.md`](docs/deployment.md) · [`docs/benchmarks.md`](docs/benchmarks.md) · [`docs/reproducibility.md`](docs/reproducibility.md) |
+
+<details>
+<summary><b>Repository layout</b></summary>
+
+```text
+src/triggermap/
+├── schema/      label inventory (single source of truth) and deterministic validator
+├── text/        Markdown → canonical text with offset map, segmentation
+├── ingest/      pinned snapshot, OSV parsing, PyPI filter, manifests
+├── corpus/      statistics, leakage groups, near-duplicates, frozen splits, sampling
+├── annotate/    Label Studio tasks and validated import
+├── models/      rules · CRF · transformer · experiment runner
+├── eval/        metrics, cluster bootstrap, reports
+├── serve/       FastAPI app, review UI, SQLite storage, review policy, exports
+└── cli.py       `triggermap` command
+annotations/     versioned annotations and sample manifests (CC BY 4.0)
+splits/          frozen split manifests
+reports/         measured results
+demo/            static demo pages (GitHub Pages)
+deploy/          Compose stack, smoke test, rollback drill
+tests/           unit, property-based and end-to-end tests
+```
+
+</details>
+
+## License
+
 - **Code:** [MIT](LICENSE).
-
-## Acknowledgements
+- **Advisory text and annotations:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+  Annotations are modified material derived from the advisories. Attribution and details are in
+  [`annotations/README.md`](annotations/README.md).
 
 Built on the [GitHub Advisory Database](https://github.com/github/advisory-database), the
 [OSV schema](https://ossf.github.io/osv-schema/) and [Label Studio](https://labelstud.io/).
