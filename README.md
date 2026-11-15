@@ -157,6 +157,8 @@ and none was used for training.
 
 ## Project status
 
+Final audit against the Definition of Done, with evidence for each item: [`docs/definition_of_done.md`](docs/definition_of_done.md).
+
 | Phase | Scope | Status |
 |---|---|:---:|
 | 1 · Feasibility | Pinned ingestion, corpus statistics, label schema, offset-preserving preprocessing, pilot sample, annotation tooling | ✅ built |

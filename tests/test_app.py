@@ -302,3 +302,45 @@ def test_app_cli_uses_the_server_database(tmp_path: Path, monkeypatch: pytest.Mo
     monkeypatch.setenv("TRIGGERMAP_DATABASE", str(target))
     args = build_parser().parse_args(["app", "create-user", "someone"])
     assert args.database == target
+
+
+def test_invalid_prediction_is_rejected_not_shown(db: Path) -> None:
+    """A model output with a span outside the text is refused (500), never shown or cached."""
+    from triggermap.schema import Category, Condition, DocumentStatus, Role
+
+    settings = Settings(database=db, review_policy=ROOT / "configs/review_policy.yaml")
+
+    class BrokenExtractor:
+        def __init__(self, real: Any) -> None:
+            self.real = real
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(self.real, name)
+
+        def extract(self, doc: Any, advisory_id: str | None = None) -> Any:
+            extraction = self.real.extract(doc, advisory_id)
+            outside = Condition(
+                id="c1",
+                span=(0, len(doc.text) + 5),
+                category=Category.USAGE,
+                role=Role.REQUIRED,
+                source="model",
+            )
+            return extraction.model_copy(
+                update={
+                    "conditions": (outside,),
+                    "groups": (),
+                    "document_status": DocumentStatus.HAS_CONDITIONS,
+                }
+            )
+
+    def broken_service() -> Service:
+        service = Service(settings)
+        service.extractor = BrokenExtractor(service.extractor)  # type: ignore[assignment]
+        return service
+
+    with TestClient(create_app(settings, broken_service)) as c:
+        for _ in range(2):  # the refused output is not cached either
+            response = c.post("/v1/extractions", json={"advisory_id": FLASK})
+            assert response.status_code == 500
+            assert response.json()["error"]["code"] == "invalid_prediction"
