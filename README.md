@@ -166,7 +166,7 @@ and none was used for training.
 | 4 · Reliability | Calibration and review policy, formatting robustness (rules: 100%), challenge-set and error-catalogue tooling | 🟨 tooling ready · thresholds await labels |
 | 5 · Application | FastAPI API, review UI, SQLite (WAL) with append-only history, exports, Docker Compose stack, release manifests, tested rollback, CI image smoke test | ✅ built |
 | 6 · Production | Benchmark harness, ONNX/INT8 export (FP32 parity exact; INT8 fails the accuracy gate on the trained DeBERTa), local proxy benchmarks and load tests, monitoring; CRF v0.1.0 measured and deployed (`app verify` passed) on the 2 vCPU / 4 GB target host | 🟨 CRF meets every serving target on the target host · transformers not yet measured there |
-| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · prospective check on 259 new advisories (behaviour only, no labels) · no usability study |
+| 7 · Validation | Declared held-out test evaluation, fresh-clone reproduction (macOS and Linux), [public demo](https://professor3333.github.io/TriggerMap/), downloadable models | 🟨 test evaluated once (agreement; gates not judgeable with 4 hand-labelled test records) · prospective check on 259 new advisories (behaviour only, no labels) · no usability study (no participants available) |
 
 ### Held-out test results (declared release evaluation, 2026-11-15)
 
@@ -517,6 +517,36 @@ data/manifests/  committed snapshot manifest (raw and processed data are rebuilt
 docs/            guidelines, pilot protocol, corpus statistics
 tests/           unit, property-based, synthetic end-to-end and real-export regression tests
 ```
+
+## Limitations
+
+- **Most labels are model drafts.** 22 records are hand-labelled (10 dev, 4 test). Every batch
+  after the pilot was submitted from model drafts, and no more hand labels will come. Most scores
+  are therefore agreement with a drafting model, not accuracy. The accuracy slices are tiny, and
+  the release gates in [`docs/targets.md`](docs/targets.md) cannot be judged.
+- **The reference labels are unstable.** Two model drafting runs of the same 100 documents agree
+  at only 0.375 typed F1 ([`reports/drafter-consistency/`](reports/drafter-consistency/README.md)).
+- **There is one annotator, and no inter-annotator agreement.** The 22 hand-labelled records come
+  from a single annotator, and no repeat annotation was done.
+- **Independence is not guaranteed.** Advisories are copied across packages, aliases and revisions.
+  Grouping removes the duplicates it can detect (shared package, repository, alias, identical text,
+  MinHash near-duplicates), but some leakage risk remains.
+- **The scope is narrow:** one source (GitHub-reviewed advisories), the PyPI ecosystem, and English
+  only. Nothing is claimed about other sources or ecosystems.
+- **Writing style varies strongly by project,** and the test split holds the newest project
+  groups, so test results measure temporal and project shift.
+- **Rare structure is weak.** Group exact match is 0 for every system, EXCEPTION and NOT_REQUIRED
+  conditions are rarely right, and `UNCERTAIN` and `UNRESOLVED` are unsupported by the pilot gate.
+- **Nested and cross-window logic is marked unresolved, not modelled.** This matters more over
+  time: 71% of advisories published after the snapshot need more than one 512-token window
+  ([`reports/prospective/`](reports/prospective/README.md)).
+- **Absence of an extracted condition is not evidence that none exists.** "No explicit conditions
+  found" is never "not affected".
+- **Exported runtimes:** dynamic INT8 fails the accuracy gate for DeBERTa, and the transformers
+  have not been measured on the target host.
+- **No usability study.** No developer participants are available, now or later, so no usability
+  study will be run. The interface is checked only by automated API and UI tests and the public
+  demo. Walkthroughs by AI models are not reported as usability evidence.
 
 ## Data and licensing
 
